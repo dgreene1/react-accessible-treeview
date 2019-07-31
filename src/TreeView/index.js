@@ -377,6 +377,7 @@ const handleKeyDown = ({
     case "Enter":
     case " ":
     case "Spacebar":
+      event.preventDefault();
       dispatch({ type: treeTypes.select, id: element.id, nodeRefs });
       if (isBranchNode(data, id)) {
         if (expandedIds.has(element.id)) {
