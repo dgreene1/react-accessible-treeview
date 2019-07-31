@@ -1,0 +1,34 @@
+.basic.tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.basic .tree-node,
+.basic .tree-node-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.basic .tree-node__branch {
+  outline: none;
+}
+.basic .tree-node__leaf {
+  outline: none;
+}
+
+.basic .tree-node__branch:focus > .tree-branch-wrapper,
+.basic .tree-node__leaf:focus {
+  outline-color: rgb(77, 144, 254);
+  outline-style: auto;
+  outline-width: 2px;
+  display: block;
+}
+
+.basic .tree-branch-wrapper {
+  display: block;
+}
+
+.basic .tree-node {
+  cursor: pointer;
+}
