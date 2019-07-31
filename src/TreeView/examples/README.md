@@ -18,7 +18,7 @@ const folder = {
       name: "node_modules",
       children: [
         {
-          name: "react-accesible-treeview",
+          name: "react-accessible-treeview",
           children: [{ name: "bundle.js" }]
         },
         { name: "react", children: [{ name: "bundle.js" }] }
@@ -76,7 +76,7 @@ const folder = {
       name: "node_modules",
       children: [
         {
-          name: "react-accesible-treeview",
+          name: "react-accessible-treeview",
           children: [{ name: "index.js" }]
         },
         { name: "react", children: [{ name: "index.js" }] }

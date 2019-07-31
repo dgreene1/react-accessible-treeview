@@ -17,7 +17,7 @@ const data = [
   { name: "index.js", id: 2 },
   { name: "styles.css", id: 3 },
   { name: "node_modules", children: [5, 7], id: 4 },
-  { name: "react-accesible-treeview", children: [6], id: 5 },
+  { name: "react-accessible-treeview", children: [6], id: 5 },
   { name: "bundle.js", id: 6 },
   { name: "react", children: [8], id: 7 },
   { name: "bundle.js", id: 8 },

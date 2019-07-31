@@ -310,7 +310,7 @@ const handleKeyDown = ({
   switch (event.key) {
     case "ArrowDown": {
       event.preventDefault();
-      const next = getNextAccesible(data, id, expandedIds);
+      const next = getNextAccessible(data, id, expandedIds);
       if (next != null) {
         dispatch({ type: treeTypes.focus, id: next, nodeRefs });
       }
@@ -318,7 +318,7 @@ const handleKeyDown = ({
     }
     case "ArrowUp": {
       event.preventDefault();
-      const previous = getPreviousAccesible(data, id, expandedIds);
+      const previous = getPreviousAccessible(data, id, expandedIds);
       if (previous != null) {
         dispatch({ type: treeTypes.focus, id: previous, nodeRefs });
       }
@@ -363,8 +363,8 @@ const handleKeyDown = ({
       break;
     case "End": {
       event.preventDefault();
-      const lastAccesible = getLastAccesible(data, data[0].id, expandedIds);
-      dispatch({ type: treeTypes.focus, id: lastAccesible, nodeRefs });
+      const lastAccessible = getLastAccessible(data, data[0].id, expandedIds);
+      dispatch({ type: treeTypes.focus, id: lastAccessible, nodeRefs });
       break;
     }
     case "*": {
@@ -388,7 +388,7 @@ const handleKeyDown = ({
       break;
     default:
       if (event.key.length === 1) {
-        let currentId = getNextAccesible(data, id, expandedIds);
+        let currentId = getNextAccessible(data, id, expandedIds);
         while (currentId !== id) {
           if (currentId == null) {
             currentId = data[0].children[0];
@@ -399,7 +399,7 @@ const handleKeyDown = ({
             dispatch({ type: treeTypes.focus, id: currentId, nodeRefs });
             break;
           }
-          currentId = getNextAccesible(data, currentId, expandedIds);
+          currentId = getNextAccessible(data, currentId, expandedIds);
         }
       }
       break;
@@ -447,7 +447,7 @@ const getSibling = (data, id, diff) => {
   return null;
 };
 
-const getLastAccesible = (data, id, expandedIds) => {
+const getLastAccessible = (data, id, expandedIds) => {
   let node = data[id];
   const isRoot = data[0].id === id;
   if (isRoot) {
@@ -459,7 +459,7 @@ const getLastAccesible = (data, id, expandedIds) => {
   return node.id;
 };
 
-const getPreviousAccesible = (data, id, expandedIds) => {
+const getPreviousAccessible = (data, id, expandedIds) => {
   if (id === data[0].children[0]) {
     return null;
   }
@@ -467,10 +467,10 @@ const getPreviousAccesible = (data, id, expandedIds) => {
   if (previous == null) {
     return getParent(data, id);
   }
-  return getLastAccesible(data, previous, expandedIds);
+  return getLastAccessible(data, previous, expandedIds);
 };
 
-const getNextAccesible = (data, id, expandedIds) => {
+const getNextAccessible = (data, id, expandedIds) => {
   let nodeId = data[id].id;
   if (isBranchNode(data, nodeId) && expandedIds.has(nodeId)) {
     return data[nodeId].children[0];
@@ -482,7 +482,7 @@ const getNextAccesible = (data, id, expandedIds) => {
     }
     nodeId = getParent(data, nodeId);
 
-    //we have reached the root so there is no next accesible node
+    //we have reached the root so there is no next accessible node
     if (nodeId == null) {
       return null;
     }
