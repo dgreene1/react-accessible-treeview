@@ -46,7 +46,7 @@ const data = flattenTree(folder);
     nodeRenderer={({ element, getNodeProps, level }) => (
       <div
         {...getNodeProps()}
-        aria-labelled-by={"basic-tree"}
+        aria-labelledby={"basic-tree"}
         style={{ paddingLeft: 20 * (level - 1) }}
       >
         {element.name}
@@ -108,7 +108,7 @@ function Example() {
       <TreeView
         data={data}
         onSelect={x => setState(x)}
-        aria-labelled-by={"styled-tree"}
+        aria-labelledby={"styled-tree"}
         nodeRenderer={({
           element,
           isBranch,
