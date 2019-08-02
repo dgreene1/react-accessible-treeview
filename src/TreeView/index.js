@@ -411,8 +411,10 @@ const handleKeyDown = ({
     }
     case "*": {
       event.preventDefault();
-      const parents = data.filter(x => isBranchNode(data, x.id)).map(x => x.id);
-      dispatch({ type: treeTypes.expandMany, ids: parents });
+      const nodes = data[getParent(data, id)].children.filter(x =>
+        isBranchNode(data, x)
+      );
+      dispatch({ type: treeTypes.expandMany, ids: nodes });
       break;
     }
     //IE11 uses "Spacebar"
