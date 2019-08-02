@@ -21,6 +21,7 @@ const treeTypes = {
   expandMany: "EXPAND_MANY",
   toggle: "TOGGLE",
   toggleSelect: "TOGGLE_SELECT",
+  changeSelectMany: "SELECT_MANY",
   focus: "FOCUS"
 };
 
@@ -31,7 +32,8 @@ const treeReducer = (state, action) => {
       newSet.delete(action.id);
       return {
         ...state,
-        expandedIds: newSet
+        expandedIds: newSet,
+        focusableId: action.id
       };
     }
     case treeTypes.collapseMany: {
@@ -49,7 +51,8 @@ const treeReducer = (state, action) => {
       newSet.add(action.id);
       return {
         ...state,
-        expandedIds: newSet
+        expandedIds: newSet,
+        focusableId: action.id
       };
     }
     case treeTypes.expandMany: {
@@ -65,7 +68,8 @@ const treeReducer = (state, action) => {
       else newSet.add(action.id);
       return {
         ...state,
-        expandedIds: newSet
+        expandedIds: newSet,
+        focusableId: action.id
       };
     }
     case treeTypes.toggleSelect: {
@@ -83,6 +87,18 @@ const treeReducer = (state, action) => {
         ...state,
         selectedIds: newSet,
         focusableId: action.id
+      };
+    }
+    case treeTypes.changeSelectMany: {
+      let newSet;
+      if (action.select) {
+        newSet = new Set([...state.selectedIds, ...action.ids]);
+      } else {
+        newSet = difference(state.selectedIds, new Set(action.ids));
+      }
+      return {
+        ...state,
+        selectedIds: newSet
       };
     }
     case treeTypes.focus:
@@ -150,6 +166,7 @@ const TreeView = React.forwardRef(function TreeView(
     defaultExpandedIds = [],
     defaultSelectedIds = [],
     propagateCollapse = false,
+    propagateSelect = false,
     multiSelect = false,
     ...other
   },
@@ -174,9 +191,11 @@ const TreeView = React.forwardRef(function TreeView(
         data,
         focusableId: state.focusableId,
         expandedIds: state.expandedIds,
+        selectedIds: state.selectedIds,
         dispatch,
         nodeRefs,
         propagateCollapse,
+        propagateSelect,
         multiSelect
       })}
       {...other}
@@ -197,6 +216,7 @@ const TreeView = React.forwardRef(function TreeView(
           posinset={index + 1}
           level={1}
           propagateCollapse={propagateCollapse}
+          propagateSelect={propagateSelect}
           multiSelect={multiSelect}
         />
       ))}
@@ -218,15 +238,22 @@ const Node = ({
   posinset,
   level,
   propagateCollapse,
+  propagateSelect,
   multiSelect
 }) => {
   const handleBranchClick = () => {
     dispatch({
       type: treeTypes.toggleSelect,
       id: element.id,
-      nodeRefs,
       multiSelect
     });
+    propagateSelect &&
+      dispatch({
+        type: treeTypes.changeSelectMany,
+        ids: getDescendants(data, element.id),
+        select: !selectedIds.has(element.id)
+      });
+
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids = [element.id, ...getDescendants(data, element.id)];
       dispatch({ type: treeTypes.collapseMany, ids });
@@ -239,7 +266,6 @@ const Node = ({
     dispatch({
       type: treeTypes.toggleSelect,
       id: element.id,
-      nodeRefs,
       multiSelect
     });
   };
@@ -314,6 +340,7 @@ const Node = ({
               posinset={index + 1}
               level={level + 1}
               propagateCollapse={propagateCollapse}
+              propagateSelect={propagateSelect}
               multiSelect={multiSelect}
             />
           ))}
@@ -341,9 +368,11 @@ const Node = ({
 const handleKeyDown = ({
   data,
   expandedIds,
+  selectedIds,
   focusableId,
   dispatch,
   propagateCollapse,
+  propagateSelect,
   multiSelect,
   nodeRefs
 }) => event => {
@@ -406,7 +435,7 @@ const handleKeyDown = ({
     case "End": {
       event.preventDefault();
       const lastAccessible = getLastAccessible(data, data[0].id, expandedIds);
-      dispatch({ type: treeTypes.focus, id: lastAccessible, nodeRefs });
+      dispatch({ type: treeTypes.focus, id: lastAccessible });
       break;
     }
     case "*": {
@@ -425,9 +454,14 @@ const handleKeyDown = ({
       dispatch({
         type: treeTypes.toggleSelect,
         id: element.id,
-        nodeRefs,
         multiSelect
       });
+      propagateSelect &&
+        dispatch({
+          type: treeTypes.changeSelectMany,
+          ids: getDescendants(data, element.id),
+          select: !selectedIds.has(element.id)
+        });
       break;
     default:
       if (event.key.length === 1) {
@@ -440,7 +474,7 @@ const handleKeyDown = ({
           if (
             data[currentId].name[0].toLowerCase() === event.key.toLowerCase()
           ) {
-            dispatch({ type: treeTypes.focus, id: currentId, nodeRefs });
+            dispatch({ type: treeTypes.focus, id: currentId });
             break;
           }
           currentId = getNextAccessible(data, currentId, expandedIds);
@@ -469,12 +503,15 @@ const getParent = (data, id) => {
 };
 
 const getDescendants = (data, id) => {
-  const node = data[id];
   const descendants = [];
-  for (const childId of node.children || []) {
-    descendants.push(childId);
-    descendants.concat(getDescendants(data, data[childId].id));
-  }
+  const getDescendantsHelper = (data, id) => {
+    const node = data[id];
+    for (const childId of node.children || []) {
+      descendants.push(childId);
+      getDescendantsHelper(data, childId);
+    }
+  };
+  getDescendantsHelper(data, id);
   return descendants;
 };
 
@@ -582,13 +619,13 @@ export const flattenTree = function(tree) {
 };
 
 const difference = (a, b) => {
-  const arr = [];
+  const s = new Set();
   for (const v of a) {
     if (!b.has(v)) {
-      arr.push(v);
+      s.add(v);
     }
   }
-  return arr;
+  return s;
 };
 
 const symmetricDifference = (a, b) => {
