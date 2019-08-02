@@ -102,13 +102,15 @@ function Example() {
     <div className="ide">
       <h5 id="styled-tree">Directory tree</h5>
       <div style={{ padding: 0, minHeight: 40 }}>
-        {(state != null && JSON.stringify(state, null, 4)) ||
-          "waiting for a selection"}
+        {state != null
+          ? JSON.stringify(state, null, 4)
+          : "waiting for a selection"}
       </div>
       <TreeView
         data={data}
-        onSelect={x => setState(x)}
+        onChange={x => setState(x)}
         aria-labelledby={"styled-tree"}
+        multiSelect
         nodeRenderer={({
           element,
           isBranch,

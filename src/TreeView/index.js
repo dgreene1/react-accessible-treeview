@@ -3,6 +3,7 @@ import cx from "classnames";
 import PropTypes from "prop-types";
 
 //TODO: add a better way to style focus i.e. using a classname with the modifier
+// implement non selectable nodes
 const baseClassNames = {
   root: "tree",
   node: "tree-node",
@@ -18,7 +19,8 @@ const treeTypes = {
   collapseMany: "COLLAPSE_MANY",
   expand: "EXPAND",
   expandMany: "EXPAND_MANY",
-  select: "SELECT",
+  toggle: "TOGGLE",
+  toggleSelect: "TOGGLE_SELECT",
   focus: "FOCUS"
 };
 
@@ -57,12 +59,32 @@ const treeReducer = (state, action) => {
         expandedIds: newSet
       };
     }
-    case treeTypes.select:
+    case treeTypes.toggle: {
+      const newSet = new Set(state.expandedIds);
+      if (state.expandedIds.has(action.id)) newSet.delete(action.id);
+      else newSet.add(action.id);
       return {
         ...state,
-        selectedId: action.id,
+        expandedIds: newSet
+      };
+    }
+    case treeTypes.toggleSelect: {
+      let newSet;
+      const isSelected = state.selectedIds.has(action.id);
+      if (action.multiSelect) {
+        newSet = new Set(state.selectedIds);
+        if (isSelected) newSet.delete(action.id);
+        else newSet.add(action.id);
+      } else {
+        newSet = new Set();
+        if (!isSelected) newSet.add(action.id);
+      }
+      return {
+        ...state,
+        selectedIds: newSet,
         focusableId: action.id
       };
+    }
     case treeTypes.focus:
       return {
         ...state,
@@ -73,26 +95,36 @@ const treeReducer = (state, action) => {
   }
 };
 
-const useTree = ({ data, defaultExpandedIds, nodeRefs, onSelect }) => {
+const useTree = ({
+  data,
+  defaultExpandedIds,
+  defaultSelectedIds,
+  nodeRefs,
+  onChange
+}) => {
   const [state, dispatch] = useReducer(treeReducer, {
-    selectedId: null,
+    selectedIds: new Set(defaultSelectedIds),
     focusableId: data[0].children[0],
     expandedIds: new Set(defaultExpandedIds)
   });
 
-  const { selectedId, expandedIds, focusableId } = state;
+  const { selectedIds, expandedIds, focusableId } = state;
+  const prevSelectedIds = usePrevious(selectedIds) || [];
   useEffect(() => {
-    const selectedElement = data[selectedId];
-    if (onSelect && selectedId) {
-      const isBranch = isBranchNode(data, selectedId);
-      onSelect({
-        element: selectedElement,
-        isBranch: isBranch,
-        isExpanded: isBranch ? expandedIds.has(selectedId) : undefined,
-        expandedIds: Array.from(expandedIds)
-      });
+    const toggledIds = symmetricDifference(selectedIds, prevSelectedIds);
+    if (onChange) {
+      for (const toggledId of toggledIds) {
+        const isBranch = isBranchNode(data, toggledId);
+        onChange({
+          element: data[toggledId],
+          isBranch: isBranch,
+          isExpanded: isBranch ? expandedIds.has(toggledId) : undefined,
+          expandedIds: Array.from(expandedIds),
+          selectedIds: Array.from(selectedIds)
+        });
+      }
     }
-  }, [data, selectedId, expandedIds, isBranchNode]);
+  }, [data, selectedIds, expandedIds, isBranchNode]);
 
   const hasUserInteractedRef = useRef(false);
   useEffect(() => {
@@ -112,11 +144,13 @@ const useTree = ({ data, defaultExpandedIds, nodeRefs, onSelect }) => {
 const TreeView = React.forwardRef(function TreeView(
   {
     data,
-    onSelect,
-    className,
+    onChange,
+    className = "",
     nodeRenderer,
-    defaultExpandedIds,
-    propagateCollapse,
+    defaultExpandedIds = [],
+    defaultSelectedIds = [],
+    propagateCollapse = false,
+    multiSelect = false,
     ...other
   },
   ref
@@ -125,14 +159,16 @@ const TreeView = React.forwardRef(function TreeView(
   const [state, dispatch] = useTree({
     data,
     defaultExpandedIds,
+    defaultSelectedIds,
     nodeRefs,
-    onSelect
+    onChange
   });
 
   return (
     <ul
       className={cx(baseClassNames.root, className)}
       role="tree"
+      aria-multiselectable={multiSelect}
       ref={ref}
       onKeyDown={handleKeyDown({
         data,
@@ -140,14 +176,15 @@ const TreeView = React.forwardRef(function TreeView(
         expandedIds: state.expandedIds,
         dispatch,
         nodeRefs,
-        propagateCollapse
+        propagateCollapse,
+        multiSelect
       })}
       {...other}
     >
       {data[0].children.map((x, index) => (
         <Node
           key={x}
-          selectedId={state.selectedId}
+          selectedIds={state.selectedIds}
           focusableId={state.focusableId}
           expandedIds={state.expandedIds}
           dispatch={dispatch}
@@ -160,6 +197,7 @@ const TreeView = React.forwardRef(function TreeView(
           posinset={index + 1}
           level={1}
           propagateCollapse={propagateCollapse}
+          multiSelect={multiSelect}
         />
       ))}
     </ul>
@@ -170,7 +208,7 @@ const Node = ({
   element,
   dispatch,
   data,
-  selectedId,
+  selectedIds,
   focusableId,
   expandedIds,
   nodeRefs,
@@ -179,30 +217,37 @@ const Node = ({
   setsize,
   posinset,
   level,
-  propagateCollapse
+  propagateCollapse,
+  multiSelect
 }) => {
   const handleBranchClick = () => {
-    dispatch({ type: treeTypes.select, id: element.id, nodeRefs });
-    if (expandedIds.has(element.id)) {
-      if (propagateCollapse) {
-        const ids = [element.id, ...getDescendants(data, element.id)];
-        dispatch({ type: treeTypes.collapseMany, ids });
-      } else {
-        dispatch({ type: treeTypes.collapse, id: element.id });
-      }
+    dispatch({
+      type: treeTypes.toggleSelect,
+      id: element.id,
+      nodeRefs,
+      multiSelect
+    });
+    if (expandedIds.has(element.id) && propagateCollapse) {
+      const ids = [element.id, ...getDescendants(data, element.id)];
+      dispatch({ type: treeTypes.collapseMany, ids });
     } else {
-      dispatch({ type: treeTypes.expand, id: element.id });
+      dispatch({ type: treeTypes.toggle, id: element.id });
     }
   };
 
   const handleLeafClick = () => {
-    dispatch({ type: treeTypes.select, id: element.id, nodeRefs });
+    dispatch({
+      type: treeTypes.toggleSelect,
+      id: element.id,
+      nodeRefs,
+      multiSelect
+    });
   };
 
   const getClasses = className => {
     return cx(className, {
       [`${className}--expanded`]: expandedIds.has(element.id),
-      [`${className}--selected`]: selectedId === element.id
+      [`${className}--selected`]: selectedIds.has(element.id)
     });
   };
 
@@ -213,10 +258,10 @@ const Node = ({
       onClick: handleLeafClick,
       ref: x => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
-      "aria-selected": selectedId === element.id,
       "aria-setsize": setsize,
       "aria-posinset": posinset,
-      "aria-level": level
+      "aria-level": level,
+      "aria-selected": getAriaSelected(selectedIds.has(element.id), multiSelect)
     };
   };
 
@@ -231,7 +276,7 @@ const Node = ({
     <li
       role="treeitem"
       aria-expanded={expandedIds.has(element.id)}
-      aria-selected={selectedId === element.id}
+      aria-selected={getAriaSelected(selectedIds.has(element.id), multiSelect)}
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
@@ -242,7 +287,7 @@ const Node = ({
       {nodeRenderer({
         element,
         isBranch: isBranchNode(data, element.id),
-        selectedId,
+        selectedIds,
         focusableId,
         isExpanded: expandedIds.has(element.id),
         dispatch,
@@ -256,7 +301,7 @@ const Node = ({
           {element.children.map((x, index) => (
             <Node
               key={x}
-              selectedId={selectedId}
+              selectedIds={selectedIds}
               focusableId={focusableId}
               expandedIds={expandedIds}
               dispatch={dispatch}
@@ -269,6 +314,7 @@ const Node = ({
               posinset={index + 1}
               level={level + 1}
               propagateCollapse={propagateCollapse}
+              multiSelect={multiSelect}
             />
           ))}
         </ul>
@@ -279,7 +325,7 @@ const Node = ({
       {nodeRenderer({
         element,
         isBranch: isBranchNode(data, element.id),
-        selectedId,
+        selectedIds,
         focusableId,
         expandedIds,
         dispatch,
@@ -298,6 +344,7 @@ const handleKeyDown = ({
   focusableId,
   dispatch,
   propagateCollapse,
+  multiSelect,
   nodeRefs
 }) => event => {
   const element = data[focusableId];
@@ -373,13 +420,14 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
-      dispatch({ type: treeTypes.select, id: element.id, nodeRefs });
+      dispatch({
+        type: treeTypes.toggleSelect,
+        id: element.id,
+        nodeRefs,
+        multiSelect
+      });
       if (isBranchNode(data, id)) {
-        if (expandedIds.has(element.id)) {
-          dispatch({ type: treeTypes.collapse, id: element.id });
-        } else {
-          dispatch({ type: treeTypes.expand, id: element.id });
-        }
+        dispatch({ type: treeTypes.toggle, id: element.id });
       }
       break;
     default:
@@ -388,6 +436,7 @@ const handleKeyDown = ({
         while (currentId !== id) {
           if (currentId == null) {
             currentId = data[0].children[0];
+            continue;
           }
           if (
             data[currentId].name[0].toLowerCase() === event.key.toLowerCase()
@@ -490,7 +539,7 @@ TreeView.propTypes = {
   data: PropTypes.array.isRequired,
 
   /** Callback function on select */
-  onSelect: PropTypes.func,
+  onChange: PropTypes.func,
 
   /** className to add to the outermost ul*/
   className: PropTypes.string,
@@ -505,14 +554,15 @@ TreeView.propTypes = {
   propagateCollapse: PropTypes.bool
 };
 
-TreeView.defaultProps = {
-  className: "",
-  defaultExpandedIds: [],
-  propagateCollapse: false
-};
-
 export default TreeView;
 
+const usePrevious = x => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = x;
+  }, [x]);
+  return ref.current;
+};
 export const flattenTree = function(tree) {
   let count = 0;
   const flattenedTree = [];
@@ -530,4 +580,26 @@ export const flattenTree = function(tree) {
 
   flattenTreeHelper(tree);
   return flattenedTree;
+};
+
+const difference = (a, b) => {
+  const arr = [];
+  for (const v of a) {
+    if (!b.has(v)) {
+      arr.push(v);
+    }
+  }
+  return arr;
+};
+
+const symmetricDifference = (a, b) => {
+  return new Set([...difference(a, b), ...difference(b, a)]);
+};
+
+const getAriaSelected = (isSelected, multiSelect) => {
+  if (multiSelect) {
+    return isSelected;
+  } else {
+    return isSelected ? true : undefined;
+  }
 };
