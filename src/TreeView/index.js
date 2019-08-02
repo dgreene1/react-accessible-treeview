@@ -29,8 +29,7 @@ const treeReducer = (state, action) => {
       newSet.delete(action.id);
       return {
         ...state,
-        expandedIds: newSet,
-        hasUserInteracted: true
+        expandedIds: newSet
       };
     }
     case treeTypes.collapseMany: {
@@ -40,8 +39,7 @@ const treeReducer = (state, action) => {
       }
       return {
         ...state,
-        expandedIds: newSet,
-        hasUserInteracted: true
+        expandedIds: newSet
       };
     }
     case treeTypes.expand: {
@@ -49,30 +47,26 @@ const treeReducer = (state, action) => {
       newSet.add(action.id);
       return {
         ...state,
-        expandedIds: newSet,
-        hasUserInteracted: true
+        expandedIds: newSet
       };
     }
     case treeTypes.expandMany: {
       const newSet = new Set([...state.expandedIds, ...action.ids]);
       return {
         ...state,
-        expandedIds: newSet,
-        hasUserInteracted: true
+        expandedIds: newSet
       };
     }
     case treeTypes.select:
       return {
         ...state,
         selectedId: action.id,
-        focusableId: action.id,
-        hasUserInteracted: true
+        focusableId: action.id
       };
     case treeTypes.focus:
       return {
         ...state,
-        focusableId: action.id,
-        hasUserInteracted: true
+        focusableId: action.id
       };
     default:
       throw new Error();
@@ -83,11 +77,10 @@ const useTree = ({ data, defaultExpandedIds, nodeRefs, onSelect }) => {
   const [state, dispatch] = useReducer(treeReducer, {
     selectedId: null,
     focusableId: data[0].children[0],
-    expandedIds: new Set(defaultExpandedIds),
-    hasUserInteracted: false
+    expandedIds: new Set(defaultExpandedIds)
   });
 
-  const { selectedId, expandedIds, focusableId, hasUserInteracted } = state;
+  const { selectedId, expandedIds, focusableId } = state;
   useEffect(() => {
     const selectedElement = data[selectedId];
     if (onSelect && selectedId) {
@@ -101,12 +94,14 @@ const useTree = ({ data, defaultExpandedIds, nodeRefs, onSelect }) => {
     }
   }, [data, selectedId, expandedIds, isBranchNode]);
 
+  const hasUserInteractedRef = useRef(false);
   useEffect(() => {
-    if (hasUserInteracted && focusableId != null) {
+    if (!hasUserInteractedRef.current) hasUserInteractedRef.current = true;
+    else if (focusableId != null) {
       const focusableNode = nodeRefs.current[focusableId];
       focusRef(focusableNode);
     }
-  }, [focusableId, focusRef, nodeRefs, hasUserInteracted]);
+  }, [focusableId, focusRef, nodeRefs, hasUserInteractedRef]);
 
   return [state, dispatch];
 };
