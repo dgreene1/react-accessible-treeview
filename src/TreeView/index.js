@@ -428,9 +428,6 @@ const handleKeyDown = ({
         nodeRefs,
         multiSelect
       });
-      if (isBranchNode(data, id)) {
-        dispatch({ type: treeTypes.toggle, id: element.id });
-      }
       break;
     default:
       if (event.key.length === 1) {
