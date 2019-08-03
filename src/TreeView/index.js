@@ -104,15 +104,18 @@ const treeReducer = (state, action) => {
     }
     case treeTypes.changeSelectMany: {
       let newSet;
-      if (action.select) {
-        newSet = new Set([...state.selectedIds, ...action.ids]);
-      } else {
-        newSet = difference(state.selectedIds, new Set(action.ids));
+      if (action.multiSelect) {
+        if (action.select) {
+          newSet = new Set([...state.selectedIds, ...action.ids]);
+        } else {
+          newSet = difference(state.selectedIds, new Set(action.ids));
+        }
+        return {
+          ...state,
+          selectedIds: newSet
+        };
       }
-      return {
-        ...state,
-        selectedIds: newSet
-      };
+      return state;
     }
     case treeTypes.focus:
       return {
@@ -264,7 +267,8 @@ const Node = ({
       dispatch({
         type: treeTypes.changeSelectMany,
         ids: getDescendants(data, element.id),
-        select: !selectedIds.has(element.id)
+        select: !selectedIds.has(element.id),
+        multiSelect
       });
 
     if (expandedIds.has(element.id) && propagateCollapse) {
@@ -473,7 +477,8 @@ const handleKeyDown = ({
         dispatch({
           type: treeTypes.changeSelectMany,
           ids: getDescendants(data, element.id),
-          select: !selectedIds.has(element.id)
+          select: !selectedIds.has(element.id),
+          multiSelect
         });
       break;
     default:
