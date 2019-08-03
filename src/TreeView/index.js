@@ -290,11 +290,11 @@ const Node = ({
     });
   };
 
-  const getLeafProps = () => {
+  const getLeafProps = ({ onClick } = {}) => {
     return {
       role: "treeitem",
       tabIndex: focusableId === element.id ? 0 : -1,
-      onClick: handleLeafClick,
+      onClick: composeHandlers(onClick, handleLeafClick),
       ref: x => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
       "aria-setsize": setsize,
@@ -304,9 +304,9 @@ const Node = ({
     };
   };
 
-  const getBranchProps = () => {
+  const getBranchProps = ({ onClick } = {}) => {
     return {
-      onClick: handleBranchClick,
+      onClick: composeHandlers(onClick, handleBranchClick),
       className: getClasses(baseClassNames.branchWrapper)
     };
   };
