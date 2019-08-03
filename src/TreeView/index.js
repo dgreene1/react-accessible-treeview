@@ -1,6 +1,19 @@
 import React, { useReducer, useRef, useEffect } from "react";
 import cx from "classnames";
 import PropTypes from "prop-types";
+import {
+  difference,
+  symmetricDifference,
+  usePrevious,
+  getDescendants,
+  getLastAccessible,
+  getNextAccessible,
+  getParent,
+  getPreviousAccessible,
+  isBranchNode,
+  composeHandlers,
+  focusRef
+} from "./utils";
 
 //TODO: add a better way to style focus i.e. using a classname with the modifier
 // implement non selectable nodes
@@ -484,92 +497,6 @@ const handleKeyDown = ({
   }
 };
 
-const isBranchNode = (data, i) =>
-  data[i].children != null && data[i].children.length > 0;
-
-const focusRef = ref => {
-  if (ref != null && ref.focus) {
-    ref.focus();
-  }
-};
-
-const getParent = (data, id) => {
-  for (const x of data.values()) {
-    if (x.children && x.children.includes(id)) {
-      return x.id;
-    }
-  }
-  return null;
-};
-
-const getDescendants = (data, id) => {
-  const descendants = [];
-  const getDescendantsHelper = (data, id) => {
-    const node = data[id];
-    for (const childId of node.children || []) {
-      descendants.push(childId);
-      getDescendantsHelper(data, childId);
-    }
-  };
-  getDescendantsHelper(data, id);
-  return descendants;
-};
-
-const getSibling = (data, id, diff) => {
-  const parentId = getParent(data, id);
-  if (parentId != null) {
-    const parent = data[parentId];
-    const index = parent.children.indexOf(id);
-    const siblingIndex = index + diff;
-    if (parent.children[siblingIndex]) {
-      return parent.children[siblingIndex];
-    }
-  }
-  return null;
-};
-
-const getLastAccessible = (data, id, expandedIds) => {
-  let node = data[id];
-  const isRoot = data[0].id === id;
-  if (isRoot) {
-    node = data[data[id].children[data[id].children.length - 1]];
-  }
-  while (expandedIds.has(node.id) && isBranchNode(data, node.id)) {
-    node = data[node.children[node.children.length - 1]];
-  }
-  return node.id;
-};
-
-const getPreviousAccessible = (data, id, expandedIds) => {
-  if (id === data[0].children[0]) {
-    return null;
-  }
-  const previous = getSibling(data, id, -1);
-  if (previous == null) {
-    return getParent(data, id);
-  }
-  return getLastAccessible(data, previous, expandedIds);
-};
-
-const getNextAccessible = (data, id, expandedIds) => {
-  let nodeId = data[id].id;
-  if (isBranchNode(data, nodeId) && expandedIds.has(nodeId)) {
-    return data[nodeId].children[0];
-  }
-  while (true) {
-    const next = getSibling(data, nodeId, 1);
-    if (next != null) {
-      return next;
-    }
-    nodeId = getParent(data, nodeId);
-
-    //we have reached the root so there is no next accessible node
-    if (nodeId == null) {
-      return null;
-    }
-  }
-};
-
 TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,
@@ -592,13 +519,6 @@ TreeView.propTypes = {
 
 export default TreeView;
 
-const usePrevious = x => {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = x;
-  }, [x]);
-  return ref.current;
-};
 export const flattenTree = function(tree) {
   let count = 0;
   const flattenedTree = [];
@@ -616,20 +536,6 @@ export const flattenTree = function(tree) {
 
   flattenTreeHelper(tree);
   return flattenedTree;
-};
-
-const difference = (a, b) => {
-  const s = new Set();
-  for (const v of a) {
-    if (!b.has(v)) {
-      s.add(v);
-    }
-  }
-  return s;
-};
-
-const symmetricDifference = (a, b) => {
-  return new Set([...difference(a, b), ...difference(b, a)]);
 };
 
 const getAriaSelected = (isSelected, multiSelect) => {
