@@ -1,0 +1,51 @@
+.checkbox {
+  font-size: 16px;
+  user-select: none;
+  min-height: 500px;
+  padding: 20px;
+}
+
+.checkbox .tree,
+.checkbox .tree-node,
+.checkbox .tree-node-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checkbox .tree-node__branch {
+  outline: none;
+}
+.checkbox .tree-node__leaf {
+  outline: none;
+}
+
+.checkbox .tree-node {
+  cursor: pointer;
+}
+
+.checkbox .tree-branch-wrapper--selected,
+.checkbox .tree-node--selected.tree-node__leaf {
+  outline: none;
+}
+
+.checkbox .tree-node__branch:focus > .tree-branch-wrapper,
+.checkbox .tree-node__leaf:focus {
+  outline: none;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.checkbox .tree-branch-wrapper:hover,
+.checkbox :not(:focus).tree-node__leaf:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.checkbox .tree-branch-wrapper,
+.checkbox .tree-node__leaf {
+  display: inline-block;
+}
+
+.icon {
+  vertical-align: middle;
+  padding-right: 5px;
+}

@@ -1,6 +1,5 @@
 import { useRef, useEffect } from "react";
 export const composeHandlers = (...handlers) => event => {
-    console.log(handlers)
   for (const handler of handlers) {
     handler && handler(event);
     if (event.defaultPrevented) {
@@ -115,4 +114,35 @@ export const getNextAccessible = (data, id, expandedIds) => {
       return null;
     }
   }
+};
+
+export const propagateSelectChange = (data, ids, selectedIds) => {
+  const changes = { every: new Set(), some: new Set(), none: new Set() };
+  for (const id of ids) {
+    let currentId = id;
+    let found_some = false;
+    while (true) {
+      const parent = getParent(data, currentId);
+      if (parent === 0) break;
+      if (found_some) {
+        changes.some.add(parent);
+        currentId = parent;
+        continue;
+      }
+      const children = data[parent].children;
+      const some = children.some(x => selectedIds.has(x));
+      if (!some) {
+        changes.none.add(parent);
+      } else {
+        if (children.every(x => selectedIds.has(x))) {
+          changes.every.add(parent);
+        } else {
+          found_some = true;
+          changes.some.add(parent);
+        }
+      }
+      currentId = parent;
+    }
+  }
+  return changes;
 };
