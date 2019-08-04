@@ -5,9 +5,9 @@
   "module": "dist/react-accessible-treeview.esm.js",
   "browser": "dist/react-accessible-treeview.umd.js",
   "peerDependencies": {
-    "react": "^16.8.6",
     "classnames": "^2.2.6",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "react": "^16.8.6"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -33,9 +33,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "test": "node test/test.js",
-    "pretest": "npm run build"
+    "dev": "rollup -c -w"
   },
   "files": [
     "dist"
