@@ -181,7 +181,7 @@ const treeReducer = (state, action) => {
         focusableId: action.id
       };
     default:
-      throw new Error();
+      throw new Error("Invalid action passed to the reducer");
   }
 };
 
@@ -268,6 +268,12 @@ const useTree = ({
   return [state, dispatch];
 };
 
+const clickActions = {
+  select: "SELECT",
+  focus: "FOCUS",
+  exclusiveSelect: "EXCLUSIVE_SELECT"
+};
+
 const TreeView = React.forwardRef(function TreeView(
   {
     data,
@@ -282,6 +288,7 @@ const TreeView = React.forwardRef(function TreeView(
     enterTogglesParents = false,
     togglableSelect = false,
     checkbox = true,
+    clickAction = clickActions.select,
     ...other
   },
   ref
@@ -296,7 +303,7 @@ const TreeView = React.forwardRef(function TreeView(
     multiSelect,
     checkbox
   });
-  togglableSelect = togglableSelect || multiSelect;
+  propagateSelect = propagateSelect && multiSelect;
 
   return (
     <ul
@@ -339,6 +346,7 @@ const TreeView = React.forwardRef(function TreeView(
           propagateSelect={propagateSelect}
           multiSelect={multiSelect}
           togglableSelect={togglableSelect}
+          clickAction={clickAction}
         />
       ))}
     </ul>
@@ -362,9 +370,11 @@ const Node = ({
   propagateCollapse,
   propagateSelect,
   multiSelect,
-  togglableSelect
+  togglableSelect,
+  clickAction
 }) => {
-  const handleBranchClick = () => {
+  const handleToggle = event => {
+    if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids = [element.id, ...getDescendants(data, element.id)];
       dispatch({ type: treeTypes.collapseMany, ids });
@@ -373,17 +383,35 @@ const Node = ({
     }
   };
 
-  const handleSelect = () => {
-    if (togglableSelect)
-      dispatch({ type: treeTypes.toggleSelect, id: element.id, multiSelect });
-    else dispatch({ type: treeTypes.select, id: element.id, multiSelect });
-    propagateSelect &&
-      dispatch({
-        type: treeTypes.changeSelectMany,
-        ids: getDescendants(data, element.id),
-        select: !selectedIds.has(element.id),
-        multiSelect
-      });
+  const handleSelect = event => {
+    if (event.ctrlKey || clickAction === clickActions.select) {
+      //Select
+      if (togglableSelect)
+        dispatch({ type: treeTypes.toggleSelect, id: element.id, multiSelect });
+      else dispatch({ type: treeTypes.select, id: element.id, multiSelect });
+      propagateSelect &&
+        dispatch({
+          type: treeTypes.changeSelectMany,
+          ids: getDescendants(data, element.id),
+          select: !selectedIds.has(element.id),
+          multiSelect
+        });
+    } else if (clickAction === clickActions.exclusiveSelect) {
+      if (togglableSelect)
+        dispatch({
+          type: treeTypes.toggleSelect,
+          id: element.id,
+          multiSelect: false
+        });
+      else
+        dispatch({
+          type: treeTypes.select,
+          id: element.id,
+          multiSelect: false
+        });
+    } else if (clickAction === clickActions.focus) {
+      dispatch({ type: treeTypes.focus, id: element.id });
+    }
   };
 
   const getClasses = className => {
@@ -409,7 +437,7 @@ const Node = ({
 
   const getBranchProps = ({ onClick } = {}) => {
     return {
-      onClick: composeHandlers(onClick, handleBranchClick),
+      onClick: composeHandlers(onClick, handleToggle),
       className: getClasses(baseClassNames.branchWrapper)
     };
   };
@@ -438,7 +466,8 @@ const Node = ({
         setsize,
         posinset,
         level,
-        handleSelect
+        handleSelect,
+        handleToggle
       })}
       {expandedIds.has(element.id) && (
         <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
@@ -462,6 +491,7 @@ const Node = ({
               propagateSelect={propagateSelect}
               multiSelect={multiSelect}
               togglableSelect={togglableSelect}
+              clickAction={clickAction}
             />
           ))}
         </ul>
@@ -481,7 +511,8 @@ const Node = ({
         setsize,
         posinset,
         level,
-        handleSelect
+        handleSelect,
+        handleToggle
       })}
     </li>
   );
@@ -501,6 +532,39 @@ const handleKeyDown = ({
 }) => event => {
   const element = data[focusableId];
   const id = element.id;
+  if (event.ctrlKey) {
+    if (event.key === "a") {
+      event.preventDefault();
+      dispatch({
+        type: treeTypes.changeSelectMany,
+        multiSelect,
+        select: selectedIds.size !== data.length - 1,
+        ids: new Set(data.slice(1).map(x => x.id))
+      });
+    }
+    return;
+  }
+  if (event.shiftKey) {
+    switch (event.key) {
+      case "ArrowUp": {
+        event.preventDefault();
+        const previous = getPreviousAccessible(data, id, expandedIds);
+        previous != null &&
+          dispatch({ type: treeTypes.select, id: previous, multiSelect });
+        break;
+      }
+      case "ArrowDown": {
+        event.preventDefault();
+        const next = getNextAccessible(data, id, expandedIds);
+        next != null &&
+          dispatch({ type: treeTypes.select, id: next, multiSelect });
+        break;
+      }
+      default:
+        break;
+    }
+    return;
+  }
   switch (event.key) {
     case "ArrowDown": {
       event.preventDefault();
@@ -574,15 +638,14 @@ const handleKeyDown = ({
     case "Spacebar":
       event.preventDefault();
       if (togglableSelect)
-        dispatch({ type: treeTypes.toggleSelect, id: element.id, multiSelect });
-      else dispatch({ type: treeTypes.select, id: element.id, multiSelect });
-      enterTogglesParents &&
-        dispatch({ type: treeTypes.toggle, id: element.id });
+        dispatch({ type: treeTypes.toggleSelect, id, multiSelect });
+      else dispatch({ type: treeTypes.select, id, multiSelect });
+      enterTogglesParents && dispatch({ type: treeTypes.toggle, id });
       propagateSelect &&
         dispatch({
           type: treeTypes.changeSelectMany,
-          ids: getDescendants(data, element.id),
-          select: !selectedIds.has(element.id),
+          ids: getDescendants(data, id),
+          select: !selectedIds.has(id),
           multiSelect
         });
       break;
