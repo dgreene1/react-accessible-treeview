@@ -50,8 +50,6 @@ const folder = {
   ]
 };
 
-
-
 const data = flattenTree(folder);
 
 function Example() {
@@ -83,7 +81,7 @@ function Example() {
                   className="icon"
                   onClick={e => {
                     e.preventDefault();
-                    handleSelect();
+                    handleSelect(e);
                   }}
                   variant={
                     isHalfSelected ? "some" : isSelected ? "all" : "none"
