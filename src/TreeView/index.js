@@ -268,9 +268,6 @@ const useTree = ({
   return [state, dispatch];
 };
 
-/**
- * @example ./examples/README.md
- */
 const TreeView = React.forwardRef(function TreeView(
   {
     data,
@@ -432,10 +429,10 @@ const Node = ({
       {nodeRenderer({
         element,
         isBranch: isBranchNode(data, element.id),
-        selectedIds,
-        halfSelectedIds,
-        focusableId,
+        isSelected: selectedIds.has(element.id),
+        isHalfSelected: halfSelectedIds.has(element.id),
         isExpanded: expandedIds.has(element.id),
+        focusableId,
         dispatch,
         getNodeProps: getBranchProps,
         setsize,
@@ -475,10 +472,10 @@ const Node = ({
       {nodeRenderer({
         element,
         isBranch: isBranchNode(data, element.id),
-        selectedIds,
+        isSelected: selectedIds.has(element.id),
+        isHalfSelected: halfSelectedIds.has(element.id),
+        isExpanded: expandedIds.has(element.id),
         focusableId,
-        expandedIds,
-        halfSelectedIds,
         dispatch,
         getNodeProps: getLeafProps,
         setsize,

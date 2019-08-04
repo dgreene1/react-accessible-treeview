@@ -17,5 +17,17 @@ module.exports = {
         }
       ]
     }
-  }
+  },
+  sections: [
+    {
+      name: "Documentation",
+      components: "src/TreeView/index.js"
+    },
+    {
+      name: "Examples",
+      components: "src/TreeView/examples/**/index.js",
+      exampleMode: "collapse", // 'hide' | 'collapse' | 'expand'
+      usageMode: "collapse" // 'hide' | 'collapse' | 'expand'
+    }
+  ]
 };
