@@ -40,12 +40,7 @@ export const focusRef = ref => {
 };
 
 export const getParent = (data, id) => {
-  for (const x of data.values()) {
-    if (x.children && x.children.includes(id)) {
-      return x.id;
-    }
-  }
-  return null;
+  return data[id].parent;
 };
 
 export const getDescendants = (data, id) => {
@@ -145,4 +140,28 @@ export const propagateSelectChange = (data, ids, selectedIds) => {
     }
   }
   return changes;
+};
+
+export const getAccesibleRange = ({ data, expandedIds, from, to }) => {
+  let range = [];
+  let max_loop = Object.keys(data).length;
+  let count = 0;
+  let currentId = from;
+  range.push(from);
+  if (from < to) {
+    while (count < max_loop) {
+      currentId = getNextAccessible(data, currentId, expandedIds);
+      range.push(currentId);
+      if (currentId == null || currentId === to) break;
+      count += 1;
+    }
+  } else if (from > to) {
+    while (count < max_loop) {
+      currentId = getPreviousAccessible(data, currentId, expandedIds);
+      range.push(currentId);
+      if (currentId == null || currentId === to) break;
+      count += 1;
+    }
+  }
+  return range;
 };

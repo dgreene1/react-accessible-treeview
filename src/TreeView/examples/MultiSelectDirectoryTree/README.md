@@ -39,6 +39,7 @@ const folder = {
 const data = flattenTree(folder);
 
 function Example() {
+  
   return (
     <div>
       <div className="ide">
@@ -48,7 +49,6 @@ function Example() {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          checkbox={false}
           nodeRenderer={({
             element,
             isBranch,

@@ -35,10 +35,10 @@ const folder = {
   ]
 };
 
-const data = flattenTree(folder);
+const initialData = flattenTree(folder);
 
 function Example() {
-  const [state, setState] = useState();
+  const [data, setData] = useState(initialData);
   const [propagateCollapse, setPropagateCollapse] = useState(false);
   const [propagateSelect, setPropagateSelect] = useState(false);
   const [togglableSelect, setTogglableSelect] = useState(false);
@@ -55,7 +55,7 @@ function Example() {
         </span>
         <TreeView
           data={data}
-          onChange={x => setState(x)}
+          onChange={({element}) => setData({...data, })}
           aria-label="directory tree"
           propagateCollapse={propagateCollapse}
           togglableSelect={togglableSelect}

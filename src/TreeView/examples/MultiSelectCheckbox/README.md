@@ -53,16 +53,16 @@ const folder = {
 const data = flattenTree(folder);
 
 function Example() {
-  const [state, setState] = useState();
   return (
     <div>
       <div className="checkbox">
         <TreeView
           data={data}
-          onChange={x => setState(x)}
+          onChange={x => console.log(x)}
           aria-label="Checkbox tree"
           multiSelect
           propagateSelect
+          propagateSelectUpwards
           togglableSelect
           nodeRenderer={({
             element,
