@@ -150,6 +150,7 @@ export const getAccesibleRange = ({ data, expandedIds, from, to }) => {
   range.push(from);
   if (from < to) {
     while (count < max_loop) {
+      console.log(currentId);
       currentId = getNextAccessible(data, currentId, expandedIds);
       range.push(currentId);
       if (currentId == null || currentId === to) break;
