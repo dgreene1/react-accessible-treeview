@@ -55,7 +55,7 @@ function Example() {
         </span>
         <TreeView
           data={data}
-          onChange={({element}) => setData({...data, })}
+          onChange={({ element }) => setData({ ...data })}
           aria-label="directory tree"
           propagateCollapse={propagateCollapse}
           togglableSelect={togglableSelect}

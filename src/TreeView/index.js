@@ -16,7 +16,6 @@ import {
   propagateSelectChange,
   getAccesibleRange
 } from "./utils";
-import { range } from "rxjs";
 
 //TODO: add a better way to style focus i.e. using a classname with the modifier
 // implement non selectable nodes

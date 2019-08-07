@@ -7,7 +7,7 @@ const Checkbox = ({ defaultState = false, onChange, children }) => {
     onChange && onChange(e.target.checked);
   };
   return (
-    <form style={{display: "inline-block", padding: 10}}>
+    <form style={{ display: "inline-block", padding: 10 }}>
       <label>
         <input type="checkbox" checked={on} onChange={handleChange} />
         {children}

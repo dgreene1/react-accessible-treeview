@@ -39,7 +39,6 @@ const folder = {
 const data = flattenTree(folder);
 
 function Example() {
-  
   return (
     <div>
       <div className="ide">
