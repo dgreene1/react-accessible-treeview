@@ -53,7 +53,7 @@ const treeReducer = (state, action) => {
       return {
         ...state,
         expandedIds,
-        focusableId: action.id,
+        tabbableId: action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -76,7 +76,7 @@ const treeReducer = (state, action) => {
       return {
         ...state,
         expandedIds,
-        focusableId: action.id,
+        tabbableId: action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -97,7 +97,7 @@ const treeReducer = (state, action) => {
       return {
         ...state,
         expandedIds,
-        focusableId: action.id,
+        tabbableId: action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -131,7 +131,7 @@ const treeReducer = (state, action) => {
         ...state,
         selectedIds,
         halfSelectedIds,
-        focusableId: action.keepFocus ? state.focusableId : action.id,
+        tabbableId: action.keepFocus ? state.tabbableId : action.id,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
           : action.id,
@@ -153,8 +153,8 @@ const treeReducer = (state, action) => {
         ...state,
         selectedIds,
         halfSelectedIds,
-        focusableId: action.id,
-        focusableId: action.keepFocus ? state.focusableId : action.id,
+        tabbableId: action.id,
+        tabbableId: action.keepFocus ? state.tabbableId : action.id,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
           : action.id,
@@ -180,7 +180,7 @@ const treeReducer = (state, action) => {
         ...state,
         selectedIds,
         halfSelectedIds,
-        focusableId: action.id,
+        tabbableId: action.id,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
           : action.id,
@@ -229,7 +229,7 @@ const treeReducer = (state, action) => {
     case treeTypes.focus:
       return {
         ...state,
-        focusableId: action.id,
+        tabbableId: action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -243,13 +243,14 @@ const useTree = ({
   defaultExpandedIds,
   defaultSelectedIds,
   nodeRefs,
-  onChange,
+  onSelect,
+  onExpand,
   multiSelect,
   propagateSelectUpwards
 }) => {
   const [state, dispatch] = useReducer(treeReducer, {
     selectedIds: new Set(defaultSelectedIds),
-    focusableId: data[0].children[0],
+    tabbableId: data[0].children[0],
     expandedIds: new Set(defaultExpandedIds),
     halfSelectedIds: new Set(),
     lastStandardSelect: data[0].children[0],
@@ -259,26 +260,25 @@ const useTree = ({
   const {
     selectedIds,
     expandedIds,
-    focusableId,
+    tabbableId,
     halfSelectedIds,
     lastAction,
     lastInteractedWith
   } = state;
-  const prevSelectedIds = usePrevious(selectedIds) || [];
+  const prevSelectedIds = usePrevious(selectedIds) || new Set();
   const toggledIds = symmetricDifference(selectedIds, prevSelectedIds);
 
-  //Toggles
   useEffect(() => {
-    if (onChange) {
+    if (onSelect !== noop) {
       for (const toggledId of toggledIds) {
         const isBranch = isBranchNode(data, toggledId);
-        onChange({
+        onSelect({
           element: data[toggledId],
           isBranch: isBranch,
           isExpanded: isBranch ? expandedIds.has(toggledId) : undefined,
           selectedIds,
           expandedIds,
-          focusableId,
+          tabbableId,
           halfSelectedIds,
           lastInteractedWith
         });
@@ -289,11 +289,42 @@ const useTree = ({
     selectedIds,
     expandedIds,
     isBranchNode,
-    focusableId,
+    tabbableId,
     halfSelectedIds,
     toggledIds,
-    onChange,
+    onSelect,
     treeTypes
+  ]);
+
+  const prevExpandedIds = usePrevious(expandedIds) || new Set();
+  useEffect(() => {
+    const toggledExpandIds = difference(expandedIds, prevExpandedIds);
+    if (onExpand !== noop) {
+      for (const id of toggledExpandIds) {
+        onExpand({
+          element: data[id],
+          isBranch: true,
+          isExpanded: true,
+          selectedIds,
+          expandedIds,
+          tabbableId,
+          halfSelectedIds,
+          lastInteractedWith
+        });
+      }
+    }
+  }, [
+    data,
+    selectedIds,
+    expandedIds,
+    tabbableId,
+    halfSelectedIds,
+    onSelect,
+    onExpand,
+    treeTypes,
+    difference,
+    usePrevious,
+    prevExpandedIds
   ]);
 
   //Update parent if a child changes
@@ -364,11 +395,11 @@ const useTree = ({
   const hasUserInteractedRef = useRef(false);
   useEffect(() => {
     if (!hasUserInteractedRef.current) hasUserInteractedRef.current = true;
-    else if (focusableId != null) {
-      const focusableNode = nodeRefs.current[focusableId];
-      focusRef(focusableNode);
+    else if (tabbableId != null) {
+      const tabbableNode = nodeRefs.current[tabbableId];
+      focusRef(tabbableNode);
     }
-  }, [focusableId, focusRef, nodeRefs, hasUserInteractedRef]);
+  }, [tabbableId, focusRef, nodeRefs, hasUserInteractedRef]);
 
   return [state, dispatch];
 };
@@ -379,21 +410,23 @@ const clickActions = {
   exclusiveSelect: "EXCLUSIVE_SELECT"
 };
 
+const noop = () => {};
 const TreeView = React.forwardRef(function TreeView(
   {
     data,
-    onChange,
-    className = "",
     nodeRenderer,
-    defaultExpandedIds = [],
-    defaultSelectedIds = [],
-    propagateCollapse = false,
-    propagateSelect = false,
-    propagateSelectUpwards = false,
-    multiSelect = false,
-    enterTogglesParents = false,
-    togglableSelect = false,
-    clickAction = clickActions.select,
+    onSelect,
+    onExpand,
+    className,
+    defaultExpandedIds,
+    defaultSelectedIds,
+    propagateCollapse,
+    propagateSelect,
+    propagateSelectUpwards,
+    multiSelect,
+    expandOnKeyboardSelect,
+    togglableSelect,
+    clickAction,
     ...other
   },
   ref
@@ -404,7 +437,8 @@ const TreeView = React.forwardRef(function TreeView(
     defaultExpandedIds,
     defaultSelectedIds,
     nodeRefs,
-    onChange,
+    onSelect,
+    onExpand,
     multiSelect,
     propagateSelectUpwards
   });
@@ -418,7 +452,7 @@ const TreeView = React.forwardRef(function TreeView(
       ref={ref}
       onKeyDown={handleKeyDown({
         data,
-        focusableId: state.focusableId,
+        tabbableId: state.tabbableId,
         expandedIds: state.expandedIds,
         selectedIds: state.selectedIds,
         halfSelectedIds: state.halfSelectedIds,
@@ -426,7 +460,7 @@ const TreeView = React.forwardRef(function TreeView(
         propagateCollapse,
         propagateSelect,
         multiSelect,
-        enterTogglesParents,
+        expandOnKeyboardSelect,
         togglableSelect,
         lastInteractedWith: state.lastInteractedWith
       })}
@@ -436,7 +470,7 @@ const TreeView = React.forwardRef(function TreeView(
         <Node
           key={x}
           selectedIds={state.selectedIds}
-          focusableId={state.focusableId}
+          tabbableId={state.tabbableId}
           expandedIds={state.expandedIds}
           halfSelectedIds={state.halfSelectedIds}
           lastStandardSelect={state.lastStandardSelect}
@@ -466,7 +500,7 @@ const Node = ({
   dispatch,
   data,
   selectedIds,
-  focusableId,
+  tabbableId,
   expandedIds,
   halfSelectedIds,
   lastStandardSelect,
@@ -483,7 +517,7 @@ const Node = ({
   clickAction,
   lastInteractedWith
 }) => {
-  const handleToggle = event => {
+  const handleExpand = event => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids = [element.id, ...getDescendants(data, element.id)];
@@ -571,7 +605,7 @@ const Node = ({
   const getLeafProps = ({ onClick } = {}) => {
     return {
       role: "treeitem",
-      tabIndex: focusableId === element.id ? 0 : -1,
+      tabIndex: tabbableId === element.id ? 0 : -1,
       onClick: composeHandlers(onClick),
       ref: x => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
@@ -584,7 +618,7 @@ const Node = ({
 
   const getBranchProps = ({ onClick } = {}) => {
     return {
-      onClick: composeHandlers(onClick, handleToggle),
+      onClick: composeHandlers(onClick, handleExpand),
       className: getClasses(baseClassNames.branchWrapper)
     };
   };
@@ -597,7 +631,7 @@ const Node = ({
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
-      tabIndex={focusableId === element.id ? 0 : -1}
+      tabIndex={tabbableId === element.id ? 0 : -1}
       ref={x => (nodeRefs.current[element.id] = x)}
       className={cx(getClasses(baseClassNames.node), baseClassNames.branch)}
     >
@@ -607,14 +641,14 @@ const Node = ({
         isSelected: selectedIds.has(element.id),
         isHalfSelected: halfSelectedIds.has(element.id),
         isExpanded: expandedIds.has(element.id),
-        focusableId,
+        tabbableId,
         dispatch,
         getNodeProps: getBranchProps,
         setsize,
         posinset,
         level,
         handleSelect,
-        handleToggle
+        handleExpand
       })}
       {expandedIds.has(element.id) && (
         <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
@@ -622,7 +656,7 @@ const Node = ({
             <Node
               key={x}
               selectedIds={selectedIds}
-              focusableId={focusableId}
+              tabbableId={tabbableId}
               expandedIds={expandedIds}
               halfSelectedIds={halfSelectedIds}
               lastStandardSelect={lastStandardSelect}
@@ -654,14 +688,14 @@ const Node = ({
         isSelected: selectedIds.has(element.id),
         isHalfSelected: halfSelectedIds.has(element.id),
         isExpanded: expandedIds.has(element.id),
-        focusableId,
+        tabbableId,
         dispatch,
         getNodeProps: getLeafProps,
         setsize,
         posinset,
         level,
         handleSelect,
-        handleToggle
+        handleExpand
       })}
     </li>
   );
@@ -671,16 +705,16 @@ const handleKeyDown = ({
   data,
   expandedIds,
   selectedIds,
-  focusableId,
+  tabbableId,
   dispatch,
   propagateCollapse,
   propagateSelect,
   multiSelect,
-  enterTogglesParents,
+  expandOnKeyboardSelect,
   togglableSelect,
   lastInteractedWith
 }) => event => {
-  const element = data[focusableId];
+  const element = data[tabbableId];
   const id = element.id;
   if (event.ctrlKey) {
     if (event.key === "a") {
@@ -754,7 +788,7 @@ const handleKeyDown = ({
     }
     case "ArrowLeft": {
       event.preventDefault();
-      if (isBranchNode(data, id) && expandedIds.has(focusableId)) {
+      if (isBranchNode(data, id) && expandedIds.has(tabbableId)) {
         if (propagateCollapse) {
           const ids = [id, ...getDescendants(data, id)];
           dispatch({
@@ -785,7 +819,7 @@ const handleKeyDown = ({
     case "ArrowRight": {
       event.preventDefault();
       if (isBranchNode(data, id)) {
-        if (expandedIds.has(focusableId)) {
+        if (expandedIds.has(tabbableId)) {
           dispatch({
             type: treeTypes.focus,
             id: element.children[0],
@@ -842,7 +876,7 @@ const handleKeyDown = ({
           multiSelect,
           lastInteractedWith: id
         });
-      enterTogglesParents &&
+      expandOnKeyboardSelect &&
         dispatch({ type: treeTypes.toggle, id, lastInteractedWith: id });
       propagateSelect &&
         dispatch({
@@ -882,8 +916,11 @@ TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,
 
-  /** Callback function on select */
-  onChange: PropTypes.func,
+  /** Function called when a node changes its selected state */
+  onSelect: PropTypes.func,
+
+  /** Function called when a node changes its expanded state */
+  onExpand: PropTypes.func,
 
   /** className to add to the outermost ul*/
   className: PropTypes.string,
@@ -891,11 +928,47 @@ TreeView.propTypes = {
   /** Render prop for the node */
   nodeRenderer: PropTypes.func.isRequired,
 
-  /** Ids of the nodes expanded by default */
-  defaultExpandedIds: PropTypes.object,
+  /**Array with the ids of the default expanded nodes*/
+  defaultExpandedIds: PropTypes.array,
+
+  /**Array with the ids of the default selected nodes*/
+  defaultSelectedIds: PropTypes.array,
 
   /** If true, collapsing a node will also collapse its descendants */
-  propagateCollapse: PropTypes.bool
+  propagateCollapse: PropTypes.bool,
+
+  /** If true, selecting a node will also select its descendants */
+  propagateSelect: PropTypes.bool,
+
+  /** If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected)*/
+  propagateSelectUpwards: PropTypes.bool,
+
+  /** Allows multiple nodes to be selected **/
+  multiSelect: PropTypes.bool,
+
+  /** Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state */
+  expandOnKeyboardSelect: PropTypes.bool,
+
+  /** Wether the selected state is togglable **/
+  togglableSelect: PropTypes.bool,
+
+  /** action to perform on click **/
+  clickAction: PropTypes.oneOf(Object.values(clickActions))
+};
+
+TreeView.defaultProps = {
+  onSelect: noop,
+  onExpand: noop,
+  className: "",
+  defaultExpandedIds: [],
+  defaultSelectedIds: [],
+  propagateCollapse: false,
+  propagateSelect: false,
+  propagateSelectUpwards: false,
+  multiSelect: false,
+  expandOnKeyboardSelect: false,
+  togglableSelect: false,
+  clickAction: clickActions.select
 };
 
 export default TreeView;

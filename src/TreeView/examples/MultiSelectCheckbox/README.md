@@ -58,7 +58,7 @@ function Example() {
       <div className="checkbox">
         <TreeView
           data={data}
-          onChange={x => console.log(x)}
+          onChange={x => console.log("waa")}
           aria-label="Checkbox tree"
           multiSelect
           propagateSelect

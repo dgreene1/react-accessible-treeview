@@ -34,22 +34,30 @@ The array can also be generated from a nested object using the <code>flattenTree
 
 - _Arguments_: An object containing the following properties:
 
-| property       | type                  | description                                                          |
-| -------------- | --------------------- | -------------------------------------------------------------------- |
-| `element`      | `object`              | The object that represents the rendered node                         |
-| `getNodeProps` | `function`            | A function which gives back the props to pass to the node            |
-| `isBranch`     | `bool`                | Whether the rendered node is a branch node                           |
-| `isExpanded`   | `bool` or `undefined` | If the node is a branch node, whether it is expanded, else undefined |
-| `expandedIds`  | `array`               | An array formed of the ids of the expanded nodes                     |
-| `level`        | `number`              | An integer that corresponds to the aria-level attribute              |
-| `setsize`      | `number`              | An integer that corresponds to the aria-setsize attribute            |
-| `posinset`     | `number`              | An integer that corresponds to the aria-posinset attribute           |
+| property       | type                  | description                                                                                           |
+| -------------- | --------------------- | ----------------------------------------------------------------------------------------------------- |
+| `element`      | `object`              | The object that represents the rendered node                                                          |
+| `getNodeProps` | `function`            | A function which gives back the props to pass to the node                                             |
+| `isBranch`     | `bool`                | Whether the rendered node is a branch node                                                            |
+| `isSelected`   | `bool`                | Whether the rendered node is selected                                                                 |
+| `isExpanded`   | `bool` or `undefined` | If the node is a branch node, whether it is expanded, else undefined                                  |
+| `tabbableId`   | `integer`             | Id of the currently tabbable (tabindex = 0) node                                                      |
+| `expandedIds`  | `array`               | An array formed of the ids of the expanded nodes                                                      |
+| `level`        | `number`              | A positive integer that corresponds to the aria-level attribute                                       |
+| `setsize`      | `number`              | A positive integer that corresponds to the aria-setsize attribute                                     |
+| `posinset`     | `number`              | A positive integer that corresponds to the aria-posinset attribute                                    |
+| `handleSelect` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
+| `handleExpand` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
 
 ### onSelect
 
-- _Arguments_: An object containing `element`, `isBranch`, `isExpanded` and `expandedIds` (see nodeRenderer for an explanation).
+- _Arguments_: `onSelect({element, isBranch, isExpanded, selectedIds, expandedIds, tabbableId, halfSelectedIds, lastInteractedWith})`
+  Note: the function uses the state _after_ the selection.
 
-Note: `isExpanded` and `expandedIds` refer to the state _after_ the selection.
+### onExpand
+
+- _Arguments_: `onExpand({element, isBranch, isExpanded, selectedIds, expandedIds, tabbableId, halfSelectedIds, lastInteractedWith})`
+  Note: the function uses the state \_after the expansion.
 
 <br/>
 <br/>
@@ -60,25 +68,28 @@ Note: `isExpanded` and `expandedIds` refer to the state _after_ the selection.
 
 Follows the same convention described in https://www.w3.org/TR/wai-aria-practices/examples/treeview/treeview-1/treeview-1b.html.
 
-| Key                        | Function                                                                                                                                                                                                                                                                                            |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Enter` or `Space`         | Updates the selected node to the current node and triggers `onSelect`                                                                                                                                                                                                                               |
-| <code>Down Arrow </code>   | <ul><li>Moves focus to the next node that is focusable without opening or closing a node.</li> <li>If focus is on the last node, does nothing.</li></ul>                                                                                                                                            |
-| <code> Up arrow </code>    | <ul><li> Moves focus to the previous node that is focusable without opening or closing a node. </li><li> If focus is on the first node, does nothing.</li></ul>                                                                                                                                     |
-| <code>Right Arrow </code>  | <ul><li>When focus is on a closed node, opens the node; focus does not move.</li> <li> When focus is on an end node, does nothing.</li><li> When focus is on a open node, moves focus to the first child node. </li></ul>                                                                           |
-| <code>Left Arrow </code>   | <ul> <li>When focus is on an open node, closes the node.</li> <li>When focus is on a child node that is also either an end node or a closed node, moves focus to its parent node.</li> <li> When focus is on a root node that is also either an end node or a closed node, does nothing.</li> </ul> |
-| <code>Home</code>          | Moves focus to first node without opening or closing a node.                                                                                                                                                                                                                                        |
-| <code>End</code>           | Moves focus to the last node that can be focused without expanding any nodes that are closed.                                                                                                                                                                                                       |
-| <code>a-z, A-Z</code>      | <ul> <li>Focus moves to the next node with a name that starts with the typed character.</li> <li>Search wraps to first node if a matching name is not found among the nodes that follow the focused node.</li> <li>Search ignores nodes that are descendants of closed nodes.</li> </ul>            |
-| <code>\*</code> (asterisk) | <ul><li> Expands all closed sibling nodes that are at the same level as the focused node.</li><li> Focus does not move.</li></ul>                                                                                                                                                                   |
+| Key                              | Function                                                                                                                                                                                                                                                                                            |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Enter` or `Space`               | Updates the selected node to the current node and triggers `onSelect`                                                                                                                                                                                                                               |
+| <code>Down Arrow </code>         | <ul><li>Moves focus to the next node that is tabbable without opening or closing a node.</li> <li>If focus is on the last node, does nothing.</li></ul>                                                                                                                                             |
+| <code> Up arrow </code>          | <ul><li> Moves focus to the previous node that is tabbable without opening or closing a node. </li><li> If focus is on the first node, does nothing.</li></ul>                                                                                                                                      |
+| <code>Right Arrow </code>        | <ul><li>When focus is on a closed node, opens the node; focus does not move.</li> <li> When focus is on an end node, does nothing.</li><li> When focus is on a open node, moves focus to the first child node. </li></ul>                                                                           |
+| <code>Left Arrow </code>         | <ul> <li>When focus is on an open node, closes the node.</li> <li>When focus is on a child node that is also either an end node or a closed node, moves focus to its parent node.</li> <li> When focus is on a root node that is also either an end node or a closed node, does nothing.</li> </ul> |
+| <code>Home</code>                | Moves focus to first node without opening or closing a node.                                                                                                                                                                                                                                        |
+| <code>End</code>                 | Moves focus to the last node that can be focused without expanding any nodes that are closed.                                                                                                                                                                                                       |
+| <code>a-z, A-Z</code>            | <ul> <li>Focus moves to the next node with a name that starts with the typed character.</li> <li>Search wraps to first node if a matching name is not found among the nodes that follow the focused node.</li> <li>Search ignores nodes that are descendants of closed nodes.</li> </ul>            |
+| <code>\*</code> (asterisk)       | <ul><li> Expands all closed sibling nodes that are at the same level as the focused node.</li><li> Focus does not move.</li></ul>                                                                                                                                                                   |
+| <code>Shift + Down Arrow </code> | Moves focus to and toggles the selection state of the next node.                                                                                                                                                                                                                                    |
+| <code>Shift + Up Arrow</code>    | Moves focus to and toggles the selection state of the previous node.                                                                                                                                                                                                                                |
+| <code>Ctrl + A </code>           | Selects all nodes in the tree. If all nodes are selected, it unselects all nodes.                                                                                                                                                                                                                   |
 
 ### Mouse Navigation
 
 | Key           | Function                                                                                                                                                   |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Click`       | toggle parent nodes and also `(select: default | exclusiveSelect | focus)`                                                                                 |
-| `Ctrl+Click`  | If `multiselect` is `true`, selects the node without dropping the current selected ones. If false, it selects the current node. Doesn't toggle parents.    |
-| `Shift+Click` | If `multiselect` is `true`, selects from the node without dropping the current selected ones. If false, it focus the current node. Doesn't toggle parents. |
+| `Click`       | toggle parent nodes and also performs one of clickActions = SELECT, EXCLUSIVE_SELECT, FOCUS                                                                |
+| `Ctrl+Click`  | If `multiselect` is `true`, selects the node without dropping the current selected ones. If false, it selects the clicked node. Doesn't toggle parents.    |
+| `Shift+Click` | If `multiselect` is `true`, selects from the node without dropping the current selected ones. If false, it focus the clicked node. Doesn't toggle parents. |
 
 <br/>
 <br/>
