@@ -65,5 +65,13 @@
       "eslint --throwOnWarning",
       "git add"
     ]
-  }
+  },
+  "keywords": [
+    "react",
+    "treeview",
+    "a11y",
+    "accessibility",
+    "react-component",
+    "tree"
+  ]
 }
