@@ -125,3 +125,13 @@ Follows the same convention described in https://www.w3.org/TR/wai-aria-practice
 | `Shift+Click` | If `multiselect` is `true`, selects from the node without dropping the current selected ones. If false, it focus the clicked node. Doesn't toggle parents. |
 
 <br/> <br/>
+
+### Click actions
+
+| Variant            | Function                                        |
+| ------------------ | ----------------------------------------------- |
+| `SELECT`           | Select the clicked node (default).              |
+| `EXCLUSIVE_SELECT` | Select the clicked node and deselects the rest. |
+| `FOCUS`            | Focus the clicked node                          |
+
+<br/> <br/>
