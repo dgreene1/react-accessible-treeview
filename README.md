@@ -24,7 +24,7 @@ https://react-accessible-treeview.netlify.com/
 | `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                   |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                |
 
-<br/> <br/> <br/> <br/>
+<br/> <br/>
 
 ### data
 
@@ -60,7 +60,7 @@ const data = [
 
 The array can also be generated from a nested object using the <code>flattenTree</code> helper (see the examples below).
 
-<br/> <br/> <br/> <br/>
+<br/> <br/>
 
 ### nodeRenderer
 
@@ -81,7 +81,7 @@ The array can also be generated from a nested object using the <code>flattenTree
 | `handleSelect` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
 | `handleExpand` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
 
-<br/> <br/> <br/> <br/>
+<br/> <br/>
 
 ### onSelect
 
@@ -93,7 +93,7 @@ The array can also be generated from a nested object using the <code>flattenTree
 - _Arguments_: `onExpand({element, isBranch, isExpanded, selectedIds, expandedIds, tabbableId, halfSelectedIds, lastInteractedWith})`
   Note: the function uses the state \_after the expansion.
 
-<br/> <br/> <br/> <br/>
+<br/> <br/>
 
 ### Keyboard Navigation
 
@@ -114,7 +114,7 @@ Follows the same convention described in https://www.w3.org/TR/wai-aria-practice
 | <code>Shift + Up Arrow</code>    | Moves focus to and toggles the selection state of the previous node.                                                                                                                                                                                                                                |
 | <code>Ctrl + A </code>           | Selects all nodes in the tree. If all nodes are selected, it unselects all nodes.                                                                                                                                                                                                                   |
 
-<br/> <br/> <br/> <br/>
+<br/> <br/>
 
 ### Mouse Navigation
 
@@ -124,4 +124,4 @@ Follows the same convention described in https://www.w3.org/TR/wai-aria-practice
 | `Ctrl+Click`  | If `multiselect` is `true`, selects the node without dropping the current selected ones. If false, it selects the clicked node. Doesn't toggle parents.    |
 | `Shift+Click` | If `multiselect` is `true`, selects from the node without dropping the current selected ones. If false, it focus the clicked node. Doesn't toggle parents. |
 
-<br/> <br/> <br/> <br/>
+<br/> <br/>
