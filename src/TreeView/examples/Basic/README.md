@@ -1,6 +1,6 @@
 ```js
 import React from "react";
-import TreeView, { flattenTree } from "../..";
+import TreeView, { flattenTree } from "../../..";
 import "./basic.css";
 
 const folder = {

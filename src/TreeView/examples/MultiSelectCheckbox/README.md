@@ -5,7 +5,7 @@ import { GoTriangleDown, GoTriangleRight } from "react-icons/go";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
 
 import "./checkbox-tree.css";
-import TreeView, { flattenTree } from "../..";
+import TreeView, { flattenTree } from "../../..";
 
 const folder = {
   name: "",

@@ -14,7 +14,8 @@ import {
   composeHandlers,
   focusRef,
   propagateSelectChange,
-  getAccesibleRange
+  getAccesibleRange,
+  getAriaSelected
 } from "./utils";
 
 //TODO: add a better way to style focus i.e. using a classname with the modifier
@@ -948,31 +949,3 @@ TreeView.propTypes = {
 };
 
 export default TreeView;
-
-export const flattenTree = function(tree) {
-  let count = 0;
-  const flattenedTree = {};
-
-  const flattenTreeHelper = function(tree, parent) {
-    tree.id = count;
-    tree.parent = parent;
-    flattenedTree[count] = tree;
-    count += 1;
-    if (tree.children == null || tree.children.length === 0) return;
-    for (const child of tree.children) {
-      flattenTreeHelper(child, tree.id);
-    }
-    tree.children = tree.children.map(x => x.id);
-  };
-
-  flattenTreeHelper(tree, null);
-  return flattenedTree;
-};
-
-const getAriaSelected = (isSelected, multiSelect) => {
-  if (multiSelect) {
-    return isSelected;
-  } else {
-    return isSelected ? true : undefined;
-  }
-};

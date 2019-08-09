@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { DiCss3, DiJavascript, DiNpm } from "react-icons/di";
 import { FaList, FaRegFolder, FaRegFolderOpen } from "react-icons/fa";
 import "./styled.css";
-import TreeView, { flattenTree } from "../..";
+import TreeView, { flattenTree } from "../../..";
 import Checkbox from "./Checkbox";
 
 const folder = {

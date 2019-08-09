@@ -1,2 +1,4 @@
-import TreeView, { flattenTree } from "./TreeView";
-export { TreeView, flattenTree };
+import TreeView from "./TreeView";
+import { flattenTree } from "./TreeView/utils";
+export default TreeView;
+export { flattenTree };

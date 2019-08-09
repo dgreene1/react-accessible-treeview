@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { DiCss3, DiJavascript, DiNpm } from "react-icons/di";
 import { FaList, FaRegFolder, FaRegFolderOpen } from "react-icons/fa";
 import "./styled.css";
-import TreeView, { flattenTree } from "../..";
+import TreeView, { flattenTree } from "../../..";
 
 const folder = {
   name: "",
@@ -37,7 +37,6 @@ const folder = {
 };
 
 const data = flattenTree(folder);
-
 function Example() {
   return (
     <div>
