@@ -12,7 +12,8 @@ export default [
       name: "react-accessible-treeview",
       file: pkg.browser,
       format: "umd",
-      globals: { react: "React", classnames: "cx", "prop-types": "PropTypes" }
+      globals: { react: "React", classnames: "cx", "prop-types": "PropTypes" },
+      exports: "named"
     },
     plugins: [
       babel({
@@ -30,13 +31,19 @@ export default [
         file: pkg.main,
         format: "cjs",
 
-        globals: { react: "React", classnames: "cx", "prop-types": "PropTypes" }
+        globals: {
+          react: "React",
+          classnames: "cx",
+          "prop-types": "PropTypes"
+        },
+        exports: "named"
       },
       {
         file: pkg.module,
         format: "es",
 
-        globals: { react: "React", classnames: "cx" }
+        globals: { react: "React", classnames: "cx" },
+        exports: "named"
       }
     ],
     plugins: [
