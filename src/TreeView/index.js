@@ -415,18 +415,18 @@ const TreeView = React.forwardRef(function TreeView(
   {
     data,
     nodeRenderer,
-    onSelect,
-    onExpand,
-    className,
-    defaultExpandedIds,
-    defaultSelectedIds,
-    propagateCollapse,
-    propagateSelect,
-    propagateSelectUpwards,
-    multiSelect,
-    expandOnKeyboardSelect,
-    togglableSelect,
-    clickAction,
+    onSelect = noop,
+    onExpand = noop,
+    className = "",
+    multiSelect = false,
+    propagateSelect = false,
+    propagateSelectUpwards = false,
+    propagateCollapse = false,
+    expandOnKeyboardSelect = false,
+    togglableSelect = false,
+    defaultExpandedIds = [],
+    defaultSelectedIds = [],
+    clickAction = clickActions.select,
     ...other
   },
   ref
@@ -928,10 +928,10 @@ TreeView.propTypes = {
   /** Render prop for the node */
   nodeRenderer: PropTypes.func.isRequired,
 
-  /**Array with the ids of the default expanded nodes*/
+  /** Array with the ids of the default expanded nodes*/
   defaultExpandedIds: PropTypes.array,
 
-  /**Array with the ids of the default selected nodes*/
+  /** Array with the ids of the default selected nodes*/
   defaultSelectedIds: PropTypes.array,
 
   /** If true, collapsing a node will also collapse its descendants */
@@ -943,32 +943,17 @@ TreeView.propTypes = {
   /** If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected)*/
   propagateSelectUpwards: PropTypes.bool,
 
-  /** Allows multiple nodes to be selected **/
+  /** Allows multiple nodes to be selected */
   multiSelect: PropTypes.bool,
 
   /** Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state */
   expandOnKeyboardSelect: PropTypes.bool,
 
-  /** Wether the selected state is togglable **/
+  /** Wether the selected state is togglable */
   togglableSelect: PropTypes.bool,
 
-  /** action to perform on click **/
+  /** action to perform on click */
   clickAction: PropTypes.oneOf(Object.values(clickActions))
-};
-
-TreeView.defaultProps = {
-  onSelect: noop,
-  onExpand: noop,
-  className: "",
-  defaultExpandedIds: [],
-  defaultSelectedIds: [],
-  propagateCollapse: false,
-  propagateSelect: false,
-  propagateSelectUpwards: false,
-  multiSelect: false,
-  expandOnKeyboardSelect: false,
-  togglableSelect: false,
-  clickAction: clickActions.select
 };
 
 export default TreeView;

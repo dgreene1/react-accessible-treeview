@@ -1,6 +1,6 @@
 module.exports = {
   title: "react-accessible-treeview",
-  usageMode: "expand",
+  usageMode: "hide",
   components: "src/TreeView/**/index.js",
   serverPort: 5000,
   webpackConfig: {

@@ -1,13 +1,36 @@
+### Prop Types
+
+| Prop name                | Type          | Default value | Description                                                                                                                                                        |
+| ------------------------ | ------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `data`                   | `array[node]` | `required`    | Tree data                                                                                                                                                          |
+| `nodeRenderer`           | `func`        | `required`    | Render prop for the node (see below for more details)                                                                                                              |
+| `onSelect`               | `func`        | `noop`        | Function called when a node changes its selected state                                                                                                             |
+| `onExpand`               | `func`        | `noop`        | Function called when a node changes its expanded state                                                                                                             |
+| `className`              | `string`      | `""`          | className to add to the outermost dom element, al `ul` with `role = "tree"`                                                                                        |
+| `multiSelect`            | `bool`        | `false`       | Allows multiple nodes to be selected                                                                                                                               |
+| `propagateSelect`        | `bool`        | `false`       | If true, selecting a node will also select its descendants                                                                                                         |
+| `propagateSelectUpwards` | `bool`        | `false`       | If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected |
+| `propagateCollapse`      | `bool`        | `false`       | If true, collapsing a node will also collapse its descendants                                                                                                      |
+| `expandOnKeyboardSelect` | `bool`        | `false`       | Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state                                                                        |
+| `togglableSelect`        | `bool`        | `false`       | Wether the selected state is togglable                                                                                                                             |
+| `defaultSelectedIds`     | `array`       | `[]`          | Array with the ids of the default selected nodes                                                                                                                   |
+| `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                   |
+| `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                |
+
+<br/> <br/> <br/> <br/>
+
 ### data
 
-An array of objects with the following structure:
+An array of nodes. Nodes are objects with the following structure:
 
-| property   | type             | default  | description                                                                                                         |
-| ---------- | ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `id`       | `integer`        | required | Unique identifier of the node                                                                                       |
-| `name`     | `string`         | required | Used to match on key press                                                                                          |
-| `children` | `array[integer]` | required | An array with the ids of the children. The first item of the array represents the root node and won't be displayed. |
-| `parent`   | `integer`        | required | The parent of the node. `null` for the root node                                                                    |
+| Property   | Type        | Default  | Description                                              |
+| ---------- | ----------- | -------- | -------------------------------------------------------- |
+| `id`       | `number`    | required | A nonnegative interger that uniquely identifies the node |
+| `name`     | `string`    | required | Used to match on key press                               |
+| `children` | `array[id]` | required | An array with the ids of the children nodes.             |
+| `parent`   | `id`        | required | The parent of the node. `null` for the root node         |
+
+The first item of the array represents the root node and won't be displayed.
 
 Example:
 
@@ -30,11 +53,13 @@ const data = [
 
 The array can also be generated from a nested object using the <code>flattenTree</code> helper (see the examples below).
 
+<br/> <br/> <br/> <br/>
+
 ### nodeRenderer
 
 - _Arguments_: An object containing the following properties:
 
-| property       | type                  | description                                                                                           |
+| Property       | Type                  | Description                                                                                           |
 | -------------- | --------------------- | ----------------------------------------------------------------------------------------------------- |
 | `element`      | `object`              | The object that represents the rendered node                                                          |
 | `getNodeProps` | `function`            | A function which gives back the props to pass to the node                                             |
@@ -49,6 +74,8 @@ The array can also be generated from a nested object using the <code>flattenTree
 | `handleSelect` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
 | `handleExpand` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
 
+<br/> <br/> <br/> <br/>
+
 ### onSelect
 
 - _Arguments_: `onSelect({element, isBranch, isExpanded, selectedIds, expandedIds, tabbableId, halfSelectedIds, lastInteractedWith})`
@@ -59,10 +86,7 @@ The array can also be generated from a nested object using the <code>flattenTree
 - _Arguments_: `onExpand({element, isBranch, isExpanded, selectedIds, expandedIds, tabbableId, halfSelectedIds, lastInteractedWith})`
   Note: the function uses the state \_after the expansion.
 
-<br/>
-<br/>
-<br/>
-<br/>
+<br/> <br/> <br/> <br/>
 
 ### Keyboard Navigation
 
@@ -83,6 +107,8 @@ Follows the same convention described in https://www.w3.org/TR/wai-aria-practice
 | <code>Shift + Up Arrow</code>    | Moves focus to and toggles the selection state of the previous node.                                                                                                                                                                                                                                |
 | <code>Ctrl + A </code>           | Selects all nodes in the tree. If all nodes are selected, it unselects all nodes.                                                                                                                                                                                                                   |
 
+<br/> <br/> <br/> <br/>
+
 ### Mouse Navigation
 
 | Key           | Function                                                                                                                                                   |
@@ -91,7 +117,4 @@ Follows the same convention described in https://www.w3.org/TR/wai-aria-practice
 | `Ctrl+Click`  | If `multiselect` is `true`, selects the node without dropping the current selected ones. If false, it selects the clicked node. Doesn't toggle parents.    |
 | `Shift+Click` | If `multiselect` is `true`, selects from the node without dropping the current selected ones. If false, it focus the clicked node. Doesn't toggle parents. |
 
-<br/>
-<br/>
-<br/>
-<br/>
+<br/> <br/> <br/> <br/>

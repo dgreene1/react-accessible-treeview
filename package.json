@@ -1,9 +1,10 @@
 {
   "name": "react-accessible-treeview",
+  "description": "A react component that implements the treeview pattern as described by the WAI-ARIA Authoring Practices.",
   "version": "1.0.0",
+  "author": "lissitz (https://github.com/lissitz)",
   "main": "dist/react-accessible-treeview.cjs.js",
   "module": "dist/react-accessible-treeview.esm.js",
-  "browser": "dist/react-accessible-treeview.umd.js",
   "peerDependencies": {
     "classnames": "^2.2.6",
     "prop-types": "^15.7.2",
@@ -39,6 +40,12 @@
   "files": [
     "dist"
   ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lissitz/react-accessible-treeview.git"
+  },
+  "homepage": "https://github.com/lissitz/react-accessible-treeview",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
