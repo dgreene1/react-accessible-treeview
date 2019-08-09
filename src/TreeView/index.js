@@ -153,7 +153,6 @@ const treeReducer = (state, action) => {
         ...state,
         selectedIds,
         halfSelectedIds,
-        tabbableId: action.id,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
@@ -288,12 +287,11 @@ const useTree = ({
     data,
     selectedIds,
     expandedIds,
-    isBranchNode,
     tabbableId,
     halfSelectedIds,
     toggledIds,
     onSelect,
-    treeTypes
+    lastInteractedWith
   ]);
 
   const prevExpandedIds = usePrevious(expandedIds) || new Set();
@@ -321,10 +319,8 @@ const useTree = ({
     halfSelectedIds,
     onSelect,
     onExpand,
-    treeTypes,
-    difference,
-    usePrevious,
-    prevExpandedIds
+    prevExpandedIds,
+    lastInteractedWith
   ]);
 
   //Update parent if a child changes
@@ -381,13 +377,10 @@ const useTree = ({
     propagateSelectUpwards,
     selectedIds,
     expandedIds,
-    isBranchNode,
     halfSelectedIds,
     lastAction,
     prevSelectedIds,
-    propagateSelectChange,
     toggledIds,
-    treeTypes,
     lastInteractedWith
   ]);
 
@@ -399,7 +392,7 @@ const useTree = ({
       const tabbableNode = nodeRefs.current[tabbableId];
       focusRef(tabbableNode);
     }
-  }, [tabbableId, focusRef, nodeRefs, hasUserInteractedRef]);
+  }, [tabbableId, nodeRefs, hasUserInteractedRef]);
 
   return [state, dispatch];
 };
@@ -461,8 +454,7 @@ const TreeView = React.forwardRef(function TreeView(
         propagateSelect,
         multiSelect,
         expandOnKeyboardSelect,
-        togglableSelect,
-        lastInteractedWith: state.lastInteractedWith
+        togglableSelect
       })}
       {...other}
     >
@@ -711,8 +703,7 @@ const handleKeyDown = ({
   propagateSelect,
   multiSelect,
   expandOnKeyboardSelect,
-  togglableSelect,
-  lastInteractedWith
+  togglableSelect
 }) => event => {
   const element = data[tabbableId];
   const id = element.id;

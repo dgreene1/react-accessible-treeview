@@ -1,4 +1,4 @@
-This example combines multiselect and an exclusive select onClick. It supports multiselect using `Ctrl+click`.
+This example combines multiselect and an exclusive select onClick. It supports multiselect using `Ctrl+click` `Shift+Click`, `Enter/Space` and `Shift + Up/Down`.
 
 ```js
 import React, { useState } from "react";
