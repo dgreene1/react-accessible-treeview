@@ -825,7 +825,11 @@ const handleKeyDown = ({
     }
     case "Home":
       event.preventDefault();
-      dispatch({ type: treeTypes.focus, id: data[0].children[0] });
+      dispatch({
+        type: treeTypes.focus,
+        id: data[0].children[0],
+        lastInteractedWith: data[0].children[0]
+      });
       break;
     case "End": {
       event.preventDefault();
