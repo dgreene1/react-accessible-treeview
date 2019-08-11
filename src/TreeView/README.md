@@ -74,6 +74,7 @@ The array can also be generated from a nested object using the <code>flattenTree
 | `posinset`     | `number`              | A positive integer that corresponds to the aria-posinset attribute                                    |
 | `handleSelect` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
 | `handleExpand` | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
+| `dispatch`     | `function`            | Function to dispatch actions                                                                          |
 
 ### onSelect
 
