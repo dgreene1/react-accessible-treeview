@@ -49,3 +49,9 @@
   vertical-align: middle;
   padding-right: 5px;
 }
+
+.checkbox button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}

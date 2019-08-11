@@ -22,6 +22,7 @@ https://react-accessible-treeview.netlify.com/
 | `togglableSelect`        | `bool`        | `false`       | Wether the selected state is togglable                                                                                                                             |
 | `defaultSelectedIds`     | `array`       | `[]`          | Array with the ids of the default selected nodes                                                                                                                   |
 | `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                   |
+| `defaultDisabledIds`     | `array`       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                   |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                |
 
 <br/> <br/>

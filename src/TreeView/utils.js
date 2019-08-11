@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { bigIntLiteral } from "@babel/types";
 export const composeHandlers = (...handlers) => event => {
   for (const handler of handlers) {
     handler && handler(event);
@@ -43,11 +44,12 @@ export const getParent = (data, id) => {
   return data[id].parent;
 };
 
-export const getDescendants = (data, id) => {
+export const getDescendants = (data, id, disabledIds) => {
   const descendants = [];
   const getDescendantsHelper = (data, id) => {
     const node = data[id];
-    for (const childId of node.children || []) {
+    if (node.children == null) return;
+    for (const childId of node.children.filter(x => !disabledIds.has(x))) {
       descendants.push(childId);
       getDescendantsHelper(data, childId);
     }
@@ -111,28 +113,24 @@ export const getNextAccessible = (data, id, expandedIds) => {
   }
 };
 
-export const propagateSelectChange = (data, ids, selectedIds) => {
+export const propagateSelectChange = (data, ids, selectedIds, disabledIds) => {
   const changes = { every: new Set(), some: new Set(), none: new Set() };
   for (const id of ids) {
     let currentId = id;
-    let found_some = false;
     while (true) {
       const parent = getParent(data, currentId);
-      if (parent === 0) break;
-      if (found_some) {
-        changes.some.add(parent);
-        currentId = parent;
-        continue;
-      }
-      const children = data[parent].children;
-      const some = children.some(x => selectedIds.has(x));
+      if (parent === 0 || disabledIds.has(parent)) break;
+      const enabledChildren = data[parent].children.filter(
+        x => !disabledIds.has(x)
+      );
+      if (enabledChildren.length === 0) break;
+      const some = enabledChildren.some(x => selectedIds.has(x));
       if (!some) {
         changes.none.add(parent);
       } else {
-        if (children.every(x => selectedIds.has(x))) {
+        if (enabledChildren.every(x => selectedIds.has(x))) {
           changes.every.add(parent);
         } else {
-          found_some = true;
           changes.some.add(parent);
         }
       }
@@ -194,9 +192,9 @@ export const getAriaSelected = (isSelected, multiSelect) => {
   }
 };
 
-export const propagatedIds = (data, ids) =>
+export const propagatedIds = (data, ids, disabledIds) =>
   ids.concat(
     ...ids
       .filter(id => isBranchNode(data, id))
-      .map(id => getDescendants(data, id))
+      .map(id => getDescendants(data, id, disabledIds))
   );
