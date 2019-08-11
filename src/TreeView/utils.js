@@ -195,10 +195,8 @@ export const getAriaSelected = (isSelected, multiSelect) => {
 };
 
 export const propagatedIds = (data, ids) =>
-  new Set(
-    ids.concat(
-      ids
-        .filter(id => isBranchNode(data, id))
-        .flatMap(id => getDescendants(data, id))
-    )
+  ids.concat(
+    ...ids
+      .filter(id => isBranchNode(data, id))
+      .map(id => getDescendants(data, id))
   );
