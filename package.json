@@ -8,7 +8,7 @@
   "peerDependencies": {
     "classnames": "^2.2.6",
     "prop-types": "^15.7.2",
-    "react": "^16.8.6"
+    "react": "^16.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -28,7 +28,7 @@
     "eslint-plugin-react-hooks": "^1.5.0",
     "lint-staged": "^9.2.1",
     "prettier": "^1.18.2",
-    "react": "^16.8.6",
+    "react": "^16.8.0",
     "react-docgen": "^4.1.1",
     "react-dom": "^16.8.6",
     "react-icons": "^3.7.0",
