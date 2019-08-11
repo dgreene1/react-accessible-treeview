@@ -14,8 +14,9 @@ import {
   composeHandlers,
   focusRef,
   propagateSelectChange,
-  getAccesibleRange,
-  getAriaSelected
+  getAccessibleRange,
+  getAriaSelected,
+  propagatedIds
 } from "./utils";
 
 //TODO: add a better way to style focus i.e. using a classname with the modifier
@@ -434,6 +435,7 @@ const TreeView = React.forwardRef(function TreeView(
     onSelect,
     onExpand,
     multiSelect,
+    propagateSelect,
     propagateSelectUpwards
   });
   propagateSelect = propagateSelect && multiSelect;
@@ -530,20 +532,14 @@ const Node = ({
 
   const handleSelect = event => {
     if (event.shiftKey) {
-      let ids = getAccesibleRange({
+      let ids = getAccessibleRange({
         data,
         expandedIds,
         from: lastStandardSelect,
         to: element.id,
         lastInteractedWith: element.id
       });
-      ids = new Set(
-        ids.concat(
-          ids
-            .filter(id => isBranchNode(data, id))
-            .flatMap(id => getDescendants(data, id))
-        )
-      );
+      ids = propagateSelect ? propagatedIds(data, ids) : ids;
       dispatch({
         type: treeTypes.exclusiveChangeSelectMany,
         select: true,
@@ -553,32 +549,27 @@ const Node = ({
       });
     } else if (event.ctrlKey || clickAction === clickActions.select) {
       //Select
-      if (togglableSelect)
-        dispatch({ type: treeTypes.toggleSelect, id: element.id, multiSelect });
-      else dispatch({ type: treeTypes.select, id: element.id, multiSelect });
+      dispatch({
+        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        id: element.id,
+        multiSelect,
+        lastInteractedWith: element.id
+      });
       propagateSelect &&
         dispatch({
           type: treeTypes.changeSelectMany,
-          ids: getDescendants(data, element.id),
-          select: !selectedIds.has(element.id),
+          ids: propagatedIds(data, [element.id]),
+          select: togglableSelect ? !selectedIds.has(element.id) : true,
           multiSelect,
           lastInteractedWith: element.id
         });
     } else if (clickAction === clickActions.exclusiveSelect) {
-      if (togglableSelect)
-        dispatch({
-          type: treeTypes.toggleSelect,
-          id: element.id,
-          multiSelect: false,
-          lastInteractedWith: element.id
-        });
-      else
-        dispatch({
-          type: treeTypes.select,
-          id: element.id,
-          multiSelect: false,
-          lastInteractedWith: element.id
-        });
+      dispatch({
+        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        id: element.id,
+        multiSelect: false,
+        lastInteractedWith: element.id
+      });
     } else if (clickAction === clickActions.focus) {
       dispatch({
         type: treeTypes.focus,
@@ -720,33 +711,73 @@ const handleKeyDown = ({
         ids: new Set(Object.values(dataWithoutRoot).map(x => x.id)),
         lastInteractedWith: element.id
       });
+    } else if (
+      event.shiftKey &&
+      (event.key === "Home" || event.key === "End")
+    ) {
+      const newId =
+        event.key === "Home"
+          ? data[0].children[0]
+          : getLastAccessible(data, id, expandedIds);
+      const range = getAccessibleRange({
+        data,
+        expandedIds,
+        from: id,
+        to: newId
+      });
+      dispatch({
+        type: treeTypes.changeSelectMany,
+        multiSelect,
+        select: true,
+        ids: propagateSelect ? propagatedIds(data, range) : range
+      });
+      dispatch({
+        type: treeTypes.focus,
+        id: newId,
+        lastInteractedWith: newId
+      });
     }
     return;
   }
+
   if (event.shiftKey) {
     switch (event.key) {
       case "ArrowUp": {
         event.preventDefault();
         const previous = getPreviousAccessible(data, id, expandedIds);
-        previous != null &&
+        if (previous != null) {
           dispatch({
-            type: treeTypes.select,
-            id: previous,
+            type: treeTypes.changeSelectMany,
+            ids: propagateSelect ? propagatedIds(data, [previous]) : [previous],
+            select: true,
             multiSelect,
             lastInteractedWith: previous
           });
+          dispatch({
+            type: treeTypes.focus,
+            id: previous,
+            lastInteractedWith: previous
+          });
+        }
         return;
       }
       case "ArrowDown": {
         event.preventDefault();
         const next = getNextAccessible(data, id, expandedIds);
-        next != null &&
+        if (next != null) {
           dispatch({
-            type: treeTypes.select,
-            id: next,
+            type: treeTypes.changeSelectMany,
+            ids: propagateSelect ? propagatedIds(data, [next]) : [next],
             multiSelect,
+            select: true,
             lastInteractedWith: next
           });
+          dispatch({
+            type: treeTypes.focus,
+            id: next,
+            lastInteractedWith: next
+          });
+        }
         return;
       }
       default:
@@ -858,30 +889,15 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
-      if (togglableSelect)
-        dispatch({
-          type: treeTypes.toggleSelect,
-          id,
-          multiSelect,
-          lastInteractedWith: id
-        });
-      else
-        dispatch({
-          type: treeTypes.select,
-          id,
-          multiSelect,
-          lastInteractedWith: id
-        });
+      dispatch({
+        type: treeTypes.changeSelectMany,
+        ids: propagateSelect ? propagatedIds(data, [id]) : [id],
+        select: togglableSelect ? !selectedIds.has(id) : true,
+        multiSelect,
+        lastInteractedWith: id
+      });
       expandOnKeyboardSelect &&
         dispatch({ type: treeTypes.toggle, id, lastInteractedWith: id });
-      propagateSelect &&
-        dispatch({
-          type: treeTypes.changeSelectMany,
-          ids: getDescendants(data, id),
-          select: !selectedIds.has(id),
-          multiSelect,
-          lastInteractedWith: id
-        });
       return;
     default:
       if (event.key.length === 1) {

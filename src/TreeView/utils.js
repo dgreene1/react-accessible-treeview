@@ -142,7 +142,7 @@ export const propagateSelectChange = (data, ids, selectedIds) => {
   return changes;
 };
 
-export const getAccesibleRange = ({ data, expandedIds, from, to }) => {
+export const getAccessibleRange = ({ data, expandedIds, from, to }) => {
   let range = [];
   let max_loop = Object.keys(data).length;
   let count = 0;
@@ -193,3 +193,12 @@ export const getAriaSelected = (isSelected, multiSelect) => {
     return isSelected ? true : undefined;
   }
 };
+
+export const propagatedIds = (data, ids) =>
+  new Set(
+    ids.concat(
+      ids
+        .filter(id => isBranchNode(data, id))
+        .flatMap(id => getDescendants(data, id))
+    )
+  );
