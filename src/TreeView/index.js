@@ -638,7 +638,11 @@ const Node = ({
       "aria-setsize": setsize,
       "aria-posinset": posinset,
       "aria-level": level,
-      "aria-selected": getAriaSelected(selectedIds.has(element.id), multiSelect)
+      "aria-selected": getAriaSelected(
+        selectedIds.has(element.id),
+        multiSelect
+      ),
+      disabled: disabledIds.has(element.id)
     };
   };
 
@@ -657,6 +661,7 @@ const Node = ({
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
+      disabled={disabledIds.has(element.id)}
       tabIndex={tabbableId === element.id ? 0 : -1}
       ref={x => (nodeRefs.current[element.id] = x)}
       className={cx(getClasses(baseClassNames.node), baseClassNames.branch)}
