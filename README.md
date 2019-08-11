@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/lissitz/react-accessible-treeview.svg?branch=master)](https://travis-ci.org/lissitz/react-accessible-treeview)
 [![Greenkeeper badge](https://badges.greenkeeper.io/lissitz/react-accessible-treeview.svg)](https://greenkeeper.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  
 
 
 A react component that implements the treeview pattern as described by the [WAI-ARIA Authoring Practices](https://www.w3.org/TR/wai-aria-practices/#TreeView).
