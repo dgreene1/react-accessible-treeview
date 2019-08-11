@@ -306,6 +306,7 @@ const useTree = ({
           isExpanded: isBranch ? expandedIds.has(toggledId) : undefined,
           selectedIds,
           expandedIds,
+          disabledIds,
           tabbableId,
           halfSelectedIds
         });
@@ -332,6 +333,7 @@ const useTree = ({
           isBranch: true,
           isExpanded: true,
           selectedIds,
+          disabledIds,
           expandedIds,
           tabbableId,
           halfSelectedIds
