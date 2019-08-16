@@ -54,25 +54,19 @@ function Example() {
             getNodeProps,
             level,
             handleSelect
-          }) =>
-            isBranch ? (
-              <div
-                {...getNodeProps({ onClick: handleSelect })}
-                style={{ paddingLeft: 20 * (level - 1) }}
-              >
+          }) => (
+            <div
+              {...getNodeProps({ onClick: handleSelect })}
+              style={{ paddingLeft: 20 * (level - 1) }}
+            >
+              {isBranch ? (
                 <FolderIcon isOpen={isExpanded} />
-                {element.name}
-              </div>
-            ) : (
-              <div
-                {...getNodeProps({ onClick: handleSelect })}
-                style={{ paddingLeft: 20 * (level - 1) }}
-              >
+              ) : (
                 <FileIcon filename={element.name} />
-                {element.name}
-              </div>
-            )
-          }
+              )}
+              {element.name}
+            </div>
+          )}
         />
       </div>
     </div>

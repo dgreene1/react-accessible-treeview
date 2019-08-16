@@ -37,9 +37,9 @@ const data = flattenTree(folder);
 <TreeView
   data={data}
   className="basic"
-  nodeRenderer={({ element, getNodeProps, level }) => (
+  nodeRenderer={({ element, getNodeProps, level, handleSelect }) => (
     <div
-      {...getNodeProps()}
+      {...getNodeProps({ onClick: handleSelect })}
       aria-label="basic example tree"
       style={{ paddingLeft: 20 * (level - 1) }}
     >
