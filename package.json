@@ -46,7 +46,9 @@
     "dev": "rollup -c -w"
   },
   "files": [
-    "dist"
+    "dist",
+    "src/index.js",
+    "src/TreeView/*.js"
   ],
   "license": "MIT",
   "repository": {
