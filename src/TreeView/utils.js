@@ -183,12 +183,10 @@ export const flattenTree = function(tree) {
   return flattenedTree;
 };
 
-export const getAriaSelected = (isSelected, multiSelect) => {
-  if (multiSelect) {
-    return isSelected;
-  } else {
-    return isSelected ? true : undefined;
-  }
+export const getAriaSelected = (isSelected, isDisabled, multiSelect) => {
+  if (isDisabled) return undefined;
+  if (multiSelect) return isSelected;
+  return isSelected ? true : undefined;
 };
 
 export const propagatedIds = (data, ids, disabledIds) =>

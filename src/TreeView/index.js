@@ -665,6 +665,7 @@ const Node = ({
       "aria-level": level,
       "aria-selected": getAriaSelected(
         selectedIds.has(element.id),
+        disabledIds.has(element.id),
         multiSelect
       ),
       disabled: disabledIds.has(element.id)
@@ -682,7 +683,11 @@ const Node = ({
     <li
       role="treeitem"
       aria-expanded={expandedIds.has(element.id)}
-      aria-selected={getAriaSelected(selectedIds.has(element.id), multiSelect)}
+      aria-selected={getAriaSelected(
+        selectedIds.has(element.id),
+        disabledIds.has(element.id),
+        multiSelect
+      )}
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
