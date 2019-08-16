@@ -16,11 +16,10 @@ import {
   propagateSelectChange,
   getAccessibleRange,
   getAriaSelected,
-  propagatedIds
+  propagatedIds,
+  onComponentBlur
 } from "./utils";
 
-//TODO: add a better way to style focus i.e. using a classname with the modifier
-// implement non selectable nodes
 const baseClassNames = {
   root: "tree",
   node: "tree-node",
@@ -45,6 +44,7 @@ const treeTypes = {
   exclusiveSelectMany: "EXCLUSIVE_SELECT_MANY",
   exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
   focus: "FOCUS",
+  blur: "BLUR",
   disable: "DISABLE",
   enable: "ENABLE"
 };
@@ -58,6 +58,7 @@ const treeReducer = (state, action) => {
         ...state,
         expandedIds,
         tabbableId: action.id,
+        isFocused: true,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -81,6 +82,7 @@ const treeReducer = (state, action) => {
         ...state,
         expandedIds,
         tabbableId: action.id,
+        isFocused: true,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -102,6 +104,7 @@ const treeReducer = (state, action) => {
         ...state,
         expandedIds,
         tabbableId: action.id,
+        isFocused: true,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -138,6 +141,7 @@ const treeReducer = (state, action) => {
         selectedIds,
         halfSelectedIds,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
+        isFocused: true,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
           : action.id,
@@ -161,6 +165,7 @@ const treeReducer = (state, action) => {
         selectedIds,
         halfSelectedIds,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
+        isFocused: true,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
           : action.id,
@@ -188,6 +193,7 @@ const treeReducer = (state, action) => {
         selectedIds,
         halfSelectedIds,
         tabbableId: action.id,
+        isFocused: true,
         lastStandardSelect: action.NotUserAction
           ? state.lastStandardSelect
           : action.id,
@@ -239,8 +245,14 @@ const treeReducer = (state, action) => {
       return {
         ...state,
         tabbableId: action.id,
+        isFocused: true,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
+      };
+    case treeTypes.blur:
+      return {
+        ...state,
+        isFocused: false
       };
     case treeTypes.disable: {
       const disabledIds = new Set(state.disabledIds);
@@ -277,6 +289,7 @@ const useTree = ({
   const [state, dispatch] = useReducer(treeReducer, {
     selectedIds: new Set(defaultSelectedIds),
     tabbableId: data[0].children[0],
+    isFocused: false,
     expandedIds: new Set(defaultExpandedIds),
     halfSelectedIds: new Set(),
     lastStandardSelect: data[0].children[0],
@@ -316,6 +329,7 @@ const useTree = ({
     data,
     selectedIds,
     expandedIds,
+    disabledIds,
     tabbableId,
     halfSelectedIds,
     toggledIds,
@@ -344,6 +358,7 @@ const useTree = ({
     data,
     selectedIds,
     expandedIds,
+    disabledIds,
     tabbableId,
     halfSelectedIds,
     onSelect,
@@ -415,14 +430,13 @@ const useTree = ({
   ]);
 
   //Focus
-  const hasUserInteractedRef = useRef(false);
   useEffect(() => {
-    if (!hasUserInteractedRef.current) hasUserInteractedRef.current = true;
+    if (lastInteractedWith == null) return;
     else if (tabbableId != null) {
       const tabbableNode = nodeRefs.current[tabbableId];
       focusRef(tabbableNode);
     }
-  }, [tabbableId, nodeRefs, hasUserInteractedRef]);
+  }, [tabbableId, nodeRefs, lastInteractedWith]);
 
   return [state, dispatch];
 };
@@ -470,12 +484,20 @@ const TreeView = React.forwardRef(function TreeView(
   });
   propagateSelect = propagateSelect && multiSelect;
 
+  let innerRef = useRef();
+  if (ref != null) innerRef = ref;
+
   return (
     <ul
       className={cx(baseClassNames.root, className)}
       role="tree"
       aria-multiselectable={multiSelect}
-      ref={ref}
+      ref={innerRef}
+      onBlur={event =>
+        onComponentBlur(event, innerRef.current, () => {
+          dispatch({ type: treeTypes.blur });
+        })
+      }
       onKeyDown={handleKeyDown({
         data,
         tabbableId: state.tabbableId,
@@ -497,6 +519,7 @@ const TreeView = React.forwardRef(function TreeView(
           key={x}
           selectedIds={state.selectedIds}
           tabbableId={state.tabbableId}
+          isFocused={state.isFocused}
           expandedIds={state.expandedIds}
           disabledIds={state.disabledIds}
           halfSelectedIds={state.halfSelectedIds}
@@ -528,6 +551,7 @@ const Node = ({
   data,
   selectedIds,
   tabbableId,
+  isFocused,
   expandedIds,
   disabledIds,
   halfSelectedIds,
@@ -624,7 +648,8 @@ const Node = ({
   const getClasses = className => {
     return cx(className, {
       [`${className}--expanded`]: expandedIds.has(element.id),
-      [`${className}--selected`]: selectedIds.has(element.id)
+      [`${className}--selected`]: selectedIds.has(element.id),
+      [`${className}--focused`]: tabbableId === element.id && isFocused
     });
   };
 
@@ -649,7 +674,7 @@ const Node = ({
   const getBranchProps = ({ onClick } = {}) => {
     return {
       onClick: composeHandlers(onClick, handleExpand, handleFocus),
-      className: getClasses(baseClassNames.branchWrapper)
+      className: cx(getClasses(baseClassNames.node), baseClassNames.branch)
     };
   };
 
@@ -664,7 +689,7 @@ const Node = ({
       disabled={disabledIds.has(element.id)}
       tabIndex={tabbableId === element.id ? 0 : -1}
       ref={x => (nodeRefs.current[element.id] = x)}
-      className={cx(getClasses(baseClassNames.node), baseClassNames.branch)}
+      className={baseClassNames.branchWrapper}
     >
       {nodeRenderer({
         element,
@@ -689,6 +714,7 @@ const Node = ({
               key={x}
               selectedIds={selectedIds}
               tabbableId={tabbableId}
+              isFocused={isFocused}
               expandedIds={expandedIds}
               halfSelectedIds={halfSelectedIds}
               disabledIds={disabledIds}

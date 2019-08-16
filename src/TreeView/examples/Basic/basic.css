@@ -10,22 +10,19 @@
   padding: 0;
 }
 
-.basic .tree-node__branch {
-  outline: none;
-}
+.basic .tree-branch-wrapper,
 .basic .tree-node__leaf {
   outline: none;
 }
 
-.basic .tree-node__branch:focus > .tree-branch-wrapper,
-.basic .tree-node__leaf:focus {
+.basic .tree-node--focused {
   outline-color: rgb(77, 144, 254);
   outline-style: auto;
   outline-width: 2px;
   display: block;
 }
 
-.basic .tree-branch-wrapper {
+.basic .tree-node__branch {
   display: block;
 }
 

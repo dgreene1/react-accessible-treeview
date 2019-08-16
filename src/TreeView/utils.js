@@ -197,3 +197,16 @@ export const propagatedIds = (data, ids, disabledIds) =>
       .filter(id => isBranchNode(data, id))
       .map(id => getDescendants(data, id, disabledIds))
   );
+
+const isIE = () => window.navigator.userAgent.match(/Trident/);
+
+export const onComponentBlur = (event, treeNode, callback) => {
+  if (isIE()) {
+    setTimeout(
+      () => !treeNode.contains(document.activeElement) && callback(),
+      0
+    );
+  } else {
+    !treeNode.contains(event.nativeEvent.relatedTarget) && callback();
+  }
+};
