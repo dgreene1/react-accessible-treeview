@@ -337,7 +337,7 @@ const useTree = ({
 
   const prevExpandedIds = usePrevious(expandedIds) || new Set();
   useEffect(() => {
-    const toggledExpandIds = difference(expandedIds, prevExpandedIds);
+    const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onExpand !== noop) {
       for (const id of toggledExpandIds) {
         onExpand({
