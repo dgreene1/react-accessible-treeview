@@ -756,7 +756,7 @@ const Node = ({
         element,
         isBranch: false,
         isSelected: selectedIds.has(element.id),
-        isHalfSelected: false,
+        isHalfSelected: undefined,
         isExpanded: false,
         isDisabled: disabledIds.has(element.id),
         tabbableId,
