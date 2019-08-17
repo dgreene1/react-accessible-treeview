@@ -533,6 +533,7 @@ const TreeView = React.forwardRef(function TreeView(
           multiSelect={multiSelect}
           togglableSelect={togglableSelect}
           clickAction={clickAction}
+          state={state}
         />
       ))}
     </ul>
@@ -561,7 +562,8 @@ const Node = ({
   multiSelect,
   togglableSelect,
   clickAction,
-  lastInteractedWith
+  lastInteractedWith,
+  state
 }) => {
   const handleExpand = event => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
@@ -703,14 +705,14 @@ const Node = ({
         isHalfSelected: halfSelectedIds.has(element.id),
         isExpanded: expandedIds.has(element.id),
         isDisabled: disabledIds.has(element.id),
-        tabbableId,
         dispatch,
         getNodeProps: getBranchProps,
         setsize,
         posinset,
         level,
         handleSelect,
-        handleExpand
+        handleExpand,
+        treeState: state
       })}
       {expandedIds.has(element.id) && (
         <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
@@ -739,6 +741,7 @@ const Node = ({
               togglableSelect={togglableSelect}
               clickAction={clickAction}
               lastInteractedWith={lastInteractedWith}
+              state={state}
             />
           ))}
         </ul>
@@ -753,14 +756,14 @@ const Node = ({
         isHalfSelected: undefined,
         isExpanded: false,
         isDisabled: disabledIds.has(element.id),
-        tabbableId,
         dispatch,
         getNodeProps: getLeafProps,
         setsize,
         posinset,
         level,
         handleSelect,
-        handleExpand: noop
+        handleExpand: noop,
+        treeState: state
       })}
     </li>
   );
