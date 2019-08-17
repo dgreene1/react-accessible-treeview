@@ -317,11 +317,10 @@ const useTree = ({
           element: data[toggledId],
           isBranch: isBranch,
           isExpanded: isBranch ? expandedIds.has(toggledId) : undefined,
-          selectedIds,
-          expandedIds,
-          disabledIds,
-          tabbableId,
-          halfSelectedIds
+          isSelected: selectedIds.has(toggledId),
+          isDisabled: disabledIds.has(toggledId),
+          isHalfSelected: isBranch ? halfSelectedIds.has(toggledId) : undefined,
+          treeViewState: state
         });
       }
     }
@@ -330,11 +329,10 @@ const useTree = ({
     selectedIds,
     expandedIds,
     disabledIds,
-    tabbableId,
     halfSelectedIds,
     toggledIds,
     onSelect,
-    lastInteractedWith
+    state
   ]);
 
   const prevExpandedIds = usePrevious(expandedIds) || new Set();
@@ -344,13 +342,11 @@ const useTree = ({
       for (const id of toggledExpandIds) {
         onExpand({
           element: data[id],
-          isBranch: true,
-          isExpanded: true,
-          selectedIds,
-          disabledIds,
-          expandedIds,
-          tabbableId,
-          halfSelectedIds
+          isExpanded: expandedIds.has(id),
+          isSelected: selectedIds.has(id),
+          isDisabled: disabledIds.has(id),
+          isHalfSelected: halfSelectedIds.has(id),
+          treeViewState: state
         });
       }
     }
@@ -359,12 +355,10 @@ const useTree = ({
     selectedIds,
     expandedIds,
     disabledIds,
-    tabbableId,
     halfSelectedIds,
-    onSelect,
-    onExpand,
     prevExpandedIds,
-    lastInteractedWith
+    onExpand,
+    state
   ]);
 
   //Update parent if a child changes
