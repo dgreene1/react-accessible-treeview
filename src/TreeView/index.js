@@ -657,7 +657,10 @@ const Node = ({
     return {
       role: "treeitem",
       tabIndex: tabbableId === element.id ? 0 : -1,
-      onClick: composeHandlers(onClick, handleFocus),
+      onClick:
+        onClick == null
+          ? composeHandlers(handleSelect, handleFocus)
+          : composeHandlers(onClick, handleFocus),
       ref: x => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
       "aria-setsize": setsize,
@@ -674,7 +677,10 @@ const Node = ({
 
   const getBranchProps = ({ onClick } = {}) => {
     return {
-      onClick: composeHandlers(onClick, handleExpand, handleFocus),
+      onClick:
+        onClick == null
+          ? composeHandlers(handleSelect, handleExpand, handleFocus)
+          : composeHandlers(onClick, handleFocus),
       className: cx(getClasses(baseClassNames.node), baseClassNames.branch)
     };
   };
@@ -698,7 +704,7 @@ const Node = ({
     >
       {nodeRenderer({
         element,
-        isBranch: isBranchNode(data, element.id),
+        isBranch: true,
         isSelected: selectedIds.has(element.id),
         isHalfSelected: halfSelectedIds.has(element.id),
         isExpanded: expandedIds.has(element.id),
@@ -748,10 +754,10 @@ const Node = ({
     <li role="none" className={getClasses(baseClassNames.leafListItem)}>
       {nodeRenderer({
         element,
-        isBranch: isBranchNode(data, element.id),
+        isBranch: false,
         isSelected: selectedIds.has(element.id),
-        isHalfSelected: halfSelectedIds.has(element.id),
-        isExpanded: expandedIds.has(element.id),
+        isHalfSelected: false,
+        isExpanded: false,
         isDisabled: disabledIds.has(element.id),
         tabbableId,
         dispatch,
@@ -760,7 +766,7 @@ const Node = ({
         posinset,
         level,
         handleSelect,
-        handleExpand
+        handleExpand: noop
       })}
     </li>
   );

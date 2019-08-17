@@ -75,12 +75,13 @@ function Example() {
             getNodeProps,
             level,
             handleSelect,
+            handleExpand,
             dispatch
           }) => {
             return (
               <>
                 <div
-                  {...getNodeProps()}
+                  {...getNodeProps({ onClick: handleExpand })}
                   style={{
                     marginLeft: 40 * (level - 1),
                     opacity: isDisabled ? 0.5 : 1
@@ -90,8 +91,8 @@ function Example() {
                   <CheckBoxIcon
                     className="icon"
                     onClick={e => {
-                      e.preventDefault();
                       handleSelect(e);
+                      e.stopPropagation();
                     }}
                     variant={
                       isHalfSelected ? "some" : isSelected ? "all" : "none"

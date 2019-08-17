@@ -74,13 +74,16 @@ function Example() {
             handleSelect
           }) => {
             return (
-              <div {...getNodeProps()} style={{ marginLeft: 40 * (level - 1) }}>
+              <div
+                {...getNodeProps({ onClick: handleExpand })}
+                style={{ marginLeft: 40 * (level - 1) }}
+              >
                 {isBranch && <TriangleIcon isOpen={isExpanded} />}
                 <CheckBoxIcon
                   className="icon"
                   onClick={e => {
-                    e.preventDefault();
                     handleSelect(e);
+                    e.stopPropagation();
                   }}
                   variant={
                     isHalfSelected ? "some" : isSelected ? "all" : "none"

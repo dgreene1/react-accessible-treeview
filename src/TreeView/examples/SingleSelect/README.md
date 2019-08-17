@@ -61,13 +61,9 @@ function Example() {
             isBranch,
             isExpanded,
             getNodeProps,
-            level,
-            handleSelect
+            level
           }) => (
-            <div
-              {...getNodeProps({ onClick: handleSelect })}
-              style={{ paddingLeft: 20 * (level - 1) }}
-            >
+            <div {...getNodeProps()} style={{ paddingLeft: 20 * (level - 1) }}>
               {isBranch ? (
                 <FolderIcon isOpen={isExpanded} />
               ) : (

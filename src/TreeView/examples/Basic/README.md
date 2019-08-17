@@ -39,7 +39,7 @@ const data = flattenTree(folder);
   className="basic"
   nodeRenderer={({ element, getNodeProps, level, handleSelect }) => (
     <div
-      {...getNodeProps({ onClick: handleSelect })}
+      {...getNodeProps()}
       aria-label="basic example tree"
       style={{ paddingLeft: 20 * (level - 1) }}
     >
