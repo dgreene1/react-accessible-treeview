@@ -71,7 +71,8 @@ function Example() {
             isHalfSelected,
             getNodeProps,
             level,
-            handleSelect
+            handleSelect,
+            handleExpand
           }) => {
             return (
               <div
