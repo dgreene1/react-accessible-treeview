@@ -6,7 +6,7 @@ A react component that implements the treeview pattern as described by the [WAI-
 
 - Single and multiple selection.
 - Disabled nodes.
-- Extensive keyboard and mouse bindings.
+- Extensive key bindings.
 - Highly customizable through the use of the render prop and prop getter patterns.
 - WAI-ARIA compliant.
 
