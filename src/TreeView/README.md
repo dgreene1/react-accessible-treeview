@@ -110,8 +110,8 @@ Follows the same convention described in https://www.w3.org/TR/wai-aria-practice
 | Key           | Function                                                                                                                                                   |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Click`       | Toggle parent nodes and also performs one of clickActions = SELECT, EXCLUSIVE_SELECT, FOCUS                                                                |
-| `Ctrl+Click`  | If `multiselect` is `true`, selects the node without dropping the current selected ones. If false, it selects the clicked node. Doesn't toggle parents.    |
-| `Shift+Click` | If `multiselect` is `true`, selects from the node without dropping the current selected ones. If false, it focus the clicked node. Doesn't toggle parents. |
+| `Ctrl+Click`  | If `multiselect` is set to `true`, selects the node without dropping the current selected ones. If false, it selects the clicked node. Doesn't toggle parents.    |
+| `Shift+Click` | If `multiselect` is set to `true`, selects from the node without dropping the current selected ones. If false, it focus the clicked node. Doesn't toggle parents. |
 
 <br/> <br/> <br/> <br/>
 
