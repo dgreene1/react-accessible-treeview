@@ -55,7 +55,7 @@
     "type": "git",
     "url": "https://github.com/lissitz/react-accessible-treeview.git"
   },
-  "homepage": "https://github.com/lissitz/react-accessible-treeview",
+  "homepage": "https://react-accessible-treeview.netlify.com",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
