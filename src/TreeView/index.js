@@ -320,7 +320,7 @@ const useTree = ({
           isSelected: selectedIds.has(toggledId),
           isDisabled: disabledIds.has(toggledId),
           isHalfSelected: isBranch ? halfSelectedIds.has(toggledId) : undefined,
-          treeViewState: state
+          treeState: state
         });
       }
     }
@@ -346,7 +346,7 @@ const useTree = ({
           isSelected: selectedIds.has(id),
           isDisabled: disabledIds.has(id),
           isHalfSelected: halfSelectedIds.has(id),
-          treeViewState: state
+          treeState: state
         });
       }
     }
