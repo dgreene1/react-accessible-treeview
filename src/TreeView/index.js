@@ -568,7 +568,7 @@ const Node = ({
   const handleExpand = event => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
-      const ids = [element.id, ...getDescendants(data, element.id, [])];
+      const ids = [element.id, ...getDescendants(data, element.id, new Set())];
       dispatch({
         type: treeTypes.collapseMany,
         ids,
@@ -906,7 +906,7 @@ const handleKeyDown = ({
       event.preventDefault();
       if (isBranchNode(data, id) && expandedIds.has(tabbableId)) {
         if (propagateCollapse) {
-          const ids = [id, ...getDescendants(data, id, [])];
+          const ids = [id, ...getDescendants(data, id, new Set())];
           dispatch({
             type: treeTypes.collapseMany,
             ids,
