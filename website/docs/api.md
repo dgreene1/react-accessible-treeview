@@ -109,7 +109,7 @@ Follows the same conventions described in https://www.w3.org/TR/wai-aria-practic
 | `Home`               | Moves focus to first node without opening or closing a node.                                                                                                                                                                                                                                        |
 | `End`                | Moves focus to the last node that can be focused without expanding any nodes that are closed.                                                                                                                                                                                                       |
 | `a-z, A-Z`           | <ul> <li>Focus moves to the next node with a name that starts with the typed character.</li> <li>Search wraps to first node if a matching name is not found among the nodes that follow the focused node.</li> <li>Search ignores nodes that are descendants of closed nodes.</li> </ul>            |
-| `*` (asterisk)      | <ul><li> Expands all closed sibling nodes that are at the same level as the focused node.</li><li> Focus does not move.</li></ul>                                                                                                                                                                   |
+| `*` (asterisk)       | <ul><li> Expands all closed sibling nodes that are at the same level as the focused node.</li><li> Focus does not move.</li></ul>                                                                                                                                                                   |
 | `Shift + Down Arrow` | Moves focus to and toggles the selection state of the next node.                                                                                                                                                                                                                                    |
 | `Shift + Up Arrow`   | Moves focus to and toggles the selection state of the previous node.                                                                                                                                                                                                                                |
 | `Ctrl + A`           | Selects all nodes in the tree. If all nodes are selected, unselects all nodes.                                                                                                                                                                                                                      |
@@ -135,3 +135,18 @@ Follows the same conventions described in https://www.w3.org/TR/wai-aria-practic
 | `FOCUS`            | Focuses the clicked node                         |
 
 <br/> <br/>
+
+## treeState
+
+The internal state of the component.
+
+| Property           | Type             | Default                       | Description                              |
+| ------------------ | ---------------- | ----------------------------- | ---------------------------------------- |
+| selectedIds        | `Set`            | `new Set(defaultSelectedIds)` | Set of the ids of the selected nodes     |
+| tabbableId         | `number`         | `data[0].children[0]`         | if of the node with tabindex = 0         |
+| isFocused          | `bool`           | `false`                       | wether the tree has focus                |
+| expandedIds        | `Set`            | `new Set(defaultExpandedIds)` | Set of the ids of the expanded nodes     |
+| halfSelectedIds    | `Set`            | `new Set()`                   | Set of the ids of the selected nodes     |
+| lastUserSelect     | `number`         | `data[0].children[0]`         | Last selection made directly by the user |
+| lastInteractedWith | `number or null` | `null`                        | Last node interacted with                |
+| disabledIds        | `Set`            | `new Set(defaultDisabledIds)` | Set of the ids of the selected nodes     |

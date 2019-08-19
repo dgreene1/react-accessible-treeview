@@ -34,7 +34,7 @@ const folder = {
 };
 
 const data = flattenTree(folder);
-function DirectoryTreeView() {
+function MultiSelectDirectoryTreeView() {
   return (
     <div>
       <div className="ide">
@@ -89,4 +89,4 @@ const FileIcon = ({ filename }) => {
       return null;
   }
 };
-export default DirectoryTreeView;
+export default MultiSelectDirectoryTreeView;
