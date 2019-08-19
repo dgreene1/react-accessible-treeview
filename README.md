@@ -31,6 +31,7 @@ A react component that implements the treeview pattern as described by the [WAI-
 | `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                          |
 | `defaultDisabledIds`     | `array`       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
+| `onBlur`                 | `func`        | `noop`        | Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it).                                    |
 
 <br/> <br/>
 
