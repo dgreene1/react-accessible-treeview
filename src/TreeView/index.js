@@ -984,9 +984,8 @@ const handleKeyDown = ({
       event.preventDefault();
       !disabledIds.has(id) &&
         dispatch({
-          type: treeTypes.toggleSelect,
+          type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
           id: element.id,
-          select: togglableSelect ? !selectedIds.has(id) : true,
           multiSelect,
           lastInteractedWith: id
         });
