@@ -453,6 +453,7 @@ const TreeView = React.forwardRef(function TreeView(
     defaultSelectedIds = [],
     defaultDisabledIds = [],
     clickAction = clickActions.select,
+    onBlur,
     ...other
   },
   ref
@@ -483,6 +484,11 @@ const TreeView = React.forwardRef(function TreeView(
       ref={innerRef}
       onBlur={event =>
         onComponentBlur(event, innerRef.current, () => {
+          onBlur &&
+            onBlur({
+              treeState: state,
+              dispatch
+            });
           dispatch({ type: treeTypes.blur });
         })
       }
