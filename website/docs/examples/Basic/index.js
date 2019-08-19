@@ -1,5 +1,5 @@
 import React from "react";
-import TreeView, { flattenTree } from "react-accessible-treeview";
+import TreeView, { flattenTree } from "../../../../src";
 import "./styles.css";
 
 const folder = {

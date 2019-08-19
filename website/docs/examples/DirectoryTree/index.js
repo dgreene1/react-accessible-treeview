@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { DiCss3, DiJavascript, DiNpm } from "react-icons/di";
 import { FaList, FaRegFolder, FaRegFolderOpen } from "react-icons/fa";
-import TreeView, { flattenTree } from "react-accessible-treeview";
+import TreeView, { flattenTree } from "../../../../src";
 import "./styles.css";
 
 const folder = {
@@ -42,9 +42,12 @@ function DirectoryTreeView() {
         <TreeView
           data={data}
           aria-label="directory tree"
-          onBlur={({ treeState, dispatch }) =>
-            dispatch({ type: "DESELECT", id: treeState.selectedIds[0] })
-          }
+          onBlur={({ treeState, dispatch }) => {
+            dispatch({
+              type: "DESELECT",
+              id: Array.from(treeState.selectedIds)[0]
+            });
+          }}
           nodeRenderer={({
             element,
             isBranch,
