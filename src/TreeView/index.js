@@ -142,9 +142,7 @@ const treeReducer = (state, action) => {
         halfSelectedIds,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
         isFocused: true,
-        lastStandardSelect: action.NotUserAction
-          ? state.lastStandardSelect
-          : action.id,
+        lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -166,9 +164,7 @@ const treeReducer = (state, action) => {
         halfSelectedIds,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
         isFocused: true,
-        lastStandardSelect: action.NotUserAction
-          ? state.lastStandardSelect
-          : action.id,
+        lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -194,9 +190,7 @@ const treeReducer = (state, action) => {
         halfSelectedIds,
         tabbableId: action.id,
         isFocused: true,
-        lastStandardSelect: action.NotUserAction
-          ? state.lastStandardSelect
-          : action.id,
+        lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith
       };
@@ -292,7 +286,7 @@ const useTree = ({
     isFocused: false,
     expandedIds: new Set(defaultExpandedIds),
     halfSelectedIds: new Set(),
-    lastStandardSelect: data[0].children[0],
+    lastUserSelect: data[0].children[0],
     lastInteractedWith: null,
     disabledIds: new Set(defaultDisabledIds)
   });
@@ -517,7 +511,7 @@ const TreeView = React.forwardRef(function TreeView(
           expandedIds={state.expandedIds}
           disabledIds={state.disabledIds}
           halfSelectedIds={state.halfSelectedIds}
-          lastStandardSelect={state.lastStandardSelect}
+          lastUserSelect={state.lastUserSelect}
           lastInteractedWith={state.lastInteractedWith}
           dispatch={dispatch}
           data={data}
@@ -550,7 +544,7 @@ const Node = ({
   expandedIds,
   disabledIds,
   halfSelectedIds,
-  lastStandardSelect,
+  lastUserSelect,
   nodeRefs,
   baseClassNames,
   nodeRenderer,
@@ -596,7 +590,7 @@ const Node = ({
       let ids = getAccessibleRange({
         data,
         expandedIds,
-        from: lastStandardSelect,
+        from: lastUserSelect,
         to: element.id,
         lastInteractedWith: element.id
       }).filter(id => !disabledIds.has(id));
@@ -725,7 +719,7 @@ const Node = ({
               expandedIds={expandedIds}
               halfSelectedIds={halfSelectedIds}
               disabledIds={disabledIds}
-              lastStandardSelect={lastStandardSelect}
+              lastUserSelect={lastUserSelect}
               dispatch={dispatch}
               data={data}
               element={data[x]}
