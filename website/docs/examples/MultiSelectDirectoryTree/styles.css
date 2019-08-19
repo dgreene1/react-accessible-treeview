@@ -1,0 +1,48 @@
+.ide {
+  background: #242322;
+  font-family: monospace;
+  font-size: 16px;
+  color: white;
+  user-select: none;
+  padding: 20px;
+  border-radius: 0.4em;
+}
+
+.ide .tree,
+.ide .tree-node,
+.ide .tree-node-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ide .tree-branch-wrapper,
+.ide .tree-node__leaf {
+  outline: none;
+  outline: none;
+}
+
+.ide .tree-node {
+  cursor: pointer;
+}
+
+.ide .tree-node:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ide .tree .tree-node--focused {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ide .tree .tree-node--selected {
+  background: rgba(48, 107, 176);
+}
+
+.ide .tree-node__branch {
+  display: block;
+}
+
+.icon {
+  vertical-align: middle;
+  padding-right: 5px;
+}

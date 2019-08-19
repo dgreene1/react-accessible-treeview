@@ -1,0 +1,50 @@
+[data-reach-tab-panel] {
+  outline: none;
+}
+
+[data-reach-tooltip] {
+  color: black;
+  background: white;
+  border: 0.5px solid rgba(31, 34, 39, 0.6);
+  border-radius: var(--ifm-global-radius);
+}
+[data-reach-tabs] {
+  box-sizing: border-box;
+  background: none;
+}
+
+[data-reach-tabs] svg {
+  vertical-align: middle;
+}
+[data-reach-tab-list] {
+  background: none;
+}
+
+[data-reach-tab] {
+  background: transparent;
+  vertical-align: middle;
+  font-size: 20px;
+  margin: 5px;
+}
+
+[data-reach-tab]:active {
+  background: transparent;
+}
+
+[data-reach-tab]:focus {
+  outline: none;
+}
+[data-reach-tab]:focus {
+  fill: var(--ifm-menu-color-active);
+  color: var(--ifm-menu-color-active);
+}
+
+
+.code-tabs-tabpanel__component {
+  background-color: transparent;
+  border: 0.5px solid rgba(31, 34, 39, 0.6);
+  border-radius: var(--ifm-global-radius);
+  box-sizing: border-box;
+  font-family: inherit;
+  padding: 0;
+}
