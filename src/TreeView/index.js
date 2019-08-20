@@ -482,7 +482,7 @@ const TreeView = React.forwardRef(function TreeView(
       role="tree"
       aria-multiselectable={multiSelect}
       ref={innerRef}
-      onBlur={event =>
+      onBlur={event => {
         onComponentBlur(event, innerRef.current, () => {
           onBlur &&
             onBlur({
@@ -490,8 +490,8 @@ const TreeView = React.forwardRef(function TreeView(
               dispatch
             });
           dispatch({ type: treeTypes.blur });
-        })
-      }
+        });
+      }}
       onKeyDown={handleKeyDown({
         data,
         tabbableId: state.tabbableId,
@@ -530,6 +530,7 @@ const TreeView = React.forwardRef(function TreeView(
           level={1}
           propagateCollapse={propagateCollapse}
           propagateSelect={propagateSelect}
+          propagateSelectUpwards={propagateSelectUpwards}
           multiSelect={multiSelect}
           togglableSelect={togglableSelect}
           clickAction={clickAction}
@@ -559,6 +560,7 @@ const Node = ({
   level,
   propagateCollapse,
   propagateSelect,
+  propagateSelectUpwards,
   multiSelect,
   togglableSelect,
   clickAction,
@@ -662,11 +664,11 @@ const Node = ({
       "aria-setsize": setsize,
       "aria-posinset": posinset,
       "aria-level": level,
-      "aria-selected": getAriaSelected(
-        selectedIds.has(element.id),
-        disabledIds.has(element.id),
+      "aria-selected": getAriaSelected({
+        isSelected: selectedIds.has(element.id),
+        isDisabled: disabledIds.has(element.id),
         multiSelect
-      ),
+      }),
       disabled: disabledIds.has(element.id)
     };
   };
@@ -685,11 +687,11 @@ const Node = ({
     <li
       role="treeitem"
       aria-expanded={expandedIds.has(element.id)}
-      aria-selected={getAriaSelected(
-        selectedIds.has(element.id),
-        disabledIds.has(element.id),
+      aria-selected={getAriaSelected({
+        isSelected: selectedIds.has(element.id),
+        isDisabled: disabledIds.has(element.id),
         multiSelect
-      )}
+      })}
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
@@ -737,6 +739,7 @@ const Node = ({
               level={level + 1}
               propagateCollapse={propagateCollapse}
               propagateSelect={propagateSelect}
+              propagateSelectUpwards={propagateSelect}
               multiSelect={multiSelect}
               togglableSelect={togglableSelect}
               clickAction={clickAction}
@@ -987,7 +990,16 @@ const handleKeyDown = ({
           type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
           id: element.id,
           multiSelect,
-          lastInteractedWith: id
+          lastInteractedWith: element.id
+        });
+      propagateSelect &&
+        !disabledIds.has(element.id) &&
+        dispatch({
+          type: treeTypes.changeSelectMany,
+          ids: propagatedIds(data, [element.id], disabledIds),
+          select: togglableSelect ? !selectedIds.has(element.id) : true,
+          multiSelect,
+          lastInteractedWith: element.id
         });
       expandOnKeyboardSelect &&
         dispatch({ type: treeTypes.toggle, id, lastInteractedWith: id });
