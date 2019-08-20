@@ -1,8 +1,7 @@
 import React from "react";
 import { GoTriangleDown, GoTriangleRight } from "react-icons/go";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
-
-import TreeView, { flattenTree } from "../../../../src";
+import TreeView, { flattenTree } from "react-accessible-treeview";
 import "./styles.css";
 
 const folder = {

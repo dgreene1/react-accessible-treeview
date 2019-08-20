@@ -77,7 +77,7 @@ function Home() {
                     className={classnames("col col--6", styles.feature)}
                   >
                     <h3>{title}</h3>
-                    <p>{description}</p>
+                    <div> {description}</div>
                     {component && <div>{component}</div>}
                   </div>
                 ))}

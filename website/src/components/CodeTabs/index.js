@@ -14,21 +14,24 @@ const CodeTabs = ({ component: Component, js, css }) => (
       <Tab>
         <Tooltip label="Live Example">
           <div>
-            <MdWebAsset />
+            <span class="visually-hidden">Live Example</span>
+            <MdWebAsset aria-hidden={true} />
           </div>
         </Tooltip>
       </Tab>
       <Tab>
         <Tooltip label="Code">
           <div>
-            <MdCode />
+            <span class="visually-hidden">Code</span>
+            <MdCode aria-hidden={true} />
           </div>
         </Tooltip>
       </Tab>
       <Tab>
-        <Tooltip label="Styling">
+        <Tooltip label="Styles">
           <div>
-            <MdBrush />
+            <span class="visually-hidden">Styles</span>
+            <MdBrush aria-hidden={true} />
           </div>
         </Tooltip>
       </Tab>

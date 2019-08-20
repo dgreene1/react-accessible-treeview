@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { DiCss3, DiJavascript, DiNpm } from "react-icons/di";
 import { FaList, FaRegFolder, FaRegFolderOpen } from "react-icons/fa";
-import TreeView, { flattenTree } from "../../../../src";
+import TreeView, { flattenTree } from "react-accessible-treeview";
 import "./styles.css";
 
 const folder = {
