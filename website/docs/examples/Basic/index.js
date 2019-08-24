@@ -37,12 +37,9 @@ const BasicTreeView = () => (
   <TreeView
     data={data}
     className="basic"
+    aria-label="basic example tree"
     nodeRenderer={({ element, getNodeProps, level, handleSelect }) => (
-      <div
-        {...getNodeProps()}
-        aria-label="basic example tree"
-        style={{ paddingLeft: 20 * (level - 1) }}
-      >
+      <div {...getNodeProps()} style={{ paddingLeft: 20 * (level - 1) }}>
         {element.name}
       </div>
     )}
