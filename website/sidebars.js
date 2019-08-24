@@ -7,7 +7,13 @@
 
 module.exports = {
   docs: {
-    Documentation: ['api'],
-    Examples: ['examples-Basic', 'examples-DirectoryTree', 'examples-MultiSelectDirectoryTree', 'examples-MultiSelectCheckbox'],
-  },
+    Documentation: ["api"],
+    Examples: [
+      "examples-Basic",
+      "examples-DirectoryTree",
+      "examples-MultiSelectDirectoryTree",
+      "examples-MultiSelectCheckbox",
+      "examples-MultiSelectCheckboxDisabled"
+    ]
+  }
 };

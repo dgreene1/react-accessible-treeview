@@ -1,13 +1,8 @@
-This example demonstrates the use of disabled nodes
-
-```js
-import React, { useState } from "react";
-import { DiCss3, DiJavascript, DiNpm } from "react-icons/di";
+import React from "react";
 import { GoTriangleDown, GoTriangleRight } from "react-icons/go";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
 
-import TreeView, { flattenTree } from "../../..";
-
+import TreeView, { flattenTree } from "react-accessible-treeview";
 const folder = {
   name: "",
   children: [
@@ -53,7 +48,7 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function Example() {
+function MultiSelectCheckboxDisabled() {
   return (
     <div>
       <div className="checkbox">
@@ -139,5 +134,4 @@ const CheckBoxIcon = ({ variant, ...rest }) => {
   }
 };
 
-<Example />;
-```
+export default MultiSelectCheckboxDisabled;
