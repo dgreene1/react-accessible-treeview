@@ -511,62 +511,55 @@ const TreeView = React.forwardRef(function TreeView(
       {data[0].children.map((x, index) => (
         <Node
           key={x}
-          selectedIds={state.selectedIds}
-          tabbableId={state.tabbableId}
-          isFocused={state.isFocused}
-          expandedIds={state.expandedIds}
-          disabledIds={state.disabledIds}
-          halfSelectedIds={state.halfSelectedIds}
-          lastUserSelect={state.lastUserSelect}
-          lastInteractedWith={state.lastInteractedWith}
-          dispatch={dispatch}
           data={data}
           element={data[x]}
-          nodeRefs={nodeRefs}
-          baseClassNames={baseClassNames}
-          nodeRenderer={nodeRenderer}
           setsize={data[0].children.length}
           posinset={index + 1}
           level={1}
+          {...state}
+          state={state}
+          dispatch={dispatch}
+          nodeRefs={nodeRefs}
+          baseClassNames={baseClassNames}
+          nodeRenderer={nodeRenderer}
           propagateCollapse={propagateCollapse}
           propagateSelect={propagateSelect}
           propagateSelectUpwards={propagateSelectUpwards}
           multiSelect={multiSelect}
           togglableSelect={togglableSelect}
           clickAction={clickAction}
-          state={state}
         />
       ))}
     </ul>
   );
 });
 
-const Node = ({
-  element,
-  dispatch,
-  data,
-  selectedIds,
-  tabbableId,
-  isFocused,
-  expandedIds,
-  disabledIds,
-  halfSelectedIds,
-  lastUserSelect,
-  nodeRefs,
-  baseClassNames,
-  nodeRenderer,
-  setsize,
-  posinset,
-  level,
-  propagateCollapse,
-  propagateSelect,
-  propagateSelectUpwards,
-  multiSelect,
-  togglableSelect,
-  clickAction,
-  lastInteractedWith,
-  state
-}) => {
+const Node = props => {
+  const {
+    element,
+    dispatch,
+    data,
+    selectedIds,
+    tabbableId,
+    isFocused,
+    expandedIds,
+    disabledIds,
+    halfSelectedIds,
+    lastUserSelect,
+    nodeRefs,
+    baseClassNames,
+    nodeRenderer,
+    setsize,
+    posinset,
+    level,
+    propagateCollapse,
+    propagateSelect,
+    multiSelect,
+    togglableSelect,
+    clickAction,
+    state
+  } = props;
+
   const handleExpand = event => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
@@ -585,13 +578,12 @@ const Node = ({
     }
   };
 
-  const handleFocus = () => {
+  const handleFocus = () =>
     dispatch({
       type: treeTypes.focus,
       id: element.id,
       lastInteractedWith: element.id
     });
-  };
 
   const handleSelect = event => {
     if (event.shiftKey) {
@@ -716,39 +708,7 @@ const Node = ({
         handleExpand,
         treeState: state
       })}
-      {expandedIds.has(element.id) && (
-        <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
-          {element.children.map((x, index) => (
-            <Node
-              key={x}
-              selectedIds={selectedIds}
-              tabbableId={tabbableId}
-              isFocused={isFocused}
-              expandedIds={expandedIds}
-              halfSelectedIds={halfSelectedIds}
-              disabledIds={disabledIds}
-              lastUserSelect={lastUserSelect}
-              dispatch={dispatch}
-              data={data}
-              element={data[x]}
-              nodeRefs={nodeRefs}
-              baseClassNames={baseClassNames}
-              nodeRenderer={nodeRenderer}
-              setsize={element.children.length}
-              posinset={index + 1}
-              level={level + 1}
-              propagateCollapse={propagateCollapse}
-              propagateSelect={propagateSelect}
-              propagateSelectUpwards={propagateSelect}
-              multiSelect={multiSelect}
-              togglableSelect={togglableSelect}
-              clickAction={clickAction}
-              lastInteractedWith={lastInteractedWith}
-              state={state}
-            />
-          ))}
-        </ul>
-      )}
+      <NodeGroup element={element} getClasses={getClasses} {...props} />
     </li>
   ) : (
     <li role="none" className={getClasses(baseClassNames.leafListItem)}>
@@ -771,6 +731,33 @@ const Node = ({
     </li>
   );
 };
+
+const NodeGroup = ({
+  data,
+  element,
+  expandedIds,
+  getClasses,
+  baseClassNames,
+  level,
+  ...rest
+}) => (
+  <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
+    {expandedIds.has(element.id) &&
+      element.children.map((x, index) => (
+        <Node
+          data={data}
+          expandedIds={expandedIds}
+          baseClassNames={baseClassNames}
+          key={x}
+          element={data[x]}
+          setsize={element.children.length}
+          posinset={index + 1}
+          level={level + 1}
+          {...rest}
+        />
+      ))}
+  </ul>
+);
 
 const handleKeyDown = ({
   data,
@@ -985,21 +972,20 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
-      !disabledIds.has(id) &&
-        dispatch({
-          type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
-          id: element.id,
-          multiSelect,
-          lastInteractedWith: element.id
-        });
+      dispatch({
+        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        id: id,
+        multiSelect,
+        lastInteractedWith: id
+      });
       propagateSelect &&
         !disabledIds.has(element.id) &&
         dispatch({
           type: treeTypes.changeSelectMany,
-          ids: propagatedIds(data, [element.id], disabledIds),
-          select: togglableSelect ? !selectedIds.has(element.id) : true,
+          ids: propagatedIds(data, [id], disabledIds),
+          select: togglableSelect ? !selectedIds.has(id) : true,
           multiSelect,
-          lastInteractedWith: element.id
+          lastInteractedWith: id
         });
       expandOnKeyboardSelect &&
         dispatch({ type: treeTypes.toggle, id, lastInteractedWith: id });
