@@ -1,6 +1,7 @@
 import React from "react";
-import { GoTriangleDown, GoTriangleRight } from "react-icons/go";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
+import { IoMdArrowDropright } from "react-icons/io";
+import cx from "classnames";
 
 import TreeView, { flattenTree } from "react-accessible-treeview";
 const folder = {
@@ -82,9 +83,9 @@ function MultiSelectCheckboxDisabled() {
                     opacity: isDisabled ? 0.5 : 1
                   }}
                 >
-                  {isBranch && <TriangleIcon isOpen={isExpanded} />}
+                  {isBranch && <ArrowIcon isOpen={isExpanded} />}
                   <CheckBoxIcon
-                    className="icon"
+                    className="checkbox-icon"
                     onClick={e => {
                       handleSelect(e);
                       e.stopPropagation();
@@ -93,7 +94,7 @@ function MultiSelectCheckboxDisabled() {
                       isHalfSelected ? "some" : isSelected ? "all" : "none"
                     }
                   />
-                  {element.name}
+                  <span className="name">{element.name}</span>
                 </div>
                 <button
                   onClick={() =>
@@ -114,12 +115,16 @@ function MultiSelectCheckboxDisabled() {
   );
 }
 
-const TriangleIcon = ({ isOpen }) =>
-  isOpen ? (
-    <GoTriangleDown className="icon" />
-  ) : (
-    <GoTriangleRight className="icon" />
+const ArrowIcon = ({ isOpen, className }) => {
+  const baseClass = "arrow";
+  const classes = cx(
+    baseClass,
+    { [`${baseClass}--closed`]: !isOpen },
+    { [`${baseClass}--open`]: isOpen },
+    className
   );
+  return <IoMdArrowDropright className={classes} />;
+};
 
 const CheckBoxIcon = ({ variant, ...rest }) => {
   switch (variant) {

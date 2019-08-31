@@ -23,11 +23,11 @@
   cursor: pointer;
 }
 
-.checkbox .tree-node:hover {
+.checkbox .tree-node .name:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.checkbox .tree-node--focused {
+.checkbox .tree-node--focused .name {
   background: rgba(0, 0, 0, 0.2);
 }
 
@@ -35,13 +35,22 @@
   display: inline-block;
 }
 
-.icon {
+.checkbox .checkbox-icon {
+  margin: 0 5px;
   vertical-align: middle;
-  padding-right: 5px;
 }
 
 .checkbox button {
   border: none;
   background: transparent;
   cursor: pointer;
+}
+
+.checkbox .arrow {
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.checkbox .arrow--open {
+  transform: rotate(90deg);
 }
