@@ -1,7 +1,88 @@
 import React from "react";
-import MultiSelectCheckbox from "../../website/docs/examples/MultiSelectCheckbox";
 import "@testing-library/jest-dom/extend-expect";
 import { render, fireEvent } from "@testing-library/react";
+import TreeView, { flattenTree } from "..";
+
+const folder = {
+  name: "",
+  children: [
+    {
+      name: "Fruits",
+      children: [
+        { name: "Avocados" },
+        { name: "Bananas" },
+        { name: "Berries" },
+        { name: "Oranges" },
+        { name: "Pears" }
+      ]
+    },
+    {
+      name: "Drinks",
+      children: [
+        { name: "Apple Juice" },
+        { name: "Chocolate" },
+        { name: "Coffee" },
+        {
+          name: "Tea",
+          children: [
+            { name: "Black Tea" },
+            { name: "Green Tea" },
+            { name: "Red Tea" },
+            { name: "Matcha" }
+          ]
+        }
+      ]
+    },
+    {
+      name: "Vegetables",
+      children: [
+        { name: "Beets" },
+        { name: "Carrots" },
+        { name: "Celery" },
+        { name: "Lettuce" },
+        { name: "Onions" }
+      ]
+    }
+  ]
+};
+
+const data = flattenTree(folder);
+
+function MultiSelectCheckbox() {
+  return (
+    <div>
+      <div className="checkbox">
+        <TreeView
+          data={data}
+          aria-label="Checkbox tree"
+          multiSelect
+          propagateSelect
+          propagateSelectUpwards
+          togglableSelect
+          nodeRenderer={({
+            element,
+            getNodeProps,
+            handleSelect,
+            handleExpand
+          }) => {
+            return (
+              <div {...getNodeProps({ onClick: handleExpand })}>
+                <div
+                  className="checkbox-icon"
+                  onClick={e => {
+                    handleSelect(e);
+                    e.stopPropagation();
+                  }}
+                />
+                <span className="name">{element.name}</span>
+              </div>
+            );
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 test("Shift + Up / Down Arrow", () => {
   const { queryAllByRole } = render(<MultiSelectCheckbox />);
