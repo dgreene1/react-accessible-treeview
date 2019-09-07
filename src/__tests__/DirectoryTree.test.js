@@ -1,7 +1,6 @@
 import React from "react";
 import "@testing-library/jest-dom/extend-expect";
 import { render, fireEvent } from "@testing-library/react";
-
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -255,4 +254,19 @@ test("Asterisk", () => {
   rootNodes.forEach(x => expect(x).toHaveAttribute("aria-expanded", "false"));
   fireEvent.keyDown(nodes[0], { key: "*" });
   rootNodes.forEach(x => expect(x).toHaveAttribute("aria-expanded", "true"));
+});
+
+
+test("Single character typeahead", () => {
+  const { queryAllByRole, getByText } = render(<DirectoryTreeView />);
+  let nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+  fireEvent.keyDown(nodes[0], { key: "p" });
+  expect(document.activeElement).toEqual(getByText("package.json"));
+  fireEvent.keyDown(nodes[0], { key: "p" });
+  expect(document.activeElement).toEqual(getByText("package.json"));
+
+  //branch node
+  fireEvent.keyDown(nodes[0], { key: "s" });
+  expect(document.activeElement).toEqual(getByText("src").parentElement);
 });
