@@ -16,7 +16,7 @@ title: API Reference
 | `propagateSelectUpwards` | `bool`        | `false`       | If set to true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected |
 | `propagateCollapse`      | `bool`        | `false`       | If set to true, collapsing a node will also collapse its descendants                                                                                                      |
 | `expandOnKeyboardSelect` | `bool`        | `false`       | Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state                                                                               |
-| `togglableSelect`        | `bool`        | `false`       | Whether the selected state is togglable                                                                                                                                    |
+| `togglableSelect`        | `bool`        | `false`       | Whether the selected state is togglable                                                                                                                                   |
 | `defaultSelectedIds`     | `array`       | `[]`          | Array with the ids of the default selected nodes                                                                                                                          |
 | `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                          |
 | `defaultDisabledIds`     | `array`       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
@@ -29,12 +29,12 @@ title: API Reference
 
 An array of nodes. Nodes are objects with the following structure:
 
-| Property   | Type        | Default  | Description                                              |
-| ---------- | ----------- | -------- | -------------------------------------------------------- |
+| Property   | Type        | Default  | Description                                             |
+| ---------- | ----------- | -------- | ------------------------------------------------------- |
 | `id`       | `number`    | required | A nonnegative integer that uniquely identifies the node |
-| `name`     | `string`    | required | Used to match on key press                               |
-| `children` | `array[id]` | required | An array with the ids of the children nodes.             |
-| `parent`   | `id`        | required | The parent of the node. `null` for the root node         |
+| `name`     | `string`    | required | Used to match on key press                              |
+| `children` | `array[id]` | required | An array with the ids of the children nodes.            |
+| `parent`   | `id`        | required | The parent of the node. `null` for the root node        |
 
 The first item of the array represents the root node and won't be displayed.
 
@@ -73,14 +73,20 @@ The array can also be generated from a nested object using the `flattenTree` hel
 | `isSelected`     | `bool`                | Whether the rendered node is selected                                                                 |
 | `isHalfSelected` | `bool` or `undefined` | If the node is a branch node, whether it is half-selected, else undefined                             |
 | `isExpanded`     | `bool` or `undefined` | If the node is a branch node, whether it is expanded, else undefined                                  |
-| `isDisabled`     | `bool`                | Whether the rendered node is disabled                                                                  |
+| `isDisabled`     | `bool`                | Whether the rendered node is disabled                                                                 |
 | `level`          | `number`              | A positive integer that corresponds to the aria-level attribute                                       |
 | `setsize`        | `number`              | A positive integer that corresponds to the aria-setsize attribute                                     |
 | `posinset`       | `number`              | A positive integer that corresponds to the aria-posinset attribute                                    |
 | `handleSelect`   | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
 | `handleExpand`   | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
-| `dispatch`       | `function`            | Function to dispatch actions                                                                          |
+| `dispatch`       | `function`            | Low level function to dispatch actions.                                                               |
 | `treeState`      | `function`            | state of the treeview                                                                                 |
+
+## getNodeProps
+
+If called without arguments, clicking a leaf node will also call `handleSelect` and clicking a branch node will call `handleSelect` and `handleExpand`.
+If called with an object with an `onClick` attribute: `getNodeProps({onClick:onClickFn})`, the component will only handle focus onClick. This enables the use of
+the handleSelect and handleExpand for just a part of the component, as demonstrated in the `CheckboxTree` example.
 
 <br/> <br/>
 
@@ -145,7 +151,7 @@ The internal state of the component.
 | ------------------ | ---------------- | ----------------------------- | ---------------------------------------- |
 | selectedIds        | `Set`            | `new Set(defaultSelectedIds)` | Set of the ids of the selected nodes     |
 | tabbableId         | `number`         | `data[0].children[0]`         | Id of the node with tabindex = 0         |
-| isFocused          | `bool`           | `false`                       | Whether the tree has focus                |
+| isFocused          | `bool`           | `false`                       | Whether the tree has focus               |
 | expandedIds        | `Set`            | `new Set(defaultExpandedIds)` | Set of the ids of the expanded nodes     |
 | halfSelectedIds    | `Set`            | `new Set()`                   | Set of the ids of the selected nodes     |
 | lastUserSelect     | `number`         | `data[0].children[0]`         | Last selection made directly by the user |
