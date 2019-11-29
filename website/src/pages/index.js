@@ -10,7 +10,7 @@ import classnames from "classnames";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import withBaseUrl from "@docusaurus/withBaseUrl";
+import useBaseUrl from "@docusaurus/useBaseUrl";
 import styles from "./styles.module.css";
 import CheckboxTree from "../../docs/examples/MultiSelectCheckbox";
 import DirectoryTree from "../../docs/examples/DirectoryTree";
@@ -34,8 +34,8 @@ const features = [
     component: <CheckboxTree />,
     description: (
       <>
-        Highly customizable through the use of the render prop and prop getter
-        patterns.
+        Highly customizable throug'@docusaurus/withBaseUrl'h the use of the
+        render prop and prop getter patterns.
       </>
     )
   }
@@ -44,6 +44,7 @@ const features = [
 function Home() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
+  const baseUrl = useBaseUrl("docs/api");
   return (
     <Layout
       title={`react-accessible-treeview`}
@@ -59,7 +60,7 @@ function Home() {
                 "button button--outline button--secondary button--lg",
                 styles.getStarted
               )}
-              to={withBaseUrl("docs/api")}
+              to={baseUrl}
             >
               Get Started
             </Link>
