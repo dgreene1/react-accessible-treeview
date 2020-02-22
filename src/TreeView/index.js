@@ -661,7 +661,8 @@ const Node = props => {
         isDisabled: disabledIds.has(element.id),
         multiSelect
       }),
-      disabled: disabledIds.has(element.id)
+      disabled: disabledIds.has(element.id),
+      "aria-disabled": disabledIds.has(element.id)
     };
   };
 
@@ -688,6 +689,7 @@ const Node = props => {
       aria-posinset={posinset}
       aria-level={level}
       disabled={disabledIds.has(element.id)}
+      aria-disabled={disabledIds.has(element.id)}
       tabIndex={tabbableId === element.id ? 0 : -1}
       ref={x => (nodeRefs.current[element.id] = x)}
       className={baseClassNames.branchWrapper}
