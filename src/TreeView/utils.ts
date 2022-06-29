@@ -1,5 +1,20 @@
-import { useRef, useEffect } from "react";
-export const composeHandlers = (...handlers) => (event) => {
+import { useEffect, useRef } from "react";
+import { INode } from ".";
+
+export interface INode {
+  /** A non-negative integer that uniquely identifies the node. */
+  id: number;
+  /** Used to match on key press. */
+  name: string;
+  /** An array with the ids of the children nodes. */
+  children: number[];
+  /** The parent of the node. null for the root node. */
+  parent: number | null;
+}
+
+export const composeHandlers = (...handlers: ((event: Event) => void)[]) => (
+  event: Event
+) => {
   for (const handler of handlers) {
     handler && handler(event);
     if (event.defaultPrevented) {
@@ -8,8 +23,8 @@ export const composeHandlers = (...handlers) => (event) => {
   }
 };
 
-export const difference = (a, b) => {
-  const s = new Set();
+export const difference = (a: Set<number>, b: Set<number>) => {
+  const s = new Set<number>();
   for (const v of a) {
     if (!b.has(v)) {
       s.add(v);
@@ -18,34 +33,38 @@ export const difference = (a, b) => {
   return s;
 };
 
-export const symmetricDifference = (a, b) => {
-  return new Set([...difference(a, b), ...difference(b, a)]);
+export const symmetricDifference = (a: Set<number>, b: Set<number>) => {
+  return new Set<number>([...difference(a, b), ...difference(b, a)]);
 };
 
-export const usePrevious = (x) => {
-  const ref = useRef();
+export const usePrevious = (x: Set<number>) => {
+  const ref = useRef(null);
   useEffect(() => {
     ref.current = x;
   }, [x]);
   return ref.current;
 };
 
-export const isBranchNode = (data, i) =>
+export const isBranchNode = (data: INode[], i: number) =>
   data[i].children != null && data[i].children.length > 0;
 
-export const focusRef = (ref) => {
+export const focusRef = (ref: any) => {
   if (ref != null && ref.focus) {
     ref.focus();
   }
 };
 
-export const getParent = (data, id) => {
+export const getParent = (data: INode[], id: number) => {
   return data[id].parent;
 };
 
-export const getDescendants = (data, id, disabledIds) => {
-  const descendants = [];
-  const getDescendantsHelper = (data, id) => {
+export const getDescendants = (
+  data: INode[],
+  id: number,
+  disabledIds: Set<number>
+) => {
+  const descendants: number[] = [];
+  const getDescendantsHelper = (data: INode[], id: number) => {
     const node = data[id];
     if (node.children == null) return;
     for (const childId of node.children.filter((x) => !disabledIds.has(x))) {
@@ -57,7 +76,7 @@ export const getDescendants = (data, id, disabledIds) => {
   return descendants;
 };
 
-export const getSibling = (data, id, diff) => {
+export const getSibling = (data: INode[], id: number, diff: number) => {
   const parentId = getParent(data, id);
   if (parentId != null) {
     const parent = data[parentId];
@@ -70,7 +89,11 @@ export const getSibling = (data, id, diff) => {
   return null;
 };
 
-export const getLastAccessible = (data, id, expandedIds) => {
+export const getLastAccessible = (
+  data: INode[],
+  id: number,
+  expandedIds: Set<number>
+) => {
   let node = data[id];
   const isRoot = data[0].id === id;
   if (isRoot) {
@@ -82,7 +105,11 @@ export const getLastAccessible = (data, id, expandedIds) => {
   return node.id;
 };
 
-export const getPreviousAccessible = (data, id, expandedIds) => {
+export const getPreviousAccessible = (
+  data: INode[],
+  id: number,
+  expandedIds: Set<number>
+) => {
   if (id === data[0].children[0]) {
     return null;
   }
@@ -93,7 +120,11 @@ export const getPreviousAccessible = (data, id, expandedIds) => {
   return getLastAccessible(data, previous, expandedIds);
 };
 
-export const getNextAccessible = (data, id, expandedIds) => {
+export const getNextAccessible = (
+  data: INode[],
+  id: number,
+  expandedIds: Set<number>
+) => {
   let nodeId = data[id].id;
   if (isBranchNode(data, nodeId) && expandedIds.has(nodeId)) {
     return data[nodeId].children[0];
@@ -112,7 +143,12 @@ export const getNextAccessible = (data, id, expandedIds) => {
   }
 };
 
-export const propagateSelectChange = (data, ids, selectedIds, disabledIds) => {
+export const propagateSelectChange = (
+  data: INode[],
+  ids: Set<number>,
+  selectedIds: Set<number>,
+  disabledIds: Set<number>
+) => {
   const changes = { every: new Set(), some: new Set(), none: new Set() };
   for (const id of ids) {
     let currentId = id;
@@ -139,7 +175,17 @@ export const propagateSelectChange = (data, ids, selectedIds, disabledIds) => {
   return changes;
 };
 
-export const getAccessibleRange = ({ data, expandedIds, from, to }) => {
+export const getAccessibleRange = ({
+  data,
+  expandedIds,
+  from,
+  to,
+}: {
+  data: INode[];
+  expandedIds: Set<number>;
+  from: number;
+  to: number;
+}) => {
   let range = [];
   let max_loop = Object.keys(data).length;
   let count = 0;
@@ -163,11 +209,11 @@ export const getAccessibleRange = ({ data, expandedIds, from, to }) => {
   return range;
 };
 
-export const flattenTree = function (tree) {
+export const flattenTree = function(tree: any) {
   let count = 0;
-  const flattenedTree = [];
+  const flattenedTree: any[] = [];
 
-  const flattenTreeHelper = function (tree, parent) {
+  const flattenTreeHelper = function(tree: any, parent: any) {
     tree.id = count;
     tree.parent = parent;
     flattenedTree[count] = tree;
@@ -176,20 +222,32 @@ export const flattenTree = function (tree) {
     for (const child of tree.children) {
       flattenTreeHelper(child, tree.id);
     }
-    tree.children = tree.children.map((x) => x.id);
+    tree.children = tree.children.map((x: any) => x.id);
   };
 
   flattenTreeHelper(tree, null);
   return flattenedTree;
 };
 
-export const getAriaSelected = ({ isSelected, isDisabled, multiSelect }) => {
+export const getAriaSelected = ({
+  isSelected,
+  isDisabled,
+  multiSelect,
+}: {
+  isSelected: boolean;
+  isDisabled: boolean;
+  multiSelect: boolean;
+}) => {
   if (isDisabled) return undefined;
   if (multiSelect) return isSelected;
   return isSelected ? true : undefined;
 };
 
-export const propagatedIds = (data, ids, disabledIds) =>
+export const propagatedIds = (
+  data: INode[],
+  ids: number[],
+  disabledIds: Set<number>
+) =>
   ids.concat(
     ...ids
       .filter((id) => isBranchNode(data, id))
@@ -198,7 +256,11 @@ export const propagatedIds = (data, ids, disabledIds) =>
 
 const isIE = () => window.navigator.userAgent.match(/Trident/);
 
-export const onComponentBlur = (event, treeNode, callback) => {
+export const onComponentBlur = (
+  event: any,
+  treeNode: any,
+  callback: () => void
+) => {
   if (isIE()) {
     setTimeout(
       () => !treeNode.contains(document.activeElement) && callback(),
