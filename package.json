@@ -5,6 +5,7 @@
   "author": "lissitz (https://github.com/lissitz)",
   "main": "dist/react-accessible-treeview.cjs.js",
   "module": "dist/react-accessible-treeview.esm.js",
+  "types": "dist/index.d.ts",
   "peerDependencies": {
     "classnames": "^2.2.6",
     "prop-types": "^15.7.2",
@@ -44,7 +45,10 @@
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-node-resolve": "^5.1.0",
-    "rollup-plugin-terser": "^5.1.1"
+    "rollup-plugin-terser": "^5.1.1",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.4"
   },
   "scripts": {
     "build": "rollup -c",
