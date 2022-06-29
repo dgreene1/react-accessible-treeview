@@ -1,6 +1,6 @@
-import React from "react";
-import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -8,32 +8,32 @@ const folder = {
   children: [
     {
       name: "src",
-      children: [{ name: "index.js" }, { name: "styles.css" }]
+      children: [{ name: "index.js" }, { name: "styles.css" }],
     },
     {
       name: "node_modules",
       children: [
         {
           name: "react-accessible-treeview",
-          children: [{ name: "index.js" }]
+          children: [{ name: "index.js" }],
         },
-        { name: "react", children: [{ name: "index.js" }] }
-      ]
+        { name: "react", children: [{ name: "index.js" }] },
+      ],
     },
     {
-      name: ".npmignore"
+      name: ".npmignore",
     },
     {
-      name: "package.json"
+      name: "package.json",
     },
     {
-      name: "webpack.config.js"
-    }
-  ]
+      name: "webpack.config.js",
+    },
+  ],
 };
 
 const data = flattenTree(folder);
-function DirectoryTreeView(props) {
+function DirectoryTreeView(props: any) {
   return (
     <div>
       <div className="ide">
@@ -43,10 +43,10 @@ function DirectoryTreeView(props) {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          onBlur={({ treeState, dispatch }) => {
+          onBlur={({ treeState, dispatch }: any) => {
             dispatch({
               type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0]
+              id: Array.from(treeState.selectedIds)[0],
             });
           }}
           nodeRenderer={({ element, getNodeProps }) => (
@@ -61,10 +61,10 @@ function DirectoryTreeView(props) {
 
 test("Ctrl+A selects all nodes", () => {
   const { queryAllByRole } = render(
-    <DirectoryTreeView defaultExpandedIds={data.map(x => x.id)} />
+    <DirectoryTreeView defaultExpandedIds={data.map((x) => x.id)} />
   );
   let nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(document.activeElement, { key: "a", ctrlKey: true });
-  nodes.forEach(x => expect(x).toHaveAttribute("aria-selected", "true"));
+  nodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
 });

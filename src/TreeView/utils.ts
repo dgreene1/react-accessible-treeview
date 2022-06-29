@@ -1,17 +1,6 @@
 import { useEffect, useRef } from "react";
 import { INode } from ".";
 
-export interface INode {
-  /** A non-negative integer that uniquely identifies the node. */
-  id: number;
-  /** Used to match on key press. */
-  name: string;
-  /** An array with the ids of the children nodes. */
-  children: number[];
-  /** The parent of the node. null for the root node. */
-  parent: number | null;
-}
-
 export const composeHandlers = (...handlers: ((event: Event) => void)[]) => (
   event: Event
 ) => {
@@ -149,7 +138,11 @@ export const propagateSelectChange = (
   selectedIds: Set<number>,
   disabledIds: Set<number>
 ) => {
-  const changes = { every: new Set(), some: new Set(), none: new Set() };
+  const changes = {
+    every: new Set<number>(),
+    some: new Set<number>(),
+    none: new Set<number>(),
+  };
   for (const id of ids) {
     let currentId = id;
     while (true) {

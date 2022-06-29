@@ -1,6 +1,6 @@
-import React from "react";
 import "@testing-library/jest-dom/extend-expect";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -8,28 +8,28 @@ const folder = {
   children: [
     {
       name: "src",
-      children: [{ name: "index.js" }, { name: "styles.css" }]
+      children: [{ name: "index.js" }, { name: "styles.css" }],
     },
     {
       name: "node_modules",
       children: [
         {
           name: "react-accessible-treeview",
-          children: [{ name: "index.js" }]
+          children: [{ name: "index.js" }],
         },
-        { name: "react", children: [{ name: "index.js" }] }
-      ]
+        { name: "react", children: [{ name: "index.js" }] },
+      ],
     },
     {
-      name: ".npmignore"
+      name: ".npmignore",
     },
     {
-      name: "package.json"
+      name: "package.json",
     },
     {
-      name: "webpack.config.js"
-    }
-  ]
+      name: "webpack.config.js",
+    },
+  ],
 };
 
 const data = flattenTree(folder);
@@ -41,10 +41,10 @@ function DirectoryTreeView() {
         <TreeView
           data={data}
           aria-label="directory tree"
-          onBlur={({ treeState, dispatch }) => {
+          onBlur={({ treeState, dispatch }: any) => {
             dispatch({
               type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0]
+              id: Array.from(treeState.selectedIds)[0],
             });
           }}
           nodeRenderer={({ element, getNodeProps }) => (
@@ -192,7 +192,7 @@ test("Left arrow", () => {
 
   //When focus is on a child node that is also either an end node or a closed node, moves focus to its parent node.
   fireEvent.keyDown(nodes[0], { key: "ArrowRight" });
-  let childNode = container.querySelector(
+  let childNode: HTMLElement = container.querySelector(
     '[role="treeitem"][aria-level="2"][aria-posinset="1"]'
   );
   childNode.focus();
@@ -251,11 +251,10 @@ test("Asterisk", () => {
     '.tree-branch-wrapper[role="treeitem"][aria-level="1"]'
   );
   expect(rootNodes.length).toBeTruthy();
-  rootNodes.forEach(x => expect(x).toHaveAttribute("aria-expanded", "false"));
+  rootNodes.forEach((x) => expect(x).toHaveAttribute("aria-expanded", "false"));
   fireEvent.keyDown(nodes[0], { key: "*" });
-  rootNodes.forEach(x => expect(x).toHaveAttribute("aria-expanded", "true"));
+  rootNodes.forEach((x) => expect(x).toHaveAttribute("aria-expanded", "true"));
 });
-
 
 test("Single character typeahead", () => {
   const { queryAllByRole, getByText } = render(<DirectoryTreeView />);

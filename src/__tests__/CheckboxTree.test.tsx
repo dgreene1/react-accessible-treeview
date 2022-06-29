@@ -1,6 +1,6 @@
-import React from "react";
 import "@testing-library/jest-dom/extend-expect";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -13,8 +13,8 @@ const folder = {
         { name: "Bananas" },
         { name: "Berries" },
         { name: "Oranges" },
-        { name: "Pears" }
-      ]
+        { name: "Pears" },
+      ],
     },
     {
       name: "Drinks",
@@ -28,10 +28,10 @@ const folder = {
             { name: "Black Tea" },
             { name: "Green Tea" },
             { name: "Red Tea" },
-            { name: "Matcha" }
-          ]
-        }
-      ]
+            { name: "Matcha" },
+          ],
+        },
+      ],
     },
     {
       name: "Vegetables",
@@ -40,15 +40,15 @@ const folder = {
         { name: "Carrots" },
         { name: "Celery" },
         { name: "Lettuce" },
-        { name: "Onions" }
-      ]
-    }
-  ]
+        { name: "Onions" },
+      ],
+    },
+  ],
 };
 
 const data = flattenTree(folder);
 
-function MultiSelectCheckbox(props) {
+function MultiSelectCheckbox(props: any) {
   return (
     <div>
       <div className="checkbox">
@@ -63,13 +63,13 @@ function MultiSelectCheckbox(props) {
             element,
             getNodeProps,
             handleSelect,
-            handleExpand
+            handleExpand,
           }) => {
             return (
               <div {...getNodeProps({ onClick: handleExpand })}>
                 <div
                   className="checkbox-icon"
-                  onClick={e => {
+                  onClick={(e) => {
                     handleSelect(e);
                     e.stopPropagation();
                   }}
@@ -123,5 +123,5 @@ test("propagateselect selects all child nodes", () => {
   let childNodes = container.querySelectorAll(
     '[role="treeitem"][aria-level="2"]'
   );
-  childNodes.forEach(x => expect(x).toHaveAttribute("aria-selected", "true"));
+  childNodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
 });
