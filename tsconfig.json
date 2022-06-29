@@ -9,7 +9,6 @@
     "jsx": "react",
     "module": "es6",
     "moduleResolution": "node",
-    "noImplicitAny": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "outDir": "dist",
