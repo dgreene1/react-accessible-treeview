@@ -1,6 +1,6 @@
-import React from "react";
 import "@testing-library/jest-dom/extend-expect";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -48,7 +48,7 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function MultiSelectCheckbox(props) {
+function MultiSelectCheckbox(props: any) {
   return (
     <div>
       <div className="checkbox">

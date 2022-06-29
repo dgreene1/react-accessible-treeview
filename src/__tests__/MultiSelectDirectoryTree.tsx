@@ -1,6 +1,6 @@
-import React from "react";
-import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -33,7 +33,7 @@ const folder = {
 };
 
 const data = flattenTree(folder);
-function DirectoryTreeView(props) {
+function DirectoryTreeView(props: any) {
   return (
     <div>
       <div className="ide">
@@ -43,7 +43,7 @@ function DirectoryTreeView(props) {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          onBlur={({ treeState, dispatch }) => {
+          onBlur={({ treeState, dispatch }: any) => {
             dispatch({
               type: "DESELECT",
               id: Array.from(treeState.selectedIds)[0],

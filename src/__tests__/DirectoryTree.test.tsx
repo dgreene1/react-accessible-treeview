@@ -1,6 +1,6 @@
-import React from "react";
 import "@testing-library/jest-dom/extend-expect";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
 
 const folder = {
@@ -41,7 +41,7 @@ function DirectoryTreeView() {
         <TreeView
           data={data}
           aria-label="directory tree"
-          onBlur={({ treeState, dispatch }) => {
+          onBlur={({ treeState, dispatch }: any) => {
             dispatch({
               type: "DESELECT",
               id: Array.from(treeState.selectedIds)[0],
@@ -192,7 +192,7 @@ test("Left arrow", () => {
 
   //When focus is on a child node that is also either an end node or a closed node, moves focus to its parent node.
   fireEvent.keyDown(nodes[0], { key: "ArrowRight" });
-  let childNode = container.querySelector(
+  let childNode: HTMLElement = container.querySelector(
     '[role="treeitem"][aria-level="2"][aria-posinset="1"]'
   );
   childNode.focus();

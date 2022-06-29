@@ -1,4 +1,4 @@
-// import TreeView from "./TreeView";
+import TreeView from "./TreeView";
 import { flattenTree } from "./TreeView/utils";
-// export default TreeView;
+export default TreeView;
 export { flattenTree };

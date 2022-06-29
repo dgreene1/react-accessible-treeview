@@ -1,24 +1,35 @@
-import React, { useReducer, useRef, useEffect } from "react";
 import cx from "classnames";
 import PropTypes from "prop-types";
+import React, { useEffect, useReducer, useRef } from "react";
 import {
+  composeHandlers,
   difference,
-  symmetricDifference,
-  usePrevious,
+  focusRef,
+  getAccessibleRange,
+  getAriaSelected,
   getDescendants,
   getLastAccessible,
   getNextAccessible,
   getParent,
   getPreviousAccessible,
   isBranchNode,
-  composeHandlers,
-  focusRef,
-  propagateSelectChange,
-  getAccessibleRange,
-  getAriaSelected,
-  propagatedIds,
   onComponentBlur,
+  propagatedIds,
+  propagateSelectChange,
+  symmetricDifference,
+  usePrevious,
 } from "./utils";
+
+export interface INode {
+  /** A non-negative integer that uniquely identifies the node. */
+  id: number;
+  /** Used to match on key press. */
+  name: string;
+  /** An array with the ids of the children nodes. */
+  children: number[];
+  /** The parent of the node. null for the root node. */
+  parent: number | null;
+}
 
 const baseClassNames = {
   root: "tree",
@@ -49,7 +60,7 @@ const treeTypes = {
   enable: "ENABLE",
 };
 
-const treeReducer = (state, action) => {
+const treeReducer = (state: any, action: any) => {
   switch (action.type) {
     case treeTypes.collapse: {
       const expandedIds = new Set(state.expandedIds);
@@ -197,7 +208,7 @@ const treeReducer = (state, action) => {
     }
     case treeTypes.changeSelectMany: {
       let selectedIds;
-      const ids = action.ids.filter((id) => !state.disabledIds.has(id));
+      const ids = action.ids.filter((id: any) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
           selectedIds = new Set([...state.selectedIds, ...ids]);
@@ -216,8 +227,8 @@ const treeReducer = (state, action) => {
       return state;
     }
     case treeTypes.exclusiveChangeSelectMany: {
-      let selectedIds;
-      const ids = action.ids.filter((id) => !state.disabledIds.has(id));
+      let selectedIds: any;
+      const ids = action.ids.filter((id: any) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
           selectedIds = new Set(ids);
@@ -279,7 +290,7 @@ const useTree = ({
   onExpand,
   multiSelect,
   propagateSelectUpwards,
-}) => {
+}: any) => {
   const [state, dispatch] = useReducer(treeReducer, {
     selectedIds: new Set(defaultSelectedIds),
     tabbableId: data[0].children[0],
@@ -429,13 +440,82 @@ const useTree = ({
   return [state, dispatch];
 };
 
-const clickActions = {
+type ClickAction = "SELECT" | "FOCUS" | "EXCLUSIVE_SELECT";
+
+const clickActions: Record<string, ClickAction> = {
   select: "SELECT",
   focus: "FOCUS",
   exclusiveSelect: "EXCLUSIVE_SELECT",
 };
 
 const noop = () => {};
+
+export interface INodeRendererProps {
+  /** The object that represents the rendered node . */
+  element: any;
+  /** A function which gives back the props to pass to the node. . */
+  getNodeProps: Function;
+  /** Whether the rendered node is a branch node . */
+  isBranch: boolean;
+  /** Whether the rendered node is selected . */
+  isSelected: boolean;
+  /** If the node is a branch node, whether it is half-selected, else undefined . */
+  isHalfSelected: boolean;
+  /** If the node is a branch node, whether it is expanded, else undefined . */
+  isExpanded: boolean;
+  /** Whether the rendered node is disabled . */
+  isDisabled: boolean;
+  /** A positive integer that corresponds to the aria-level attribute . */
+  level: number;
+  /** A positive integer that corresponds to the aria-setsize attribute . */
+  setsize: number;
+  /** A positive integer that corresponds to the aria-posinset attribute . */
+  posinset: number;
+  /** Function to assign to the onClick event handler of the element(s) that will toggle the selected state . */
+  handleSelect: Function;
+  /** Function to assign to the onClick event handler of the element(s) that will toggle the expanded state . */
+  handleExpand: Function;
+  /** Function to dispatch actions . */
+  dispatch: Function;
+  /** state of the treeview . */
+  treeState: Function;
+}
+
+interface ITreeViewProps {
+  /** Tree data*/
+  data: INode[];
+  /** Function called when a node changes its selected state */
+  onSelect?: Function;
+  /** Function called when a node changes its expanded state */
+  onExpand?: Function;
+  /** className to add to the outermost ul*/
+  className?: string;
+  /** Render prop for the node */
+  nodeRenderer: (props: INodeRendererProps) => any;
+  /** Array with the ids of the default expanded nodes*/
+  defaultExpandedIds?: number[];
+  /** Array with the ids of the default selected nodes*/
+  defaultSelectedIds?: number[];
+  /** Array with the ids of the default disabled nodes*/
+  defaultDisabledIds?: number[];
+  /** If true, collapsing a node will also collapse its descendants */
+  propagateCollapse?: boolean;
+  /** If true, selecting a node will also select its descendants */
+  propagateSelect?: boolean;
+  /** If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected)*/
+  propagateSelectUpwards?: boolean;
+  /** Allows multiple nodes to be selected */
+  multiSelect?: boolean;
+  /** Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state */
+  expandOnKeyboardSelect?: boolean;
+  /** Wether the selected state is togglable */
+  togglableSelect?: boolean;
+  /** action to perform on click */
+  clickAction?: ClickAction;
+  /** Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it). */
+  onBlur?: Function;
+}
+
 const TreeView = React.forwardRef(function TreeView(
   {
     data,
@@ -455,7 +535,7 @@ const TreeView = React.forwardRef(function TreeView(
     clickAction = clickActions.select,
     onBlur,
     ...other
-  },
+  }: ITreeViewProps,
   ref
 ) {
   const nodeRefs = useRef({});
@@ -473,7 +553,7 @@ const TreeView = React.forwardRef(function TreeView(
   });
   propagateSelect = propagateSelect && multiSelect;
 
-  let innerRef = useRef();
+  let innerRef: any = useRef();
   if (ref != null) innerRef = ref;
 
   return (
@@ -534,7 +614,7 @@ const TreeView = React.forwardRef(function TreeView(
   );
 });
 
-const Node = (props) => {
+const Node = (props: any) => {
   const {
     element,
     dispatch,
@@ -560,7 +640,7 @@ const Node = (props) => {
     state,
   } = props;
 
-  const handleExpand = (event) => {
+  const handleExpand = (event: any) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids = [element.id, ...getDescendants(data, element.id, new Set())];
@@ -585,14 +665,13 @@ const Node = (props) => {
       lastInteractedWith: element.id,
     });
 
-  const handleSelect = (event) => {
+  const handleSelect = (event: any) => {
     if (event.shiftKey) {
       let ids = getAccessibleRange({
         data,
         expandedIds,
         from: lastUserSelect,
         to: element.id,
-        lastInteractedWith: element.id,
       }).filter((id) => !disabledIds.has(id));
       ids = propagateSelect ? propagatedIds(data, ids, disabledIds) : ids;
       dispatch({
@@ -635,7 +714,7 @@ const Node = (props) => {
     }
   };
 
-  const getClasses = (className) => {
+  const getClasses = (className: string) => {
     return cx(className, {
       [`${className}--expanded`]: expandedIds.has(element.id),
       [`${className}--selected`]: selectedIds.has(element.id),
@@ -643,7 +722,7 @@ const Node = (props) => {
     });
   };
 
-  const getLeafProps = ({ onClick } = {}) => {
+  const getLeafProps = ({ onClick }: any = {}) => {
     return {
       role: "treeitem",
       tabIndex: tabbableId === element.id ? 0 : -1,
@@ -651,7 +730,7 @@ const Node = (props) => {
         onClick == null
           ? composeHandlers(handleSelect, handleFocus)
           : composeHandlers(onClick, handleFocus),
-      ref: (x) => (nodeRefs.current[element.id] = x),
+      ref: (x: any) => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
       "aria-setsize": setsize,
       "aria-posinset": posinset,
@@ -666,7 +745,7 @@ const Node = (props) => {
     };
   };
 
-  const getBranchProps = ({ onClick } = {}) => {
+  const getBranchProps = ({ onClick }: any = {}) => {
     return {
       onClick:
         onClick == null
@@ -688,7 +767,6 @@ const Node = (props) => {
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
-      disabled={disabledIds.has(element.id)}
       aria-disabled={disabledIds.has(element.id)}
       tabIndex={tabbableId === element.id ? 0 : -1}
       ref={(x) => (nodeRefs.current[element.id] = x)}
@@ -742,10 +820,10 @@ const NodeGroup = ({
   baseClassNames,
   level,
   ...rest
-}) => (
+}: any) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
-      element.children.map((x, index) => (
+      element.children.map((x: any, index: number) => (
         <Node
           data={data}
           expandedIds={expandedIds}
@@ -773,7 +851,7 @@ const handleKeyDown = ({
   multiSelect,
   expandOnKeyboardSelect,
   togglableSelect,
-}) => (event) => {
+}: any) => (event: any) => {
   const element = data[tabbableId];
   const id = element.id;
   if (event.ctrlKey) {
@@ -781,7 +859,7 @@ const handleKeyDown = ({
       event.preventDefault();
       const { 0: root, ...dataWithoutRoot } = data;
       const ids = Object.values(dataWithoutRoot)
-        .map((x) => x.id)
+        .map((x: any) => x.id)
         .filter((id) => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
@@ -959,7 +1037,7 @@ const handleKeyDown = ({
     }
     case "*": {
       event.preventDefault();
-      const nodes = data[getParent(data, id)].children.filter((x) =>
+      const nodes = data[getParent(data, id)].children.filter((x: any) =>
         isBranchNode(data, x)
       );
       dispatch({
