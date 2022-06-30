@@ -8,7 +8,7 @@ const centered = (triggerRect, tooltipRect) => {
   const maxLeft = window.innerWidth - tooltipRect.width - 2;
   return {
     left: Math.min(Math.max(2, left), maxLeft) + window.scrollX,
-    top: triggerRect.bottom + 8 + window.scrollY
+    top: triggerRect.bottom + 8 + window.scrollY,
   };
 };
 
@@ -33,7 +33,7 @@ function Tooltip({ children, label, ariaLabel }) {
             height: 0,
             borderLeft: "10px solid transparent",
             borderRight: "10px solid transparent",
-            borderBottom: "10px solid black"
+            borderBottom: "10px solid black",
           }}
         />
       )}
@@ -46,7 +46,7 @@ function Tooltip({ children, label, ariaLabel }) {
           color: "white",
           border: "none",
           borderRadius: "3px",
-          padding: "0.5em 1em"
+          padding: "0.5em 1em",
         }}
         position={centered}
       />

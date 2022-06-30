@@ -13,15 +13,15 @@ export default [
       file: pkg.browser,
       format: "umd",
       globals: { react: "React", classnames: "cx", "prop-types": "PropTypes" },
-      exports: "named"
+      exports: "named",
     },
     plugins: [
       babel({
-        exclude: ["node_modules/**"]
+        exclude: ["node_modules/**"],
       }),
       commonjs(),
-      terser()
-    ]
+      terser(),
+    ],
   },
   {
     input: "src/index.js",
@@ -34,25 +34,25 @@ export default [
         globals: {
           react: "React",
           classnames: "cx",
-          "prop-types": "PropTypes"
+          "prop-types": "PropTypes",
         },
-        exports: "named"
+        exports: "named",
       },
       {
         file: pkg.module,
         format: "es",
 
         globals: { react: "React", classnames: "cx" },
-        exports: "named"
-      }
+        exports: "named",
+      },
     ],
     plugins: [
       resolve(),
       babel({
-        exclude: ["node_modules/**"]
+        exclude: ["node_modules/**"],
       }),
       commonjs(),
-      terser()
-    ]
-  }
+      terser(),
+    ],
+  },
 ];

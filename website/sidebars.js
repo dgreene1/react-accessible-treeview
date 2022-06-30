@@ -13,7 +13,7 @@ module.exports = {
       "examples-DirectoryTree",
       "examples-MultiSelectDirectoryTree",
       "examples-MultiSelectCheckbox",
-      "examples-MultiSelectCheckboxDisabled"
-    ]
-  }
+      "examples-MultiSelectCheckboxDisabled",
+    ],
+  },
 };

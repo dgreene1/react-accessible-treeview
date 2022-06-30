@@ -39,7 +39,6 @@
   color: var(--ifm-menu-color-active);
 }
 
-
 .code-tabs-tabpanel__component {
   background-color: transparent;
   border: 0.5px solid rgba(31, 34, 39, 0.6);

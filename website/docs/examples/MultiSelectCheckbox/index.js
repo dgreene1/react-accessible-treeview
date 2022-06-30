@@ -15,8 +15,8 @@ const folder = {
         { name: "Bananas" },
         { name: "Berries" },
         { name: "Oranges" },
-        { name: "Pears" }
-      ]
+        { name: "Pears" },
+      ],
     },
     {
       name: "Drinks",
@@ -30,10 +30,10 @@ const folder = {
             { name: "Black Tea" },
             { name: "Green Tea" },
             { name: "Red Tea" },
-            { name: "Matcha" }
-          ]
-        }
-      ]
+            { name: "Matcha" },
+          ],
+        },
+      ],
     },
     {
       name: "Vegetables",
@@ -42,10 +42,10 @@ const folder = {
         { name: "Carrots" },
         { name: "Celery" },
         { name: "Lettuce" },
-        { name: "Onions" }
-      ]
-    }
-  ]
+        { name: "Onions" },
+      ],
+    },
+  ],
 };
 
 const data = flattenTree(folder);
@@ -70,7 +70,7 @@ function MultiSelectCheckbox() {
             getNodeProps,
             level,
             handleSelect,
-            handleExpand
+            handleExpand,
           }) => {
             return (
               <div
@@ -80,7 +80,7 @@ function MultiSelectCheckbox() {
                 {isBranch && <ArrowIcon isOpen={isExpanded} />}
                 <CheckBoxIcon
                   className="checkbox-icon"
-                  onClick={e => {
+                  onClick={(e) => {
                     handleSelect(e);
                     e.stopPropagation();
                   }}

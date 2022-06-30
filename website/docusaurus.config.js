@@ -11,7 +11,7 @@ module.exports = {
     "A React component that implements the treeview pattern as described by the WAI-ARIA Authoring Practices.",
   url: "https://react-accessible-treeview.netlify.com",
   baseUrl: "/",
-  favicon:"static/favicon.ico",
+  favicon: "static/favicon.ico",
   organizationName: "lissitz", // Usually your GitHub org/user name.
   projectName: "react-accessible-treeview", // Usually your repo name.
   themeConfig: {
@@ -23,22 +23,22 @@ module.exports = {
         {
           href: "https://github.com/lissitz/react-accessible-treeview",
           label: "GitHub",
-          position: "right"
-        }
-      ]
-    }
+          position: "right",
+        },
+      ],
+    },
   },
   presets: [
     [
       "@docusaurus/preset-classic",
       {
         docs: {
-          sidebarPath: require.resolve("./sidebars.js")
+          sidebarPath: require.resolve("./sidebars.js"),
         },
         theme: {
-          customCss: require.resolve("./src/css/custom.css")
-        }
-      }
-    ]
-  ]
+          customCss: require.resolve("./src/css/custom.css"),
+        },
+      },
+    ],
+  ],
 };

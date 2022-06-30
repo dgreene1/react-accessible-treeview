@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const Checkbox = ({ defaultState = false, onChange, children }) => {
   const [on, setOn] = useState(defaultState);
-  const handleChange = e => {
+  const handleChange = (e) => {
     setOn(e.target.checked);
     onChange && onChange(e.target.checked);
   };

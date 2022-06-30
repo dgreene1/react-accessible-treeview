@@ -14,8 +14,8 @@ const folder = {
         { name: "Bananas" },
         { name: "Berries" },
         { name: "Oranges" },
-        { name: "Pears" }
-      ]
+        { name: "Pears" },
+      ],
     },
     {
       name: "Drinks",
@@ -29,10 +29,10 @@ const folder = {
             { name: "Black Tea" },
             { name: "Green Tea" },
             { name: "Red Tea" },
-            { name: "Matcha" }
-          ]
-        }
-      ]
+            { name: "Matcha" },
+          ],
+        },
+      ],
     },
     {
       name: "Vegetables",
@@ -41,10 +41,10 @@ const folder = {
         { name: "Carrots" },
         { name: "Celery" },
         { name: "Lettuce" },
-        { name: "Onions" }
-      ]
-    }
-  ]
+        { name: "Onions" },
+      ],
+    },
+  ],
 };
 
 const data = flattenTree(folder);
@@ -72,7 +72,7 @@ function MultiSelectCheckboxDisabled() {
             level,
             handleSelect,
             handleExpand,
-            dispatch
+            dispatch,
           }) => {
             return (
               <>
@@ -80,13 +80,13 @@ function MultiSelectCheckboxDisabled() {
                   {...getNodeProps({ onClick: handleExpand })}
                   style={{
                     marginLeft: 40 * (level - 1),
-                    opacity: isDisabled ? 0.5 : 1
+                    opacity: isDisabled ? 0.5 : 1,
                   }}
                 >
                   {isBranch && <ArrowIcon isOpen={isExpanded} />}
                   <CheckBoxIcon
                     className="checkbox-icon"
-                    onClick={e => {
+                    onClick={(e) => {
                       handleSelect(e);
                       e.stopPropagation();
                     }}
@@ -100,7 +100,7 @@ function MultiSelectCheckboxDisabled() {
                   onClick={() =>
                     dispatch({
                       type: isDisabled ? "ENABLE" : "DISABLE",
-                      id: element.id
+                      id: element.id,
                     })
                   }
                 >

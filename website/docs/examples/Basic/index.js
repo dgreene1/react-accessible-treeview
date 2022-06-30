@@ -7,28 +7,28 @@ const folder = {
   children: [
     {
       name: "src",
-      children: [{ name: "index.js" }, { name: "styles.css" }]
+      children: [{ name: "index.js" }, { name: "styles.css" }],
     },
     {
       name: "node_modules",
       children: [
         {
           name: "react-accessible-treeview",
-          children: [{ name: "bundle.js" }]
+          children: [{ name: "bundle.js" }],
         },
-        { name: "react", children: [{ name: "bundle.js" }] }
-      ]
+        { name: "react", children: [{ name: "bundle.js" }] },
+      ],
     },
     {
-      name: ".npmignore"
+      name: ".npmignore",
     },
     {
-      name: "package.json"
+      name: "package.json",
     },
     {
-      name: "webpack.config.js"
-    }
-  ]
+      name: "webpack.config.js",
+    },
+  ],
 };
 
 const data = flattenTree(folder);

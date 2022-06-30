@@ -1,4 +1,4 @@
-module.exports = function(api) {
+module.exports = function (api) {
   api.cache(true);
 
   return {
@@ -7,18 +7,18 @@ module.exports = function(api) {
         "@babel/preset-env",
         {
           targets: {
-            browsers: ["last 2 versions", "safari >= 7"]
+            browsers: ["last 2 versions", "safari >= 7"],
           },
-          modules: false
-        }
+          modules: false,
+        },
       ],
-      "@babel/preset-react"
+      "@babel/preset-react",
     ],
     env: {
       test: {
-        presets: [["react-app"]]
-      }
+        presets: [["react-app"]],
+      },
     },
-    plugins: ["@babel/plugin-proposal-object-rest-spread"]
+    plugins: ["@babel/plugin-proposal-object-rest-spread"],
   };
 };

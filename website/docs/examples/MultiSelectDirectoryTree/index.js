@@ -9,28 +9,28 @@ const folder = {
   children: [
     {
       name: "src",
-      children: [{ name: "index.js" }, { name: "styles.css" }]
+      children: [{ name: "index.js" }, { name: "styles.css" }],
     },
     {
       name: "node_modules",
       children: [
         {
           name: "react-accessible-treeview",
-          children: [{ name: "index.js" }]
+          children: [{ name: "index.js" }],
         },
-        { name: "react", children: [{ name: "index.js" }] }
-      ]
+        { name: "react", children: [{ name: "index.js" }] },
+      ],
     },
     {
-      name: ".npmignore"
+      name: ".npmignore",
     },
     {
-      name: "package.json"
+      name: "package.json",
     },
     {
-      name: "webpack.config.js"
-    }
-  ]
+      name: "webpack.config.js",
+    },
+  ],
 };
 
 const data = flattenTree(folder);
@@ -47,7 +47,7 @@ function MultiSelectDirectoryTreeView() {
           onBlur={({ treeState, dispatch }) => {
             dispatch({
               type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0]
+              id: Array.from(treeState.selectedIds)[0],
             });
           }}
           nodeRenderer={({
@@ -56,7 +56,7 @@ function MultiSelectDirectoryTreeView() {
             isExpanded,
             getNodeProps,
             level,
-            handleSelect
+            handleSelect,
           }) => (
             <div {...getNodeProps()} style={{ paddingLeft: 20 * (level - 1) }}>
               {isBranch ? (

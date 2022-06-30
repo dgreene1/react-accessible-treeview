@@ -53,7 +53,7 @@ const data = [
   { name: "bundle.js", id: 8, parent: 7 },
   { name: ".npmignore", id: 9, parent: 0 },
   { name: "package.json", id: 10, parent: 0 },
-  { name: "webpack.config.js", id: 11, parent: 0 }
+  { name: "webpack.config.js", id: 11, parent: 0 },
 ];
 ```
 

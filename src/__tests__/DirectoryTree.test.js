@@ -8,28 +8,28 @@ const folder = {
   children: [
     {
       name: "src",
-      children: [{ name: "index.js" }, { name: "styles.css" }]
+      children: [{ name: "index.js" }, { name: "styles.css" }],
     },
     {
       name: "node_modules",
       children: [
         {
           name: "react-accessible-treeview",
-          children: [{ name: "index.js" }]
+          children: [{ name: "index.js" }],
         },
-        { name: "react", children: [{ name: "index.js" }] }
-      ]
+        { name: "react", children: [{ name: "index.js" }] },
+      ],
     },
     {
-      name: ".npmignore"
+      name: ".npmignore",
     },
     {
-      name: "package.json"
+      name: "package.json",
     },
     {
-      name: "webpack.config.js"
-    }
-  ]
+      name: "webpack.config.js",
+    },
+  ],
 };
 
 const data = flattenTree(folder);
@@ -44,7 +44,7 @@ function DirectoryTreeView() {
           onBlur={({ treeState, dispatch }) => {
             dispatch({
               type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0]
+              id: Array.from(treeState.selectedIds)[0],
             });
           }}
           nodeRenderer={({ element, getNodeProps }) => (
@@ -251,11 +251,10 @@ test("Asterisk", () => {
     '.tree-branch-wrapper[role="treeitem"][aria-level="1"]'
   );
   expect(rootNodes.length).toBeTruthy();
-  rootNodes.forEach(x => expect(x).toHaveAttribute("aria-expanded", "false"));
+  rootNodes.forEach((x) => expect(x).toHaveAttribute("aria-expanded", "false"));
   fireEvent.keyDown(nodes[0], { key: "*" });
-  rootNodes.forEach(x => expect(x).toHaveAttribute("aria-expanded", "true"));
+  rootNodes.forEach((x) => expect(x).toHaveAttribute("aria-expanded", "true"));
 });
-
 
 test("Single character typeahead", () => {
   const { queryAllByRole, getByText } = render(<DirectoryTreeView />);

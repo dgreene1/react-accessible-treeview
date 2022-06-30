@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-export const composeHandlers = (...handlers) => event => {
+export const composeHandlers = (...handlers) => (event) => {
   for (const handler of handlers) {
     handler && handler(event);
     if (event.defaultPrevented) {
@@ -22,7 +22,7 @@ export const symmetricDifference = (a, b) => {
   return new Set([...difference(a, b), ...difference(b, a)]);
 };
 
-export const usePrevious = x => {
+export const usePrevious = (x) => {
   const ref = useRef();
   useEffect(() => {
     ref.current = x;
@@ -33,7 +33,7 @@ export const usePrevious = x => {
 export const isBranchNode = (data, i) =>
   data[i].children != null && data[i].children.length > 0;
 
-export const focusRef = ref => {
+export const focusRef = (ref) => {
   if (ref != null && ref.focus) {
     ref.focus();
   }
@@ -48,7 +48,7 @@ export const getDescendants = (data, id, disabledIds) => {
   const getDescendantsHelper = (data, id) => {
     const node = data[id];
     if (node.children == null) return;
-    for (const childId of node.children.filter(x => !disabledIds.has(x))) {
+    for (const childId of node.children.filter((x) => !disabledIds.has(x))) {
       descendants.push(childId);
       getDescendantsHelper(data, childId);
     }
@@ -120,14 +120,14 @@ export const propagateSelectChange = (data, ids, selectedIds, disabledIds) => {
       const parent = getParent(data, currentId);
       if (parent === 0 || disabledIds.has(parent)) break;
       const enabledChildren = data[parent].children.filter(
-        x => !disabledIds.has(x)
+        (x) => !disabledIds.has(x)
       );
       if (enabledChildren.length === 0) break;
-      const some = enabledChildren.some(x => selectedIds.has(x));
+      const some = enabledChildren.some((x) => selectedIds.has(x));
       if (!some) {
         changes.none.add(parent);
       } else {
-        if (enabledChildren.every(x => selectedIds.has(x))) {
+        if (enabledChildren.every((x) => selectedIds.has(x))) {
           changes.every.add(parent);
         } else {
           changes.some.add(parent);
@@ -163,11 +163,11 @@ export const getAccessibleRange = ({ data, expandedIds, from, to }) => {
   return range;
 };
 
-export const flattenTree = function(tree) {
+export const flattenTree = function (tree) {
   let count = 0;
   const flattenedTree = [];
 
-  const flattenTreeHelper = function(tree, parent) {
+  const flattenTreeHelper = function (tree, parent) {
     tree.id = count;
     tree.parent = parent;
     flattenedTree[count] = tree;
@@ -176,7 +176,7 @@ export const flattenTree = function(tree) {
     for (const child of tree.children) {
       flattenTreeHelper(child, tree.id);
     }
-    tree.children = tree.children.map(x => x.id);
+    tree.children = tree.children.map((x) => x.id);
   };
 
   flattenTreeHelper(tree, null);
@@ -192,8 +192,8 @@ export const getAriaSelected = ({ isSelected, isDisabled, multiSelect }) => {
 export const propagatedIds = (data, ids, disabledIds) =>
   ids.concat(
     ...ids
-      .filter(id => isBranchNode(data, id))
-      .map(id => getDescendants(data, id, disabledIds))
+      .filter((id) => isBranchNode(data, id))
+      .map((id) => getDescendants(data, id, disabledIds))
   );
 
 const isIE = () => window.navigator.userAgent.match(/Trident/);

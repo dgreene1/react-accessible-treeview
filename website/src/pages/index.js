@@ -27,7 +27,7 @@ const features = [
           <li>Extensive key bindings</li>
         </ul>
       </>
-    )
+    ),
   },
   {
     title: <>Flexible</>,
@@ -37,8 +37,8 @@ const features = [
         Highly customizable throug'@docusaurus/withBaseUrl'h the use of the
         render prop and prop getter patterns.
       </>
-    )
-  }
+    ),
+  },
 ];
 
 function Home() {
