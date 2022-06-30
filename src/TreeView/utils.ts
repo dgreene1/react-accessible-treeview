@@ -202,20 +202,31 @@ export const getAccessibleRange = ({
   return range;
 };
 
-export const flattenTree = function(tree: any) {
-  let count = 0;
-  const flattenedTree: any[] = [];
+interface ITreeNode {
+  name: string;
+  children?: ITreeNode[];
+}
 
-  const flattenTreeHelper = function(tree: any, parent: any) {
-    tree.id = count;
-    tree.parent = parent;
-    flattenedTree[count] = tree;
+export const flattenTree = function(tree: ITreeNode): INode[] {
+  let count = 0;
+  const flattenedTree: INode[] = [];
+
+  const flattenTreeHelper = function(tree: ITreeNode, parent: number | null) {
+    const node: INode = {
+      id: count,
+      name: tree.name,
+      children: [],
+      parent,
+    };
+    flattenedTree[count] = node;
     count += 1;
     if (tree.children == null || tree.children.length === 0) return;
     for (const child of tree.children) {
-      flattenTreeHelper(child, tree.id);
+      flattenTreeHelper(child, node.id);
     }
-    tree.children = tree.children.map((x: any) => x.id);
+    node.children = flattenedTree
+      .filter((x) => x.parent === node.id)
+      .map((x: INode) => x.id);
   };
 
   flattenTreeHelper(tree, null);
