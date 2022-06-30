@@ -80,7 +80,7 @@ The array can also be generated from a nested object using the `flattenTree` hel
 | `handleSelect`   | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
 | `handleExpand`   | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
 | `dispatch`       | `function`            | Low level function to dispatch actions.                                                               |
-| `treeState`      | `function`            | state of the treeview                                                                                 |
+| `treeState`      | `object`              | state of the treeview                                                                                 |
 
 ## getNodeProps
 
