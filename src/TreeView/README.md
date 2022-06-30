@@ -58,7 +58,7 @@ const data = [
   { name: "bundle.js", id: 8, parent: 7 },
   { name: ".npmignore", id: 9, parent: 0 },
   { name: "package.json", id: 10, parent: 0 },
-  { name: "webpack.config.js", id: 11, parent: 0 }
+  { name: "webpack.config.js", id: 11, parent: 0 },
 ];
 ```
 
@@ -85,7 +85,7 @@ The array can also be generated from a nested object using the <code>flattenTree
 | `handleSelect`   | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the selected state |
 | `handleExpand`   | `function`            | Function to assign to the onClick event handler of the element(s) that will toggle the expanded state |
 | `dispatch`       | `function`            | Function to dispatch actions                                                                          |
-| `treeState`      | `function`            | state of the treeview                                                                                 |
+| `treeState`      | `object`              | state of the treeview                                                                                 |
 
 <br/> <br/>
 
