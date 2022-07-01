@@ -39,7 +39,7 @@ const baseClassNames = {
   leafListItem: "tree-leaf-list-item",
   leaf: "tree-node__leaf",
   nodeGroup: "tree-node-group",
-};
+} as const;
 
 const treeTypes = {
   collapse: "COLLAPSE",
@@ -58,7 +58,7 @@ const treeTypes = {
   blur: "BLUR",
   disable: "DISABLE",
   enable: "ENABLE",
-};
+} as const;
 
 const treeReducer = (state: any, action: any) => {
   switch (action.type) {
