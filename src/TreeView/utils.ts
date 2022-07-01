@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { INode } from ".";
 
-export const composeHandlers = (...handlers: ((event: Event) => void)[]) => (
-  event: Event
-) => {
+export type EventCallback = (event?: UIEvent) => void;
+
+export const composeHandlers = (
+  ...handlers: EventCallback[]
+): EventCallback => (event): void => {
   for (const handler of handlers) {
     handler && handler(event);
     if (event.defaultPrevented) {
@@ -261,8 +263,8 @@ export const propagatedIds = (
 const isIE = () => window.navigator.userAgent.match(/Trident/);
 
 export const onComponentBlur = (
-  event: any,
-  treeNode: any,
+  event: React.FocusEvent,
+  treeNode: any, // HTMLUListElement
   callback: () => void
 ) => {
   if (isIE()) {

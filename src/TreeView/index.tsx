@@ -4,6 +4,7 @@ import React, { useEffect, useReducer, useRef } from "react";
 import {
   composeHandlers,
   difference,
+  EventCallback,
   focusRef,
   getAccessibleRange,
   getAriaSelected,
@@ -17,7 +18,7 @@ import {
   propagatedIds,
   propagateSelectChange,
   symmetricDifference,
-  usePrevious,
+  usePrevious
 } from "./utils";
 
 export interface INode {
@@ -52,7 +53,7 @@ const treeTypes = {
   toggle: "TOGGLE",
   toggleSelect: "TOGGLE_SELECT",
   changeSelectMany: "SELECT_MANY",
-  exclusiveSelectMany: "EXCLUSIVE_SELECT_MANY",
+  // exclusiveSelectMany: "EXCLUSIVE_SELECT_MANY", // NOT USED BY TREE REDUCER
   exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
   focus: "FOCUS",
   blur: "BLUR",
@@ -60,7 +61,81 @@ const treeTypes = {
   enable: "ENABLE",
 } as const;
 
-const treeReducer = (state: any, action: any) => {
+type Action =
+  | { type: "COLLAPSE"; id: number; lastInteractedWith?: number | null }
+  | { type: "COLLAPSE_MANY"; ids: number[]; lastInteractedWith?: number | null }
+  | { type: "EXPAND"; id: number; lastInteractedWith?: number | null }
+  | { type: "EXPAND_MANY"; ids: number[]; lastInteractedWith?: number | null }
+  | {
+      type: "HALF_SELECT";
+      id: number;
+      lastInteractedWith?: number | null;
+    }
+  | {
+      type: "SELECT";
+      id: number;
+      multiSelect?: boolean;
+      keepFocus?: boolean;
+      NotUserAction?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | {
+      type: "DESELECT";
+      id: number;
+      multiSelect?: boolean;
+      keepFocus?: boolean;
+      NotUserAction?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | { type: "TOGGLE"; id: number; lastInteractedWith?: number | null }
+  | {
+      type: "TOGGLE_SELECT";
+      id: number;
+      multiSelect?: boolean;
+      NotUserAction?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | {
+      type: "SELECT_MANY";
+      ids: number[];
+      select?: boolean;
+      multiSelect?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | { type: "EXCLUSIVE_SELECT_MANY" }
+  | {
+      type: "EXCLUSIVE_CHANGE_SELECT_MANY";
+      ids: number[];
+      select?: boolean;
+      multiSelect?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | { type: "FOCUS"; id: number; lastInteractedWith?: number | null }
+  | { type: "BLUR" }
+  | { type: "DISABLE"; id: number }
+  | { type: "ENABLE"; id: number };
+
+export interface ITreeViewState {
+  /** Set of the ids of the expanded nodes */
+  expandedIds: Set<number>;
+  /** Set of the ids of the selected nodes */
+  disabledIds: Set<number>;
+  /** Set of the ids of the selected nodes */
+  halfSelectedIds: Set<number>;
+  /** Set of the ids of the selected nodes */
+  selectedIds: Set<number>;
+  /** Id of the node with tabindex = 0 */
+  tabbableId: number;
+  /** Whether the tree has focus */
+  isFocused: boolean;
+  /** Last selection made directly by the user */
+  lastUserSelect: number;
+  /** Last node interacted with */
+  lastInteractedWith: number;
+  lastAction?: Action["type"];
+}
+
+const treeReducer = (state: ITreeViewState, action: Action): ITreeViewState => {
   switch (action.type) {
     case treeTypes.collapse: {
       const expandedIds = new Set<number>(state.expandedIds);
@@ -283,6 +358,19 @@ const treeReducer = (state: any, action: any) => {
   }
 };
 
+interface IUseTreeProps {
+  data: INode[];
+  defaultExpandedIds?: number[];
+  defaultSelectedIds?: number[];
+  defaultDisabledIds?: number[];
+  nodeRefs: any;
+  onSelect?: (props: ITreeViewOnSelectProps) => void;
+  onExpand?: (props: ITreeViewOnExpandProps) => void;
+  multiSelect?: boolean;
+  propagateSelectUpwards?: boolean;
+  propagateSelect?: boolean;
+}
+
 const useTree = ({
   data,
   defaultExpandedIds,
@@ -293,7 +381,7 @@ const useTree = ({
   onExpand,
   multiSelect,
   propagateSelectUpwards,
-}: any) => {
+}: IUseTreeProps): [state: ITreeViewState, dispatch: React.Dispatch<Action>] => {
   const [state, dispatch] = useReducer(treeReducer, {
     selectedIds: new Set<number>(defaultSelectedIds),
     tabbableId: data[0].children[0],
@@ -399,9 +487,9 @@ const useTree = ({
           dispatch({
             type: treeTypes.halfSelect,
             id,
-            multiSelect,
-            keepFocus: true,
-            NotUserAction: true,
+            // multiSelect, // NOT USED IN TREE REDUCER
+            // keepFocus: true, // NOT USED IN TREE REDUCER
+            // NotUserAction: true, // NOT USED IN TREE REDUCER
             lastInteractedWith,
           });
       }
@@ -456,25 +544,6 @@ type ClickActions = ValueOf<typeof clickActions>;
 
 const noop = () => {};
 
-export interface ITreeViewState {
-  /** Set of the ids of the selected nodes */
-  selectedIds: Set<number>;
-  /** Id of the node with tabindex = 0 */
-  tabbableId: number;
-  /** Whether the tree has focus */
-  isFocused: boolean;
-  /** Set of the ids of the expanded nodes */
-  expandedIds: Set<number>;
-  /** Set of the ids of the selected nodes */
-  halfSelectedIds: Set<number>;
-  /** Last selection made directly by the user */
-  lastUserSelect: number;
-  /** Last node interacted with */
-  lastInteractedWith: number;
-  /** Set of the ids of the selected nodes */
-  disabledIds: Set<number>;
-}
-
 export interface INodeRendererProps {
   /** The object that represents the rendered node */
   element: INode;
@@ -497,11 +566,11 @@ export interface INodeRendererProps {
   /** A positive integer that corresponds to the aria-posinset attribute */
   posinset: number;
   /** Function to assign to the onClick event handler of the element(s) that will toggle the selected state */
-  handleSelect: (event: Event) => void;
+  handleSelect: (event: KeyboardEvent | MouseEvent) => void;
   /** Function to assign to the onClick event handler of the element(s) that will toggle the expanded state */
-  handleExpand: (event: Event) => void;
+  handleExpand: (event: KeyboardEvent | MouseEvent) => void;
   /** Function to dispatch actions */
-  dispatch: Function;
+  dispatch: React.Dispatch<Action>;
   /** state of the treeview */
   treeState: ITreeViewState;
 }
@@ -580,7 +649,7 @@ const TreeView = React.forwardRef(function TreeView(
     onBlur,
     ...other
   }: ITreeViewProps,
-  ref
+  ref: React.Ref<HTMLUListElement>
 ) {
   const nodeRefs = useRef({});
   const [state, dispatch] = useTree({
@@ -597,8 +666,8 @@ const TreeView = React.forwardRef(function TreeView(
   });
   propagateSelect = propagateSelect && multiSelect;
 
-  let innerRef: any = useRef();
-  if (ref != null) innerRef = ref;
+  let innerRef = useRef<HTMLUListElement>(null);
+  if (ref != null) innerRef = ref as React.MutableRefObject<HTMLUListElement>;
 
   return (
     <ul
@@ -687,7 +756,7 @@ const Node = (props: any) => {
   const handleExpand = (event: any) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
-      const ids = [
+      const ids: number[] = [
         element.id,
         ...getDescendants(data, element.id, new Set<number>()),
       ];
@@ -705,14 +774,14 @@ const Node = (props: any) => {
     }
   };
 
-  const handleFocus = () =>
+  const handleFocus = (): void =>
     dispatch({
       type: treeTypes.focus,
       id: element.id,
       lastInteractedWith: element.id,
     });
 
-  const handleSelect = (event: any) => {
+  const handleSelect = (event: KeyboardEvent | MouseEvent) => {
     if (event.shiftKey) {
       let ids = getAccessibleRange({
         data,
@@ -769,7 +838,8 @@ const Node = (props: any) => {
     });
   };
 
-  const getLeafProps = ({ onClick }: any = {}) => {
+  const getLeafProps = (props: { onClick?: EventCallback } = {}) => {
+    const { onClick } = props;
     return {
       role: "treeitem",
       tabIndex: tabbableId === element.id ? 0 : -1,
@@ -792,7 +862,8 @@ const Node = (props: any) => {
     };
   };
 
-  const getBranchProps = ({ onClick }: any = {}) => {
+  const getBranchProps = (props: { onClick?: EventCallback } = {}) => {
+    const { onClick } = props;
     return {
       onClick:
         onClick == null
