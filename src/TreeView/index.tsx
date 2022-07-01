@@ -448,8 +448,11 @@ const clickActions = {
   focus: "FOCUS",
   exclusiveSelect: "EXCLUSIVE_SELECT",
 } as const;
+
 const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
-type ClickActions = typeof CLICK_ACTIONS[number];
+
+type ValueOf<T> = T[keyof T];
+type ClickActions = ValueOf<typeof clickActions>;
 
 const noop = () => {};
 
