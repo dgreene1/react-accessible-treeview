@@ -443,9 +443,13 @@ const useTree = ({
   return [state, dispatch];
 };
 
-const CLIENT_ACTIONS = ["SELECT", "FOCUS", "EXCLUSIVE_SELECT"] as const;
-type ClickActionTuple = typeof CLIENT_ACTIONS;
-type ClickAction = ClickActionTuple[number];
+const clickActions = {
+  select: "SELECT",
+  focus: "FOCUS",
+  exclusiveSelect: "EXCLUSIVE_SELECT",
+} as const;
+const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
+type ClickActions = typeof CLICK_ACTIONS[number];
 
 const noop = () => {};
 
@@ -548,7 +552,7 @@ interface ITreeViewProps {
   /** Wether the selected state is togglable */
   togglableSelect?: boolean;
   /** action to perform on click */
-  clickAction?: ClickAction;
+  clickAction?: ClickActions;
   /** Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it) */
   onBlur?: Function;
 }
@@ -569,7 +573,7 @@ const TreeView = React.forwardRef(function TreeView(
     defaultExpandedIds = [],
     defaultSelectedIds = [],
     defaultDisabledIds = [],
-    clickAction = "SELECT",
+    clickAction = clickActions.select,
     onBlur,
     ...other
   }: ITreeViewProps,
@@ -721,7 +725,7 @@ const Node = (props: any) => {
         ids,
         lastInteractedWith: element.id,
       });
-    } else if (event.ctrlKey || clickAction === "SELECT") {
+    } else if (event.ctrlKey || clickActions.select) {
       //Select
       dispatch({
         type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
@@ -738,14 +742,14 @@ const Node = (props: any) => {
           multiSelect,
           lastInteractedWith: element.id,
         });
-    } else if (clickAction === "EXCLUSIVE_SELECT") {
+    } else if (clickAction === clickActions.exclusiveSelect) {
       dispatch({
         type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
         id: element.id,
         multiSelect: false,
         lastInteractedWith: element.id,
       });
-    } else if (clickAction === "FOCUS") {
+    } else if (clickAction === clickActions.focus) {
       dispatch({
         type: treeTypes.focus,
         id: element.id,
@@ -1179,7 +1183,7 @@ TreeView.propTypes = {
   togglableSelect: PropTypes.bool,
 
   /** action to perform on click */
-  clickAction: PropTypes.oneOf(CLIENT_ACTIONS),
+  clickAction: PropTypes.oneOf(CLICK_ACTIONS),
 };
 
 export default TreeView;
