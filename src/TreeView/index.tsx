@@ -61,7 +61,7 @@ const treeTypes = {
   enable: "ENABLE",
 } as const;
 
-type Action =
+type TreeViewAction =
   | { type: "COLLAPSE"; id: number; lastInteractedWith?: number | null }
   | { type: "COLLAPSE_MANY"; ids: number[]; lastInteractedWith?: number | null }
   | { type: "EXPAND"; id: number; lastInteractedWith?: number | null }
@@ -132,10 +132,13 @@ export interface ITreeViewState {
   lastUserSelect: number;
   /** Last node interacted with */
   lastInteractedWith: number;
-  lastAction?: Action["type"];
+  lastAction?: TreeViewAction["type"];
 }
 
-const treeReducer = (state: ITreeViewState, action: Action): ITreeViewState => {
+const treeReducer = (
+  state: ITreeViewState,
+  action: TreeViewAction
+): ITreeViewState => {
   switch (action.type) {
     case treeTypes.collapse: {
       const expandedIds = new Set<number>(state.expandedIds);
@@ -381,7 +384,7 @@ const useTree = ({
   onExpand,
   multiSelect,
   propagateSelectUpwards,
-}: IUseTreeProps): [state: ITreeViewState, dispatch: React.Dispatch<Action>] => {
+}: IUseTreeProps): [state: ITreeViewState, dispatch: React.Dispatch<TreeViewAction>] => {
   const [state, dispatch] = useReducer(treeReducer, {
     selectedIds: new Set<number>(defaultSelectedIds),
     tabbableId: data[0].children[0],
@@ -570,7 +573,7 @@ export interface INodeRendererProps {
   /** Function to assign to the onClick event handler of the element(s) that will toggle the expanded state */
   handleExpand: (event: KeyboardEvent | MouseEvent) => void;
   /** Function to dispatch actions */
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<TreeViewAction>;
   /** state of the treeview */
   treeState: ITreeViewState;
 }
@@ -604,7 +607,7 @@ interface ITreeViewProps {
   /** className to add to the outermost ul */
   className?: string;
   /** Render prop for the node */
-  nodeRenderer: (props: INodeRendererProps) => void;
+  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
   /** Array with the ids of the default expanded nodes */
   defaultExpandedIds?: number[];
   /** Array with the ids of the default selected nodes */
@@ -727,7 +730,33 @@ const TreeView = React.forwardRef(function TreeView(
   );
 });
 
-const Node = (props: any) => {
+interface INodeProps {
+  element: INode;
+  dispatch: React.Dispatch<TreeViewAction>;
+  data: INode[];
+  selectedIds: Set<number>;
+  tabbableId: number;
+  isFocused: boolean;
+  expandedIds: Set<number>;
+  disabledIds: Set<number>;
+  halfSelectedIds: Set<number>;
+  lastUserSelect: number;
+  nodeRefs: any;
+  baseClassNames: typeof baseClassNames;
+  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  setsize: number;
+  posinset: number;
+  level: number;
+  propagateCollapse: boolean;
+  propagateSelect: boolean;
+  multiSelect: boolean;
+  togglableSelect: boolean;
+  clickAction?: ClickActions;
+  state: ITreeViewState;
+  propagateSelectUpwards: boolean;
+}
+
+const Node = (props: INodeProps) => {
   const {
     element,
     dispatch,
@@ -752,8 +781,8 @@ const Node = (props: any) => {
     clickAction,
     state,
   } = props;
-
-  const handleExpand = (event: any) => {
+  
+  const handleExpand = (event: KeyboardEvent | MouseEvent) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids: number[] = [
@@ -890,23 +919,25 @@ const Node = (props: any) => {
       ref={(x) => (nodeRefs.current[element.id] = x)}
       className={baseClassNames.branchWrapper}
     >
-      {nodeRenderer({
-        element,
-        isBranch: true,
-        isSelected: selectedIds.has(element.id),
-        isHalfSelected: halfSelectedIds.has(element.id),
-        isExpanded: expandedIds.has(element.id),
-        isDisabled: disabledIds.has(element.id),
-        dispatch,
-        getNodeProps: getBranchProps,
-        setsize,
-        posinset,
-        level,
-        handleSelect,
-        handleExpand,
-        treeState: state,
-      })}
-      <NodeGroup element={element} getClasses={getClasses} {...props} />
+      <>
+        {nodeRenderer({
+          element,
+          isBranch: true,
+          isSelected: selectedIds.has(element.id),
+          isHalfSelected: halfSelectedIds.has(element.id),
+          isExpanded: expandedIds.has(element.id),
+          isDisabled: disabledIds.has(element.id),
+          dispatch,
+          getNodeProps: getBranchProps,
+          setsize,
+          posinset,
+          level,
+          handleSelect,
+          handleExpand,
+          treeState: state,
+        })}
+        <NodeGroup element={element} getClasses={getClasses} {...props} />
+      </>
     </li>
   ) : (
     <li role="none" className={getClasses(baseClassNames.leafListItem)}>
@@ -930,6 +961,10 @@ const Node = (props: any) => {
   );
 };
 
+interface INodeGroupProps extends INodeProps {
+  getClasses: (className: string) => string;
+}
+
 const NodeGroup = ({
   data,
   element,
@@ -938,7 +973,7 @@ const NodeGroup = ({
   baseClassNames,
   level,
   ...rest
-}: any) => (
+}: INodeGroupProps) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
       element.children.map((x: any, index: number) => (
