@@ -551,7 +551,19 @@ export interface INodeRendererProps {
   /** The object that represents the rendered node */
   element: INode;
   /** A function which gives back the props to pass to the node */
-  getNodeProps: Function;
+  getNodeProps: () => {
+    role?: string;
+    tabIndex?: number;
+    onClick?: EventCallback;
+    ref?: Function;
+    className?: string;
+    "aria-setsize"?: number;
+    "aria-posinset"?: number;
+    "aria-level"?: number;
+    "aria-selected"?: boolean;
+    disabled?: boolean;
+    "aria-disabled"?: boolean;
+  };
   /** Whether the rendered node is a branch node */
   isBranch: boolean;
   /** Whether the rendered node is selected */
@@ -688,20 +700,22 @@ const TreeView = React.forwardRef(function TreeView(
           dispatch({ type: treeTypes.blur });
         });
       }}
-      onKeyDown={handleKeyDown({
-        data,
-        tabbableId: state.tabbableId,
-        expandedIds: state.expandedIds,
-        selectedIds: state.selectedIds,
-        disabledIds: state.disabledIds,
-        halfSelectedIds: state.halfSelectedIds,
-        dispatch,
-        propagateCollapse,
-        propagateSelect,
-        multiSelect,
-        expandOnKeyboardSelect,
-        togglableSelect,
-      })}
+      onKeyDown={() =>
+        handleKeyDown({
+          data,
+          tabbableId: state.tabbableId,
+          expandedIds: state.expandedIds,
+          selectedIds: state.selectedIds,
+          disabledIds: state.disabledIds,
+          halfSelectedIds: state.halfSelectedIds,
+          dispatch,
+          propagateCollapse,
+          propagateSelect,
+          multiSelect,
+          expandOnKeyboardSelect,
+          togglableSelect,
+        })
+      }
       {...other}
     >
       {data[0].children.map((x, index) => (
@@ -781,7 +795,7 @@ const Node = (props: INodeProps) => {
     clickAction,
     state,
   } = props;
-  
+
   const handleExpand = (event: KeyboardEvent | MouseEvent) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
@@ -976,7 +990,7 @@ const NodeGroup = ({
 }: INodeGroupProps) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
-      element.children.map((x: any, index: number) => (
+      element.children.map((x: number, index: number) => (
         <Node
           data={data}
           expandedIds={expandedIds}
@@ -1004,7 +1018,20 @@ const handleKeyDown = ({
   multiSelect,
   expandOnKeyboardSelect,
   togglableSelect,
-}: any) => (event: any) => {
+}: {
+  data: INode[];
+  tabbableId: number;
+  expandedIds: Set<number>;
+  selectedIds: Set<number>;
+  disabledIds: Set<number>;
+  halfSelectedIds: Set<number>;
+  dispatch: React.Dispatch<TreeViewAction>;
+  propagateCollapse?: boolean;
+  propagateSelect?: boolean;
+  multiSelect?: boolean;
+  expandOnKeyboardSelect?: boolean;
+  togglableSelect?: boolean;
+}) => (event: KeyboardEvent) => {
   const element = data[tabbableId];
   const id = element.id;
   if (event.ctrlKey) {
