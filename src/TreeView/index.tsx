@@ -31,6 +31,10 @@ export interface INode {
   /** The parent of the node; null for the root node */
   parent: number | null;
 }
+export type INodeRef = HTMLLIElement | HTMLDivElement;
+export type INodeRefs = null | React.RefObject<{
+  [key: number]: INodeRef;
+}>;
 
 const baseClassNames = {
   root: "tree",
@@ -366,7 +370,7 @@ interface IUseTreeProps {
   defaultExpandedIds?: number[];
   defaultSelectedIds?: number[];
   defaultDisabledIds?: number[];
-  nodeRefs: any;
+  nodeRefs: INodeRefs;
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   onExpand?: (props: ITreeViewOnExpandProps) => void;
   multiSelect?: boolean;
@@ -555,7 +559,7 @@ export interface INodeRendererProps {
     role?: string;
     tabIndex?: number;
     onClick?: EventCallback;
-    ref?: Function;
+    ref?: (x: INodeRef) => INodeRef;
     className?: string;
     "aria-setsize"?: number;
     "aria-posinset"?: number;
@@ -690,7 +694,7 @@ const TreeView = React.forwardRef(function TreeView(
       role="tree"
       aria-multiselectable={multiSelect}
       ref={innerRef}
-      onBlur={(event) => {
+      onBlur={(event: React.FocusEvent<HTMLUListElement>) => {
         onComponentBlur(event, innerRef.current, () => {
           onBlur &&
             onBlur({
@@ -755,7 +759,7 @@ interface INodeProps {
   disabledIds: Set<number>;
   halfSelectedIds: Set<number>;
   lastUserSelect: number;
-  nodeRefs: any;
+  nodeRefs: INodeRefs;
   baseClassNames: typeof baseClassNames;
   nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
   setsize: number;
@@ -890,7 +894,7 @@ const Node = (props: INodeProps) => {
         onClick == null
           ? composeHandlers(handleSelect, handleFocus)
           : composeHandlers(onClick, handleFocus),
-      ref: (x: any) => (nodeRefs.current[element.id] = x),
+      ref: (x: INodeRef) => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
       "aria-setsize": setsize,
       "aria-posinset": posinset,
@@ -1039,7 +1043,7 @@ const handleKeyDown = ({
       event.preventDefault();
       const { 0: root, ...dataWithoutRoot } = data;
       const ids = Object.values(dataWithoutRoot)
-        .map((x: any) => x.id)
+        .map((x: INode) => x.id)
         .filter((id) => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
@@ -1217,7 +1221,7 @@ const handleKeyDown = ({
     }
     case "*": {
       event.preventDefault();
-      const nodes = data[getParent(data, id)].children.filter((x: any) =>
+      const nodes = data[getParent(data, id)].children.filter((x: number) =>
         isBranchNode(data, x)
       );
       dispatch({

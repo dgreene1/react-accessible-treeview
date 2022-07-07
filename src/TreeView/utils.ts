@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { INode } from ".";
+import { INode, INodeRef } from ".";
 
 export type EventCallback = (event?: UIEvent) => void;
 
@@ -39,7 +39,8 @@ export const usePrevious = (x: Set<number>) => {
 export const isBranchNode = (data: INode[], i: number) =>
   data[i].children != null && data[i].children.length > 0;
 
-export const focusRef = (ref: any) => {
+export const focusRef = (ref: INodeRef) => {
+  console.log("focusRef. ref = ", ref);
   if (ref != null && ref.focus) {
     ref.focus();
   }
