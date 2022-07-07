@@ -645,7 +645,7 @@ interface ITreeViewProps {
   /** action to perform on click */
   clickAction?: ClickActions;
   /** Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it) */
-  onBlur?: Function;
+  onBlur?: (event: React.FocusEvent<HTMLUListElement> | { treeState: ITreeViewState; dispatch: React.Dispatch<TreeViewAction>; }) => void;
 }
 
 const TreeView = React.forwardRef(function TreeView(

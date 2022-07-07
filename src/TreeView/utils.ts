@@ -265,7 +265,7 @@ const isIE = () => window.navigator.userAgent.match(/Trident/);
 
 export const onComponentBlur = (
   event: React.FocusEvent,
-  treeNode: any, // HTMLUListElement
+  treeNode: HTMLUListElement,
   callback: () => void
 ) => {
   if (isIE()) {
@@ -274,6 +274,6 @@ export const onComponentBlur = (
       0
     );
   } else {
-    !treeNode.contains(event.nativeEvent.relatedTarget) && callback();
+    !treeNode.contains(event.nativeEvent.relatedTarget as Node) && callback();
   }
 };
