@@ -883,8 +883,8 @@ const Node = (props: INodeProps) => {
     });
   };
 
-  const getLeafProps = (props: { onClick?: EventCallback } = {}) => {
-    const { onClick } = props;
+  const getLeafProps = (args: { onClick?: EventCallback } = {}) => {
+    const { onClick } = args;
     return {
       role: "treeitem",
       tabIndex: tabbableId === element.id ? 0 : -1,
@@ -907,8 +907,8 @@ const Node = (props: INodeProps) => {
     };
   };
 
-  const getBranchProps = (props: { onClick?: EventCallback } = {}) => {
-    const { onClick } = props;
+  const getBranchProps = (args: { onClick?: EventCallback } = {}) => {
+    const { onClick } = args;
     return {
       onClick:
         onClick == null
@@ -1039,6 +1039,7 @@ const handleKeyDown = ({
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { 0: root, ...dataWithoutRoot } = data;
       const ids = Object.values(dataWithoutRoot)
         .map((x: INode) => x.id)
