@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { SyntheticEvent, useEffect, useRef } from "react";
 import { INode, INodeRef } from ".";
 
-export type EventCallback = (event?: UIEvent) => void;
+export type EventCallback = (event?: UIEvent | SyntheticEvent) => void;
 
 export const composeHandlers = (
   ...handlers: EventCallback[]
