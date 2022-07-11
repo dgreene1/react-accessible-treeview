@@ -48,7 +48,7 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function MultiSelectCheckbox(props: any) {
+function MultiSelectCheckbox() {
   return (
     <div>
       <div className="checkbox">
@@ -87,7 +87,7 @@ function MultiSelectCheckbox(props: any) {
 test("Shift + Up / Down Arrow", () => {
   const { queryAllByRole } = render(<MultiSelectCheckbox />);
 
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(nodes[0], { key: "ArrowDown", shiftKey: true });
 
@@ -102,7 +102,7 @@ test("Shift + Up / Down Arrow", () => {
 test("Shift + Up / Down Arrow", () => {
   const { queryAllByRole } = render(<MultiSelectCheckbox />);
 
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(nodes[0], { key: "ArrowDown", shiftKey: true });
 
@@ -116,11 +116,11 @@ test("Shift + Up / Down Arrow", () => {
 
 test("propagateselect selects all child nodes", () => {
   const { queryAllByRole, container } = render(<MultiSelectCheckbox />);
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(document.activeElement, { key: "Enter" });
   fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
-  let childNodes = container.querySelectorAll(
+  const childNodes = container.querySelectorAll(
     '[role="treeitem"][aria-level="2"]'
   );
   childNodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
