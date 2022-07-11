@@ -413,7 +413,7 @@ const useTree = ({
   const toggledIds = symmetricDifference(selectedIds, prevSelectedIds);
 
   useEffect(() => {
-    if (onSelect !== noop) {
+    if (onSelect) {
       for (const toggledId of toggledIds) {
         const isBranch = isBranchNode(data, toggledId);
         onSelect({
@@ -441,7 +441,7 @@ const useTree = ({
   const prevExpandedIds = usePrevious(expandedIds) || new Set<number>();
   useEffect(() => {
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
-    if (onExpand !== noop) {
+    if (onExpand) {
       for (const id of toggledExpandIds) {
         onExpand({
           element: data[id],
@@ -467,7 +467,7 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards && multiSelect) {
-      let idsToUpdate = new Set<number>(toggledIds);
+      const idsToUpdate = new Set<number>(toggledIds);
       if (lastInteractedWith) {
         idsToUpdate.add(lastInteractedWith);
       }
@@ -548,8 +548,6 @@ const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
 
 type ValueOf<T> = T[keyof T];
 type ClickActions = ValueOf<typeof clickActions>;
-
-const noop = () => {};
 
 export interface INodeRendererProps {
   /** The object that represents the rendered node */
@@ -652,8 +650,8 @@ const TreeView = React.forwardRef(function TreeView(
   {
     data,
     nodeRenderer,
-    onSelect = noop,
-    onExpand = noop,
+    onSelect,
+    onExpand,
     className = "",
     multiSelect = false,
     propagateSelect = false,
@@ -885,8 +883,8 @@ const Node = (props: INodeProps) => {
     });
   };
 
-  const getLeafProps = (props: { onClick?: EventCallback } = {}) => {
-    const { onClick } = props;
+  const getLeafProps = (args: { onClick?: EventCallback } = {}) => {
+    const { onClick } = args;
     return {
       role: "treeitem",
       tabIndex: tabbableId === element.id ? 0 : -1,
@@ -909,8 +907,8 @@ const Node = (props: INodeProps) => {
     };
   };
 
-  const getBranchProps = (props: { onClick?: EventCallback } = {}) => {
-    const { onClick } = props;
+  const getBranchProps = (args: { onClick?: EventCallback } = {}) => {
+    const { onClick } = args;
     return {
       onClick:
         onClick == null
@@ -972,7 +970,7 @@ const Node = (props: INodeProps) => {
         posinset,
         level,
         handleSelect,
-        handleExpand: noop,
+        handleExpand,
         treeState: state,
       })}
     </li>
@@ -1041,6 +1039,7 @@ const handleKeyDown = ({
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { 0: root, ...dataWithoutRoot } = data;
       const ids = Object.values(dataWithoutRoot)
         .map((x: INode) => x.id)

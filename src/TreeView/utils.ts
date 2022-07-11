@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { SyntheticEvent, useEffect, useRef } from "react";
 import { INode, INodeRef } from ".";
 
-export type EventCallback = (event?: UIEvent) => void;
+export type EventCallback = (event?: UIEvent | SyntheticEvent) => void;
 
 export const composeHandlers = (
   ...handlers: EventCallback[]
@@ -181,8 +181,8 @@ export const getAccessibleRange = ({
   from: number;
   to: number;
 }) => {
-  let range = [];
-  let max_loop = Object.keys(data).length;
+  const range = [];
+  const max_loop = Object.keys(data).length;
   let count = 0;
   let currentId = from;
   range.push(from);
