@@ -65,7 +65,7 @@ const treeTypes = {
   enable: "ENABLE",
 } as const;
 
-type TreeViewAction =
+export type TreeViewAction =
   | { type: "COLLAPSE"; id: number; lastInteractedWith?: number | null }
   | { type: "COLLAPSE_MANY"; ids: number[]; lastInteractedWith?: number | null }
   | { type: "EXPAND"; id: number; lastInteractedWith?: number | null }
@@ -613,7 +613,7 @@ interface ITreeViewOnExpandProps {
   treeState: ITreeViewState;
 }
 
-interface ITreeViewProps {
+export interface ITreeViewProps {
   /** Tree data*/
   data: INode[];
   /** Function called when a node changes its selected state */
