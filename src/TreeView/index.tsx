@@ -293,7 +293,7 @@ const treeReducer = (
     }
     case treeTypes.changeSelectMany: {
       let selectedIds: Set<number>;
-      const ids = action.ids.filter((id: number) => !state.disabledIds.has(id));
+      const ids = action.ids.filter((id) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
           selectedIds = new Set<number>([...state.selectedIds, ...ids]);
@@ -313,7 +313,7 @@ const treeReducer = (
     }
     case treeTypes.exclusiveChangeSelectMany: {
       let selectedIds: Set<number>;
-      const ids = action.ids.filter((id: number) => !state.disabledIds.has(id));
+      const ids = action.ids.filter((id) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
           selectedIds = new Set<number>(ids);
@@ -994,7 +994,7 @@ const NodeGroup = ({
 }: INodeGroupProps) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
-      element.children.map((x: number, index: number) => (
+      element.children.map((x, index) => (
         <Node
           data={data}
           expandedIds={expandedIds}
@@ -1044,7 +1044,7 @@ const handleKeyDown = ({
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { 0: root, ...dataWithoutRoot } = data;
       const ids = Object.values(dataWithoutRoot)
-        .map((x: INode) => x.id)
+        .map((x) => x.id)
         .filter((id) => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
@@ -1222,7 +1222,7 @@ const handleKeyDown = ({
     }
     case "*": {
       event.preventDefault();
-      const nodes = data[getParent(data, id)].children.filter((x: number) =>
+      const nodes = data[getParent(data, id)].children.filter((x) =>
         isBranchNode(data, x)
       );
       dispatch({
