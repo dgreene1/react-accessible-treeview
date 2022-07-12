@@ -59,6 +59,7 @@
     "build-storybook": "build-storybook",
     "prepare": "npm run build",
     "test": "jest",
+    "type-check": "tsc --noEmit",
     "lint": "eslint \"src/**/*\""
   },
   "files": [
