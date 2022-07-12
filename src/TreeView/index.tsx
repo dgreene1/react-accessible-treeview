@@ -413,7 +413,7 @@ const useTree = ({
   const toggledIds = symmetricDifference(selectedIds, prevSelectedIds);
 
   useEffect(() => {
-    if (onSelect) {
+    if (onSelect !== noop) {
       for (const toggledId of toggledIds) {
         const isBranch = isBranchNode(data, toggledId);
         onSelect({
@@ -441,7 +441,7 @@ const useTree = ({
   const prevExpandedIds = usePrevious(expandedIds) || new Set<number>();
   useEffect(() => {
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
-    if (onExpand) {
+    if (onExpand !== noop) {
       for (const id of toggledExpandIds) {
         onExpand({
           element: data[id],
@@ -646,12 +646,14 @@ export interface ITreeViewProps {
   onBlur?: (event: React.FocusEvent<HTMLUListElement> | { treeState: ITreeViewState; dispatch: React.Dispatch<TreeViewAction>; }) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {};
 const TreeView = React.forwardRef(function TreeView(
   {
     data,
     nodeRenderer,
-    onSelect,
-    onExpand,
+    onSelect = noop,
+    onExpand = noop,
     className = "",
     multiSelect = false,
     propagateSelect = false,
@@ -949,7 +951,7 @@ const Node = (props: INodeProps) => {
           posinset,
           level,
           handleSelect,
-          handleExpand,
+          handleExpand: noop,
           treeState: state,
         })}
         <NodeGroup element={element} getClasses={getClasses} {...props} />
