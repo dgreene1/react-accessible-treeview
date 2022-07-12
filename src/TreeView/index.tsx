@@ -549,23 +549,30 @@ const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
 type ValueOf<T> = T[keyof T];
 type ClickActions = ValueOf<typeof clickActions>;
 
+interface ILeafProps {
+  role: string;
+  tabIndex: number;
+  onClick: EventCallback;
+  ref: (x: INodeRef) => INodeRef;
+  className: string;
+  "aria-setsize": number;
+  "aria-posinset": number;
+  "aria-level": number;
+  "aria-selected": boolean;
+  disabled: boolean;
+  "aria-disabled": boolean;
+}
+
+interface IBranchProps {
+  onClick: EventCallback;
+  className: string;
+}
+
 export interface INodeRendererProps {
   /** The object that represents the rendered node */
   element: INode;
   /** A function which gives back the props to pass to the node */
-  getNodeProps: () => {
-    role?: string;
-    tabIndex?: number;
-    onClick?: EventCallback;
-    ref?: (x: INodeRef) => INodeRef;
-    className?: string;
-    "aria-setsize"?: number;
-    "aria-posinset"?: number;
-    "aria-level"?: number;
-    "aria-selected"?: boolean;
-    disabled?: boolean;
-    "aria-disabled"?: boolean;
-  };
+  getNodeProps: () => IBranchProps | ILeafProps;
   /** Whether the rendered node is a branch node */
   isBranch: boolean;
   /** Whether the rendered node is selected */
