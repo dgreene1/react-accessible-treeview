@@ -951,7 +951,7 @@ const Node = (props: INodeProps) => {
           posinset,
           level,
           handleSelect,
-          handleExpand: noop,
+          handleExpand,
           treeState: state,
         })}
         <NodeGroup element={element} getClasses={getClasses} {...props} />
@@ -972,7 +972,7 @@ const Node = (props: INodeProps) => {
         posinset,
         level,
         handleSelect,
-        handleExpand,
+        handleExpand: noop,
         treeState: state,
       })}
     </li>
