@@ -34,7 +34,9 @@ const folder = {
 };
 
 const data = flattenTree(folder);
-function DirectoryTreeView(props: ITreeViewProps) {
+function DirectoryTreeView(props: {
+  defaultExpandedIds: ITreeViewProps["defaultExpandedIds"];
+}) {
   return (
     <div>
       <div className="ide">
@@ -44,7 +46,13 @@ function DirectoryTreeView(props: ITreeViewProps) {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          onBlur={({ treeState, dispatch }: { treeState: ITreeViewState; dispatch: React.Dispatch<TreeViewAction>; }) => {
+          onBlur={({
+            treeState,
+            dispatch,
+          }: {
+            treeState: ITreeViewState;
+            dispatch: React.Dispatch<TreeViewAction>;
+          }) => {
             dispatch({
               type: "DESELECT",
               id: Array.from(treeState.selectedIds)[0],
