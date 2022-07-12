@@ -572,7 +572,7 @@ export interface INodeRendererProps {
   /** The object that represents the rendered node */
   element: INode;
   /** A function which gives back the props to pass to the node */
-  getNodeProps: () => IBranchProps | ILeafProps;
+  getNodeProps: (args?: { onClick?: EventCallback }) => IBranchProps | ILeafProps;
   /** Whether the rendered node is a branch node */
   isBranch: boolean;
   /** Whether the rendered node is selected */
