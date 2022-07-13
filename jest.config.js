@@ -8,7 +8,7 @@ module.exports = {
   },
   testPathIgnorePatterns: ["/node_modules/"],
   testMatch: [
-    "<rootDir>/src/__tests__/**/!(*.d).ts",
+    "<rootDiZZZZZZZZZZZZZZZZZZZZZr>/src/__tests__/**/!(*.d).ts",
     "<rootDir>/src/__tests__/**/*.test.tsx",
     "<rootDir>/src/__tests__/**/*.test.ts",
   ],
