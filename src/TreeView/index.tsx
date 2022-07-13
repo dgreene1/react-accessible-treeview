@@ -590,9 +590,9 @@ export interface INodeRendererProps {
   /** A positive integer that corresponds to the aria-posinset attribute */
   posinset: number;
   /** Function to assign to the onClick event handler of the element(s) that will toggle the selected state */
-  handleSelect: (event: KeyboardEvent | MouseEvent) => void;
+  handleSelect: <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => void;
   /** Function to assign to the onClick event handler of the element(s) that will toggle the expanded state */
-  handleExpand: (event: KeyboardEvent | MouseEvent) => void;
+  handleExpand: <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => void;
   /** Function to dispatch actions */
   dispatch: React.Dispatch<TreeViewAction>;
   /** state of the treeview */
@@ -807,7 +807,7 @@ const Node = (props: INodeProps) => {
     state,
   } = props;
 
-  const handleExpand = (event: KeyboardEvent | MouseEvent) => {
+  const handleExpand = <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids: number[] = [
@@ -835,7 +835,7 @@ const Node = (props: INodeProps) => {
       lastInteractedWith: element.id,
     });
 
-  const handleSelect = (event: KeyboardEvent | MouseEvent) => {
+  const handleSelect = <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => {
     if (event.shiftKey) {
       let ids = getAccessibleRange({
         data,
