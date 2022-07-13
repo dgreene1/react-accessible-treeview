@@ -1,6 +1,7 @@
 import cx from "classnames";
-import PropTypes from "prop-types";
-import React, { useEffect, useReducer, useRef } from "react";
+import * as PropTypes from "prop-types";
+import * as React from "react";
+import { useEffect, useReducer, useRef } from "react";
 import {
   composeHandlers,
   difference,
