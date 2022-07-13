@@ -6,6 +6,7 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js",
   },
+  testEnvironment: "jsdom",
   testPathIgnorePatterns: ["/node_modules/"],
   testMatch: [
     "<rootDiZZZZZZZZZZZZZZZZZZZZZr>/src/__tests__/**/!(*.d).ts",
