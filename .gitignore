@@ -4,3 +4,4 @@ dist
 website/package-lock.json
 styleguide
 website/yarn.lock
+storybook-static
