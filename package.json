@@ -60,7 +60,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "prepare": "npm run build",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "type-check": "tsc --noEmit",
     "lint": "eslint \"src/**/*\""
   },
