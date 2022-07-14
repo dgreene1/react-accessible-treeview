@@ -1,20 +1,11 @@
-import { useEffect, useRef } from "react";
-import { INode } from ".";
+import { SyntheticEvent, useEffect, useRef } from "react";
+import { INode, INodeRef } from ".";
 
-export interface INode {
-  /** A non-negative integer that uniquely identifies the node. */
-  id: number;
-  /** Used to match on key press. */
-  name: string;
-  /** An array with the ids of the children nodes. */
-  children: number[];
-  /** The parent of the node. null for the root node. */
-  parent: number | null;
-}
+export type EventCallback = (event?: UIEvent | SyntheticEvent) => void;
 
-export const composeHandlers = (...handlers: ((event: Event) => void)[]) => (
-  event: Event
-) => {
+export const composeHandlers = (
+  ...handlers: EventCallback[]
+): EventCallback => (event): void => {
   for (const handler of handlers) {
     handler && handler(event);
     if (event.defaultPrevented) {
@@ -48,7 +39,7 @@ export const usePrevious = (x: Set<number>) => {
 export const isBranchNode = (data: INode[], i: number) =>
   data[i].children != null && data[i].children.length > 0;
 
-export const focusRef = (ref: any) => {
+export const focusRef = (ref: INodeRef) => {
   if (ref != null && ref.focus) {
     ref.focus();
   }
@@ -149,7 +140,11 @@ export const propagateSelectChange = (
   selectedIds: Set<number>,
   disabledIds: Set<number>
 ) => {
-  const changes = { every: new Set(), some: new Set(), none: new Set() };
+  const changes = {
+    every: new Set<number>(),
+    some: new Set<number>(),
+    none: new Set<number>(),
+  };
   for (const id of ids) {
     let currentId = id;
     while (true) {
@@ -186,8 +181,8 @@ export const getAccessibleRange = ({
   from: number;
   to: number;
 }) => {
-  let range = [];
-  let max_loop = Object.keys(data).length;
+  const range = [];
+  const max_loop = Object.keys(data).length;
   let count = 0;
   let currentId = from;
   range.push(from);
@@ -209,20 +204,31 @@ export const getAccessibleRange = ({
   return range;
 };
 
-export const flattenTree = function(tree: any) {
-  let count = 0;
-  const flattenedTree: any[] = [];
+interface ITreeNode {
+  name: string;
+  children?: ITreeNode[];
+}
 
-  const flattenTreeHelper = function(tree: any, parent: any) {
-    tree.id = count;
-    tree.parent = parent;
-    flattenedTree[count] = tree;
+export const flattenTree = function(tree: ITreeNode): INode[] {
+  let count = 0;
+  const flattenedTree: INode[] = [];
+
+  const flattenTreeHelper = function(tree: ITreeNode, parent: number | null) {
+    const node: INode = {
+      id: count,
+      name: tree.name,
+      children: [],
+      parent,
+    };
+    flattenedTree[count] = node;
     count += 1;
     if (tree.children == null || tree.children.length === 0) return;
     for (const child of tree.children) {
-      flattenTreeHelper(child, tree.id);
+      flattenTreeHelper(child, node.id);
     }
-    tree.children = tree.children.map((x: any) => x.id);
+    node.children = flattenedTree
+      .filter((x) => x.parent === node.id)
+      .map((x: INode) => x.id);
   };
 
   flattenTreeHelper(tree, null);
@@ -257,8 +263,8 @@ export const propagatedIds = (
 const isIE = () => window.navigator.userAgent.match(/Trident/);
 
 export const onComponentBlur = (
-  event: any,
-  treeNode: any,
+  event: React.FocusEvent,
+  treeNode: HTMLUListElement,
   callback: () => void
 ) => {
   if (isIE()) {
@@ -267,6 +273,6 @@ export const onComponentBlur = (
       0
     );
   } else {
-    !treeNode.contains(event.nativeEvent.relatedTarget) && callback();
+    !treeNode.contains(event.nativeEvent.relatedTarget as Node) && callback();
   }
 };

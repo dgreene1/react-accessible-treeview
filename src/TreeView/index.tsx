@@ -1,24 +1,40 @@
-import React, { useReducer, useRef, useEffect } from "react";
 import cx from "classnames";
 import PropTypes from "prop-types";
+import React, { useEffect, useReducer, useRef } from "react";
 import {
+  composeHandlers,
   difference,
-  symmetricDifference,
-  usePrevious,
+  EventCallback,
+  focusRef,
+  getAccessibleRange,
+  getAriaSelected,
   getDescendants,
   getLastAccessible,
   getNextAccessible,
   getParent,
   getPreviousAccessible,
   isBranchNode,
-  composeHandlers,
-  focusRef,
-  propagateSelectChange,
-  getAccessibleRange,
-  getAriaSelected,
+  onComponentBlur,
   propagatedIds,
-  onComponentBlur
+  propagateSelectChange,
+  symmetricDifference,
+  usePrevious
 } from "./utils";
+
+export interface INode {
+  /** A non-negative integer that uniquely identifies the node */
+  id: number;
+  /** Used to match on key press */
+  name: string;
+  /** An array with the ids of the children nodes */
+  children: number[];
+  /** The parent of the node; null for the root node */
+  parent: number | null;
+}
+export type INodeRef = HTMLLIElement | HTMLDivElement;
+export type INodeRefs = null | React.RefObject<{
+  [key: number]: INodeRef;
+}>;
 
 const baseClassNames = {
   root: "tree",
@@ -27,8 +43,8 @@ const baseClassNames = {
   branchWrapper: "tree-branch-wrapper",
   leafListItem: "tree-leaf-list-item",
   leaf: "tree-node__leaf",
-  nodeGroup: "tree-node-group"
-};
+  nodeGroup: "tree-node-group",
+} as const;
 
 const treeTypes = {
   collapse: "COLLAPSE",
@@ -41,18 +57,95 @@ const treeTypes = {
   toggle: "TOGGLE",
   toggleSelect: "TOGGLE_SELECT",
   changeSelectMany: "SELECT_MANY",
-  exclusiveSelectMany: "EXCLUSIVE_SELECT_MANY",
+  // exclusiveSelectMany: "EXCLUSIVE_SELECT_MANY", // NOT USED BY TREE REDUCER
   exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
   focus: "FOCUS",
   blur: "BLUR",
   disable: "DISABLE",
-  enable: "ENABLE"
-};
+  enable: "ENABLE",
+} as const;
 
-const treeReducer = (state, action) => {
+export type TreeViewAction =
+  | { type: "COLLAPSE"; id: number; lastInteractedWith?: number | null }
+  | { type: "COLLAPSE_MANY"; ids: number[]; lastInteractedWith?: number | null }
+  | { type: "EXPAND"; id: number; lastInteractedWith?: number | null }
+  | { type: "EXPAND_MANY"; ids: number[]; lastInteractedWith?: number | null }
+  | {
+      type: "HALF_SELECT";
+      id: number;
+      lastInteractedWith?: number | null;
+    }
+  | {
+      type: "SELECT";
+      id: number;
+      multiSelect?: boolean;
+      keepFocus?: boolean;
+      NotUserAction?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | {
+      type: "DESELECT";
+      id: number;
+      multiSelect?: boolean;
+      keepFocus?: boolean;
+      NotUserAction?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | { type: "TOGGLE"; id: number; lastInteractedWith?: number | null }
+  | {
+      type: "TOGGLE_SELECT";
+      id: number;
+      multiSelect?: boolean;
+      NotUserAction?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | {
+      type: "SELECT_MANY";
+      ids: number[];
+      select?: boolean;
+      multiSelect?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | { type: "EXCLUSIVE_SELECT_MANY" }
+  | {
+      type: "EXCLUSIVE_CHANGE_SELECT_MANY";
+      ids: number[];
+      select?: boolean;
+      multiSelect?: boolean;
+      lastInteractedWith?: number | null;
+    }
+  | { type: "FOCUS"; id: number; lastInteractedWith?: number | null }
+  | { type: "BLUR" }
+  | { type: "DISABLE"; id: number }
+  | { type: "ENABLE"; id: number };
+
+export interface ITreeViewState {
+  /** Set of the ids of the expanded nodes */
+  expandedIds: Set<number>;
+  /** Set of the ids of the selected nodes */
+  disabledIds: Set<number>;
+  /** Set of the ids of the selected nodes */
+  halfSelectedIds: Set<number>;
+  /** Set of the ids of the selected nodes */
+  selectedIds: Set<number>;
+  /** Id of the node with tabindex = 0 */
+  tabbableId: number;
+  /** Whether the tree has focus */
+  isFocused: boolean;
+  /** Last selection made directly by the user */
+  lastUserSelect: number;
+  /** Last node interacted with */
+  lastInteractedWith: number;
+  lastAction?: TreeViewAction["type"];
+}
+
+const treeReducer = (
+  state: ITreeViewState,
+  action: TreeViewAction
+): ITreeViewState => {
   switch (action.type) {
     case treeTypes.collapse: {
-      const expandedIds = new Set(state.expandedIds);
+      const expandedIds = new Set<number>(state.expandedIds);
       expandedIds.delete(action.id);
       return {
         ...state,
@@ -60,11 +153,11 @@ const treeReducer = (state, action) => {
         tabbableId: action.id,
         isFocused: true,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.collapseMany: {
-      const expandedIds = new Set(state.expandedIds);
+      const expandedIds = new Set<number>(state.expandedIds);
       for (const id of action.ids) {
         expandedIds.delete(id);
       }
@@ -72,11 +165,11 @@ const treeReducer = (state, action) => {
         ...state,
         expandedIds,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.expand: {
-      const expandedIds = new Set(state.expandedIds);
+      const expandedIds = new Set<number>(state.expandedIds);
       expandedIds.add(action.id);
       return {
         ...state,
@@ -84,20 +177,23 @@ const treeReducer = (state, action) => {
         tabbableId: action.id,
         isFocused: true,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.expandMany: {
-      const expandedIds = new Set([...state.expandedIds, ...action.ids]);
+      const expandedIds = new Set<number>([
+        ...state.expandedIds,
+        ...action.ids,
+      ]);
       return {
         ...state,
         expandedIds,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.toggle: {
-      const expandedIds = new Set(state.expandedIds);
+      const expandedIds = new Set<number>(state.expandedIds);
       if (state.expandedIds.has(action.id)) expandedIds.delete(action.id);
       else expandedIds.add(action.id);
       return {
@@ -106,13 +202,13 @@ const treeReducer = (state, action) => {
         tabbableId: action.id,
         isFocused: true,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.halfSelect: {
       if (state.disabledIds.has(action.id)) return state;
-      const halfSelectedIds = new Set(state.halfSelectedIds);
-      const selectedIds = new Set(state.selectedIds);
+      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
+      const selectedIds = new Set<number>(state.selectedIds);
       halfSelectedIds.add(action.id);
       selectedIds.delete(action.id);
       return {
@@ -120,21 +216,21 @@ const treeReducer = (state, action) => {
         selectedIds,
         halfSelectedIds,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.select: {
       if (state.disabledIds.has(action.id)) return state;
       let selectedIds;
       if (action.multiSelect) {
-        selectedIds = new Set(state.selectedIds);
+        selectedIds = new Set<number>(state.selectedIds);
         selectedIds.add(action.id);
       } else {
-        selectedIds = new Set();
+        selectedIds = new Set<number>();
         selectedIds.add(action.id);
       }
 
-      const halfSelectedIds = new Set(state.halfSelectedIds);
+      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
       return {
         ...state,
@@ -144,19 +240,19 @@ const treeReducer = (state, action) => {
         isFocused: true,
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.deselect: {
       if (state.disabledIds.has(action.id)) return state;
       let selectedIds;
       if (action.multiSelect) {
-        selectedIds = new Set(state.selectedIds);
+        selectedIds = new Set<number>(state.selectedIds);
         selectedIds.delete(action.id);
       } else {
-        selectedIds = new Set();
+        selectedIds = new Set<number>();
       }
-      const halfSelectedIds = new Set(state.halfSelectedIds);
+      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
       return {
         ...state,
@@ -166,7 +262,7 @@ const treeReducer = (state, action) => {
         isFocused: true,
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.toggleSelect: {
@@ -174,15 +270,15 @@ const treeReducer = (state, action) => {
       let selectedIds;
       const isSelected = state.selectedIds.has(action.id);
       if (action.multiSelect) {
-        selectedIds = new Set(state.selectedIds);
+        selectedIds = new Set<number>(state.selectedIds);
         if (isSelected) selectedIds.delete(action.id);
         else selectedIds.add(action.id);
       } else {
-        selectedIds = new Set();
+        selectedIds = new Set<number>();
         if (!isSelected) selectedIds.add(action.id);
       }
 
-      const halfSelectedIds = new Set(state.halfSelectedIds);
+      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
       return {
         ...state,
@@ -192,17 +288,17 @@ const treeReducer = (state, action) => {
         isFocused: true,
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     }
     case treeTypes.changeSelectMany: {
-      let selectedIds;
-      const ids = action.ids.filter(id => !state.disabledIds.has(id));
+      let selectedIds: Set<number>;
+      const ids = action.ids.filter((id) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
-          selectedIds = new Set([...state.selectedIds, ...ids]);
+          selectedIds = new Set<number>([...state.selectedIds, ...ids]);
         } else {
-          selectedIds = difference(state.selectedIds, new Set(ids));
+          selectedIds = difference(state.selectedIds, new Set<number>(ids));
         }
         const halfSelectedIds = difference(state.halfSelectedIds, selectedIds);
         return {
@@ -210,19 +306,19 @@ const treeReducer = (state, action) => {
           selectedIds,
           halfSelectedIds,
           lastAction: action.type,
-          lastInteractedWith: action.lastInteractedWith
+          lastInteractedWith: action.lastInteractedWith,
         };
       }
       return state;
     }
     case treeTypes.exclusiveChangeSelectMany: {
-      let selectedIds;
-      const ids = action.ids.filter(id => !state.disabledIds.has(id));
+      let selectedIds: Set<number>;
+      const ids = action.ids.filter((id) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
-          selectedIds = new Set(ids);
+          selectedIds = new Set<number>(ids);
         } else {
-          selectedIds = difference(state.selectedIds, new Set(ids));
+          selectedIds = difference(state.selectedIds, new Set<number>(ids));
         }
         const halfSelectedIds = difference(state.halfSelectedIds, selectedIds);
         return {
@@ -230,7 +326,7 @@ const treeReducer = (state, action) => {
           selectedIds,
           halfSelectedIds,
           lastAction: action.type,
-          lastInteractedWith: action.lastInteractedWith
+          lastInteractedWith: action.lastInteractedWith,
         };
       }
       return state;
@@ -241,33 +337,46 @@ const treeReducer = (state, action) => {
         tabbableId: action.id,
         isFocused: true,
         lastAction: action.type,
-        lastInteractedWith: action.lastInteractedWith
+        lastInteractedWith: action.lastInteractedWith,
       };
     case treeTypes.blur:
       return {
         ...state,
-        isFocused: false
+        isFocused: false,
       };
     case treeTypes.disable: {
-      const disabledIds = new Set(state.disabledIds);
+      const disabledIds = new Set<number>(state.disabledIds);
       disabledIds.add(action.id);
       return {
         ...state,
-        disabledIds
+        disabledIds,
       };
     }
     case treeTypes.enable: {
-      const disabledIds = new Set(state.disabledIds);
+      const disabledIds = new Set<number>(state.disabledIds);
       disabledIds.delete(action.id);
       return {
         ...state,
-        disabledIds
+        disabledIds,
       };
     }
     default:
       throw new Error("Invalid action passed to the reducer");
   }
 };
+
+interface IUseTreeProps {
+  data: INode[];
+  defaultExpandedIds?: number[];
+  defaultSelectedIds?: number[];
+  defaultDisabledIds?: number[];
+  nodeRefs: INodeRefs;
+  onSelect?: (props: ITreeViewOnSelectProps) => void;
+  onExpand?: (props: ITreeViewOnExpandProps) => void;
+  multiSelect?: boolean;
+  propagateSelectUpwards?: boolean;
+  propagateSelect?: boolean;
+}
 
 const useTree = ({
   data,
@@ -278,17 +387,17 @@ const useTree = ({
   onSelect,
   onExpand,
   multiSelect,
-  propagateSelectUpwards
-}) => {
+  propagateSelectUpwards,
+}: IUseTreeProps): [state: ITreeViewState, dispatch: React.Dispatch<TreeViewAction>] => {
   const [state, dispatch] = useReducer(treeReducer, {
-    selectedIds: new Set(defaultSelectedIds),
+    selectedIds: new Set<number>(defaultSelectedIds),
     tabbableId: data[0].children[0],
     isFocused: false,
-    expandedIds: new Set(defaultExpandedIds),
-    halfSelectedIds: new Set(),
+    expandedIds: new Set<number>(defaultExpandedIds),
+    halfSelectedIds: new Set<number>(),
     lastUserSelect: data[0].children[0],
     lastInteractedWith: null,
-    disabledIds: new Set(defaultDisabledIds)
+    disabledIds: new Set<number>(defaultDisabledIds),
   });
 
   const {
@@ -298,9 +407,9 @@ const useTree = ({
     tabbableId,
     halfSelectedIds,
     lastAction,
-    lastInteractedWith
+    lastInteractedWith,
   } = state;
-  const prevSelectedIds = usePrevious(selectedIds) || new Set();
+  const prevSelectedIds = usePrevious(selectedIds) || new Set<number>();
   const toggledIds = symmetricDifference(selectedIds, prevSelectedIds);
 
   useEffect(() => {
@@ -314,7 +423,7 @@ const useTree = ({
           isSelected: selectedIds.has(toggledId),
           isDisabled: disabledIds.has(toggledId),
           isHalfSelected: isBranch ? halfSelectedIds.has(toggledId) : undefined,
-          treeState: state
+          treeState: state,
         });
       }
     }
@@ -326,10 +435,10 @@ const useTree = ({
     halfSelectedIds,
     toggledIds,
     onSelect,
-    state
+    state,
   ]);
 
-  const prevExpandedIds = usePrevious(expandedIds) || new Set();
+  const prevExpandedIds = usePrevious(expandedIds) || new Set<number>();
   useEffect(() => {
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onExpand !== noop) {
@@ -340,7 +449,7 @@ const useTree = ({
           isSelected: selectedIds.has(id),
           isDisabled: disabledIds.has(id),
           isHalfSelected: halfSelectedIds.has(id),
-          treeState: state
+          treeState: state,
         });
       }
     }
@@ -352,13 +461,13 @@ const useTree = ({
     halfSelectedIds,
     prevExpandedIds,
     onExpand,
-    state
+    state,
   ]);
 
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards && multiSelect) {
-      let idsToUpdate = new Set(toggledIds);
+      const idsToUpdate = new Set<number>(toggledIds);
       if (lastInteractedWith) {
         idsToUpdate.add(lastInteractedWith);
       }
@@ -376,7 +485,7 @@ const useTree = ({
             multiSelect,
             keepFocus: true,
             NotUserAction: true,
-            lastInteractedWith
+            lastInteractedWith,
           });
         }
       }
@@ -385,10 +494,10 @@ const useTree = ({
           dispatch({
             type: treeTypes.halfSelect,
             id,
-            multiSelect,
-            keepFocus: true,
-            NotUserAction: true,
-            lastInteractedWith
+            // multiSelect, // NOT USED IN TREE REDUCER
+            // keepFocus: true, // NOT USED IN TREE REDUCER
+            // NotUserAction: true, // NOT USED IN TREE REDUCER
+            lastInteractedWith,
           });
       }
       for (const id of none) {
@@ -399,7 +508,7 @@ const useTree = ({
             multiSelect,
             keepFocus: true,
             NotUserAction: true,
-            lastInteractedWith
+            lastInteractedWith,
           });
       }
     }
@@ -414,7 +523,7 @@ const useTree = ({
     lastAction,
     prevSelectedIds,
     toggledIds,
-    lastInteractedWith
+    lastInteractedWith,
   ]);
 
   //Focus
@@ -432,9 +541,119 @@ const useTree = ({
 const clickActions = {
   select: "SELECT",
   focus: "FOCUS",
-  exclusiveSelect: "EXCLUSIVE_SELECT"
-};
+  exclusiveSelect: "EXCLUSIVE_SELECT",
+} as const;
 
+const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
+
+type ValueOf<T> = T[keyof T];
+type ClickActions = ValueOf<typeof clickActions>;
+
+interface ILeafProps {
+  role: string;
+  tabIndex: number;
+  onClick: EventCallback;
+  ref: (x: INodeRef) => INodeRef;
+  className: string;
+  "aria-setsize": number;
+  "aria-posinset": number;
+  "aria-level": number;
+  "aria-selected": boolean;
+  disabled: boolean;
+  "aria-disabled": boolean;
+}
+
+interface IBranchProps {
+  onClick: EventCallback;
+  className: string;
+}
+
+export interface INodeRendererProps {
+  /** The object that represents the rendered node */
+  element: INode;
+  /** A function which gives back the props to pass to the node */
+  getNodeProps: (args?: { onClick?: EventCallback }) => IBranchProps | ILeafProps;
+  /** Whether the rendered node is a branch node */
+  isBranch: boolean;
+  /** Whether the rendered node is selected */
+  isSelected: boolean;
+  /** If the node is a branch node, whether it is half-selected, else undefined */
+  isHalfSelected: boolean;
+  /** If the node is a branch node, whether it is expanded, else undefined */
+  isExpanded: boolean;
+  /** Whether the rendered node is disabled */
+  isDisabled: boolean;
+  /** A positive integer that corresponds to the aria-level attribute */
+  level: number;
+  /** A positive integer that corresponds to the aria-setsize attribute */
+  setsize: number;
+  /** A positive integer that corresponds to the aria-posinset attribute */
+  posinset: number;
+  /** Function to assign to the onClick event handler of the element(s) that will toggle the selected state */
+  handleSelect: <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => void;
+  /** Function to assign to the onClick event handler of the element(s) that will toggle the expanded state */
+  handleExpand: <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => void;
+  /** Function to dispatch actions */
+  dispatch: React.Dispatch<TreeViewAction>;
+  /** state of the treeview */
+  treeState: ITreeViewState;
+}
+
+interface ITreeViewOnSelectProps {
+  element: INode;
+  isBranch: boolean;
+  isExpanded: boolean;
+  isSelected: boolean;
+  isHalfSelected: boolean;
+  isDisabled: boolean;
+  treeState: ITreeViewState;
+}
+
+interface ITreeViewOnExpandProps {
+  element: INode;
+  isExpanded: boolean;
+  isSelected: boolean;
+  isHalfSelected: boolean;
+  isDisabled: boolean;
+  treeState: ITreeViewState;
+}
+
+export interface ITreeViewProps {
+  /** Tree data*/
+  data: INode[];
+  /** Function called when a node changes its selected state */
+  onSelect?: (props: ITreeViewOnSelectProps) => void;
+  /** Function called when a node changes its expanded state */
+  onExpand?: (props: ITreeViewOnExpandProps) => void;
+  /** className to add to the outermost ul */
+  className?: string;
+  /** Render prop for the node */
+  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  /** Array with the ids of the default expanded nodes */
+  defaultExpandedIds?: number[];
+  /** Array with the ids of the default selected nodes */
+  defaultSelectedIds?: number[];
+  /** Array with the ids of the default disabled nodes */
+  defaultDisabledIds?: number[];
+  /** If true, collapsing a node will also collapse its descendants */
+  propagateCollapse?: boolean;
+  /** If true, selecting a node will also select its descendants */
+  propagateSelect?: boolean;
+  /** If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected) */
+  propagateSelectUpwards?: boolean;
+  /** Allows multiple nodes to be selected */
+  multiSelect?: boolean;
+  /** Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state */
+  expandOnKeyboardSelect?: boolean;
+  /** Wether the selected state is togglable */
+  togglableSelect?: boolean;
+  /** action to perform on click */
+  clickAction?: ClickActions;
+  /** Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it) */
+  onBlur?: (event: React.FocusEvent<HTMLUListElement> | { treeState: ITreeViewState; dispatch: React.Dispatch<TreeViewAction>; }) => void;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
 const TreeView = React.forwardRef(function TreeView(
   {
@@ -455,8 +674,8 @@ const TreeView = React.forwardRef(function TreeView(
     clickAction = clickActions.select,
     onBlur,
     ...other
-  },
-  ref
+  }: ITreeViewProps,
+  ref: React.Ref<HTMLUListElement>
 ) {
   const nodeRefs = useRef({});
   const [state, dispatch] = useTree({
@@ -469,12 +688,12 @@ const TreeView = React.forwardRef(function TreeView(
     onExpand,
     multiSelect,
     propagateSelect,
-    propagateSelectUpwards
+    propagateSelectUpwards,
   });
   propagateSelect = propagateSelect && multiSelect;
 
-  let innerRef = useRef();
-  if (ref != null) innerRef = ref;
+  let innerRef = useRef<HTMLUListElement>(null);
+  if (ref != null) innerRef = ref as React.MutableRefObject<HTMLUListElement>;
 
   return (
     <ul
@@ -482,30 +701,31 @@ const TreeView = React.forwardRef(function TreeView(
       role="tree"
       aria-multiselectable={multiSelect}
       ref={innerRef}
-      onBlur={event => {
+      onBlur={(event: React.FocusEvent<HTMLUListElement>) => {
         onComponentBlur(event, innerRef.current, () => {
           onBlur &&
             onBlur({
               treeState: state,
-              dispatch
+              dispatch,
             });
           dispatch({ type: treeTypes.blur });
         });
       }}
       onKeyDown={handleKeyDown({
-        data,
-        tabbableId: state.tabbableId,
-        expandedIds: state.expandedIds,
-        selectedIds: state.selectedIds,
-        disabledIds: state.disabledIds,
-        halfSelectedIds: state.halfSelectedIds,
-        dispatch,
-        propagateCollapse,
-        propagateSelect,
-        multiSelect,
-        expandOnKeyboardSelect,
-        togglableSelect
-      })}
+          data,
+          tabbableId: state.tabbableId,
+          expandedIds: state.expandedIds,
+          selectedIds: state.selectedIds,
+          disabledIds: state.disabledIds,
+          halfSelectedIds: state.halfSelectedIds,
+          dispatch,
+          propagateCollapse,
+          propagateSelect,
+          multiSelect,
+          expandOnKeyboardSelect,
+          togglableSelect,
+        })
+      }
       {...other}
     >
       {data[0].children.map((x, index) => (
@@ -534,7 +754,33 @@ const TreeView = React.forwardRef(function TreeView(
   );
 });
 
-const Node = props => {
+interface INodeProps {
+  element: INode;
+  dispatch: React.Dispatch<TreeViewAction>;
+  data: INode[];
+  selectedIds: Set<number>;
+  tabbableId: number;
+  isFocused: boolean;
+  expandedIds: Set<number>;
+  disabledIds: Set<number>;
+  halfSelectedIds: Set<number>;
+  lastUserSelect: number;
+  nodeRefs: INodeRefs;
+  baseClassNames: typeof baseClassNames;
+  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  setsize: number;
+  posinset: number;
+  level: number;
+  propagateCollapse: boolean;
+  propagateSelect: boolean;
+  multiSelect: boolean;
+  togglableSelect: boolean;
+  clickAction?: ClickActions;
+  state: ITreeViewState;
+  propagateSelectUpwards: boolean;
+}
+
+const Node = (props: INodeProps) => {
   const {
     element,
     dispatch,
@@ -557,58 +803,60 @@ const Node = props => {
     multiSelect,
     togglableSelect,
     clickAction,
-    state
+    state,
   } = props;
 
-  const handleExpand = event => {
+  const handleExpand = <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
-      const ids = [element.id, ...getDescendants(data, element.id, new Set())];
+      const ids: number[] = [
+        element.id,
+        ...getDescendants(data, element.id, new Set<number>()),
+      ];
       dispatch({
         type: treeTypes.collapseMany,
         ids,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
     } else {
       dispatch({
         type: treeTypes.toggle,
         id: element.id,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
     }
   };
 
-  const handleFocus = () =>
+  const handleFocus = (): void =>
     dispatch({
       type: treeTypes.focus,
       id: element.id,
-      lastInteractedWith: element.id
+      lastInteractedWith: element.id,
     });
 
-  const handleSelect = event => {
+  const handleSelect = <T, E>(event: React.MouseEvent<T, E> | React.KeyboardEvent<T>) => {
     if (event.shiftKey) {
       let ids = getAccessibleRange({
         data,
         expandedIds,
         from: lastUserSelect,
         to: element.id,
-        lastInteractedWith: element.id
-      }).filter(id => !disabledIds.has(id));
+      }).filter((id) => !disabledIds.has(id));
       ids = propagateSelect ? propagatedIds(data, ids, disabledIds) : ids;
       dispatch({
         type: treeTypes.exclusiveChangeSelectMany,
         select: true,
         multiSelect,
         ids,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
-    } else if (event.ctrlKey || clickAction === clickActions.select) {
+    } else if (event.ctrlKey || clickActions.select) {
       //Select
       dispatch({
         type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
         id: element.id,
         multiSelect,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
       propagateSelect &&
         !disabledIds.has(element.id) &&
@@ -617,33 +865,34 @@ const Node = props => {
           ids: propagatedIds(data, [element.id], disabledIds),
           select: togglableSelect ? !selectedIds.has(element.id) : true,
           multiSelect,
-          lastInteractedWith: element.id
+          lastInteractedWith: element.id,
         });
     } else if (clickAction === clickActions.exclusiveSelect) {
       dispatch({
         type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
         id: element.id,
         multiSelect: false,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
     } else if (clickAction === clickActions.focus) {
       dispatch({
         type: treeTypes.focus,
         id: element.id,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
     }
   };
 
-  const getClasses = className => {
+  const getClasses = (className: string) => {
     return cx(className, {
       [`${className}--expanded`]: expandedIds.has(element.id),
       [`${className}--selected`]: selectedIds.has(element.id),
-      [`${className}--focused`]: tabbableId === element.id && isFocused
+      [`${className}--focused`]: tabbableId === element.id && isFocused,
     });
   };
 
-  const getLeafProps = ({ onClick } = {}) => {
+  const getLeafProps = (args: { onClick?: EventCallback } = {}) => {
+    const { onClick } = args;
     return {
       role: "treeitem",
       tabIndex: tabbableId === element.id ? 0 : -1,
@@ -651,7 +900,7 @@ const Node = props => {
         onClick == null
           ? composeHandlers(handleSelect, handleFocus)
           : composeHandlers(onClick, handleFocus),
-      ref: x => (nodeRefs.current[element.id] = x),
+      ref: (x: INodeRef) => (nodeRefs.current[element.id] = x),
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
       "aria-setsize": setsize,
       "aria-posinset": posinset,
@@ -659,20 +908,21 @@ const Node = props => {
       "aria-selected": getAriaSelected({
         isSelected: selectedIds.has(element.id),
         isDisabled: disabledIds.has(element.id),
-        multiSelect
+        multiSelect,
       }),
       disabled: disabledIds.has(element.id),
-      "aria-disabled": disabledIds.has(element.id)
+      "aria-disabled": disabledIds.has(element.id),
     };
   };
 
-  const getBranchProps = ({ onClick } = {}) => {
+  const getBranchProps = (args: { onClick?: EventCallback } = {}) => {
+    const { onClick } = args;
     return {
       onClick:
         onClick == null
           ? composeHandlers(handleSelect, handleExpand, handleFocus)
           : composeHandlers(onClick, handleFocus),
-      className: cx(getClasses(baseClassNames.node), baseClassNames.branch)
+      className: cx(getClasses(baseClassNames.node), baseClassNames.branch),
     };
   };
 
@@ -683,34 +933,35 @@ const Node = props => {
       aria-selected={getAriaSelected({
         isSelected: selectedIds.has(element.id),
         isDisabled: disabledIds.has(element.id),
-        multiSelect
+        multiSelect,
       })}
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
-      disabled={disabledIds.has(element.id)}
       aria-disabled={disabledIds.has(element.id)}
       tabIndex={tabbableId === element.id ? 0 : -1}
-      ref={x => (nodeRefs.current[element.id] = x)}
+      ref={(x) => (nodeRefs.current[element.id] = x)}
       className={baseClassNames.branchWrapper}
     >
-      {nodeRenderer({
-        element,
-        isBranch: true,
-        isSelected: selectedIds.has(element.id),
-        isHalfSelected: halfSelectedIds.has(element.id),
-        isExpanded: expandedIds.has(element.id),
-        isDisabled: disabledIds.has(element.id),
-        dispatch,
-        getNodeProps: getBranchProps,
-        setsize,
-        posinset,
-        level,
-        handleSelect,
-        handleExpand,
-        treeState: state
-      })}
-      <NodeGroup element={element} getClasses={getClasses} {...props} />
+      <>
+        {nodeRenderer({
+          element,
+          isBranch: true,
+          isSelected: selectedIds.has(element.id),
+          isHalfSelected: halfSelectedIds.has(element.id),
+          isExpanded: expandedIds.has(element.id),
+          isDisabled: disabledIds.has(element.id),
+          dispatch,
+          getNodeProps: getBranchProps,
+          setsize,
+          posinset,
+          level,
+          handleSelect,
+          handleExpand,
+          treeState: state,
+        })}
+        <NodeGroup element={element} getClasses={getClasses} {...props} />
+      </>
     </li>
   ) : (
     <li role="none" className={getClasses(baseClassNames.leafListItem)}>
@@ -728,11 +979,15 @@ const Node = props => {
         level,
         handleSelect,
         handleExpand: noop,
-        treeState: state
+        treeState: state,
       })}
     </li>
   );
 };
+
+interface INodeGroupProps extends INodeProps {
+  getClasses: (className: string) => string;
+}
 
 const NodeGroup = ({
   data,
@@ -742,7 +997,7 @@ const NodeGroup = ({
   baseClassNames,
   level,
   ...rest
-}) => (
+}: INodeGroupProps) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
       element.children.map((x, index) => (
@@ -772,25 +1027,39 @@ const handleKeyDown = ({
   propagateSelect,
   multiSelect,
   expandOnKeyboardSelect,
-  togglableSelect
-}) => event => {
+  togglableSelect,
+}: {
+  data: INode[];
+  tabbableId: number;
+  expandedIds: Set<number>;
+  selectedIds: Set<number>;
+  disabledIds: Set<number>;
+  halfSelectedIds: Set<number>;
+  dispatch: React.Dispatch<TreeViewAction>;
+  propagateCollapse?: boolean;
+  propagateSelect?: boolean;
+  multiSelect?: boolean;
+  expandOnKeyboardSelect?: boolean;
+  togglableSelect?: boolean;
+}) => (event: React.KeyboardEvent) => {
   const element = data[tabbableId];
   const id = element.id;
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { 0: root, ...dataWithoutRoot } = data;
       const ids = Object.values(dataWithoutRoot)
-        .map(x => x.id)
-        .filter(id => !disabledIds.has(id));
+        .map((x) => x.id)
+        .filter((id) => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
         multiSelect,
         select:
-          Array.from(selectedIds).filter(id => !disabledIds.has(id)).length !==
-          ids.length,
+          Array.from(selectedIds).filter((id) => !disabledIds.has(id))
+            .length !== ids.length,
         ids,
-        lastInteractedWith: element.id
+        lastInteractedWith: element.id,
       });
     } else if (
       event.shiftKey &&
@@ -804,18 +1073,18 @@ const handleKeyDown = ({
         data,
         expandedIds,
         from: id,
-        to: newId
-      }).filter(id => !disabledIds.has(id));
+        to: newId,
+      }).filter((id) => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
         multiSelect,
         select: true,
-        ids: propagateSelect ? propagatedIds(data, range, disabledIds) : range
+        ids: propagateSelect ? propagatedIds(data, range, disabledIds) : range,
       });
       dispatch({
         type: treeTypes.focus,
         id: newId,
-        lastInteractedWith: newId
+        lastInteractedWith: newId,
       });
     }
     return;
@@ -834,12 +1103,12 @@ const handleKeyDown = ({
               : [previous],
             select: true,
             multiSelect,
-            lastInteractedWith: previous
+            lastInteractedWith: previous,
           });
           dispatch({
             type: treeTypes.focus,
             id: previous,
-            lastInteractedWith: previous
+            lastInteractedWith: previous,
           });
         }
         return;
@@ -855,12 +1124,12 @@ const handleKeyDown = ({
               : [next],
             multiSelect,
             select: true,
-            lastInteractedWith: next
+            lastInteractedWith: next,
           });
           dispatch({
             type: treeTypes.focus,
             id: next,
-            lastInteractedWith: next
+            lastInteractedWith: next,
           });
         }
         return;
@@ -877,7 +1146,7 @@ const handleKeyDown = ({
         dispatch({
           type: treeTypes.focus,
           id: next,
-          lastInteractedWith: next
+          lastInteractedWith: next,
         });
       }
       return;
@@ -889,7 +1158,7 @@ const handleKeyDown = ({
         dispatch({
           type: treeTypes.focus,
           id: previous,
-          lastInteractedWith: previous
+          lastInteractedWith: previous,
         });
       }
       return;
@@ -898,17 +1167,17 @@ const handleKeyDown = ({
       event.preventDefault();
       if (isBranchNode(data, id) && expandedIds.has(tabbableId)) {
         if (propagateCollapse) {
-          const ids = [id, ...getDescendants(data, id, new Set())];
+          const ids = [id, ...getDescendants(data, id, new Set<number>())];
           dispatch({
             type: treeTypes.collapseMany,
             ids,
-            lastInteractedWith: element.id
+            lastInteractedWith: element.id,
           });
         } else {
           dispatch({
             type: treeTypes.collapse,
             id,
-            lastInteractedWith: id
+            lastInteractedWith: id,
           });
         }
       } else {
@@ -918,7 +1187,7 @@ const handleKeyDown = ({
           dispatch({
             type: treeTypes.focus,
             id: parentId,
-            lastInteractedWith: parentId
+            lastInteractedWith: parentId,
           });
         }
       }
@@ -931,7 +1200,7 @@ const handleKeyDown = ({
           dispatch({
             type: treeTypes.focus,
             id: element.children[0],
-            lastInteractedWith: element.children[0]
+            lastInteractedWith: element.children[0],
           });
         } else {
           dispatch({ type: treeTypes.expand, id, lastInteractedWith: id });
@@ -944,7 +1213,7 @@ const handleKeyDown = ({
       dispatch({
         type: treeTypes.focus,
         id: data[0].children[0],
-        lastInteractedWith: data[0].children[0]
+        lastInteractedWith: data[0].children[0],
       });
       break;
     case "End": {
@@ -953,19 +1222,19 @@ const handleKeyDown = ({
       dispatch({
         type: treeTypes.focus,
         id: lastAccessible,
-        lastInteractedWith: lastAccessible
+        lastInteractedWith: lastAccessible,
       });
       return;
     }
     case "*": {
       event.preventDefault();
-      const nodes = data[getParent(data, id)].children.filter(x =>
+      const nodes = data[getParent(data, id)].children.filter((x) =>
         isBranchNode(data, x)
       );
       dispatch({
         type: treeTypes.expandMany,
         ids: nodes,
-        lastInteractedWith: id
+        lastInteractedWith: id,
       });
       return;
     }
@@ -978,7 +1247,7 @@ const handleKeyDown = ({
         type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
         id: id,
         multiSelect,
-        lastInteractedWith: id
+        lastInteractedWith: id,
       });
       propagateSelect &&
         !disabledIds.has(element.id) &&
@@ -987,7 +1256,7 @@ const handleKeyDown = ({
           ids: propagatedIds(data, [id], disabledIds),
           select: togglableSelect ? !selectedIds.has(id) : true,
           multiSelect,
-          lastInteractedWith: id
+          lastInteractedWith: id,
         });
       expandOnKeyboardSelect &&
         dispatch({ type: treeTypes.toggle, id, lastInteractedWith: id });
@@ -1006,7 +1275,7 @@ const handleKeyDown = ({
             dispatch({
               type: treeTypes.focus,
               id: currentId,
-              lastInteractedWith: id
+              lastInteractedWith: id,
             });
             return;
           }
@@ -1061,7 +1330,7 @@ TreeView.propTypes = {
   togglableSelect: PropTypes.bool,
 
   /** action to perform on click */
-  clickAction: PropTypes.oneOf(Object.values(clickActions))
+  clickAction: PropTypes.oneOf(CLICK_ACTIONS),
 };
 
 export default TreeView;
