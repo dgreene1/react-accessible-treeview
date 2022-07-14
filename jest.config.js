@@ -9,7 +9,7 @@ module.exports = {
   testEnvironment: "jsdom",
   testPathIgnorePatterns: ["/node_modules/"],
   testMatch: [
-    "<rootDiZZZZZZZZZZZZZZZZZZZZZr>/src/__tests__/**/!(*.d).ts",
+    "<rootDir>/src/__tests__/**/!(*.d).ts",
     "<rootDir>/src/__tests__/**/*.test.tsx",
     "<rootDir>/src/__tests__/**/*.test.ts",
   ],
