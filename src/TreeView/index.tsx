@@ -711,8 +711,7 @@ const TreeView = React.forwardRef(function TreeView(
           dispatch({ type: treeTypes.blur });
         });
       }}
-      onKeyDown={() =>
-        handleKeyDown({
+      onKeyDown={handleKeyDown({
           data,
           tabbableId: state.tabbableId,
           expandedIds: state.expandedIds,
@@ -1042,7 +1041,7 @@ const handleKeyDown = ({
   multiSelect?: boolean;
   expandOnKeyboardSelect?: boolean;
   togglableSelect?: boolean;
-}) => (event: KeyboardEvent) => {
+}) => (event: React.KeyboardEvent) => {
   const element = data[tabbableId];
   const id = element.id;
   if (event.ctrlKey) {
