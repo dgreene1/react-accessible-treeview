@@ -66,8 +66,8 @@
   },
   "files": [
     "dist",
-    "src/index.js",
-    "src/TreeView/*.js"
+    "src/index.ts",
+    "src/TreeView/*.ts(x)"
   ],
   "license": "MIT",
   "repository": {

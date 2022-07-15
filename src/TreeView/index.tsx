@@ -57,7 +57,6 @@ const treeTypes = {
   toggle: "TOGGLE",
   toggleSelect: "TOGGLE_SELECT",
   changeSelectMany: "SELECT_MANY",
-  // exclusiveSelectMany: "EXCLUSIVE_SELECT_MANY", // NOT USED BY TREE REDUCER
   exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
   focus: "FOCUS",
   blur: "BLUR",
@@ -494,9 +493,6 @@ const useTree = ({
           dispatch({
             type: treeTypes.halfSelect,
             id,
-            // multiSelect, // NOT USED IN TREE REDUCER
-            // keepFocus: true, // NOT USED IN TREE REDUCER
-            // NotUserAction: true, // NOT USED IN TREE REDUCER
             lastInteractedWith,
           });
       }
@@ -544,12 +540,12 @@ const clickActions = {
   exclusiveSelect: "EXCLUSIVE_SELECT",
 } as const;
 
-const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
+export const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
 
 type ValueOf<T> = T[keyof T];
-type ClickActions = ValueOf<typeof clickActions>;
+export type ClickActions = ValueOf<typeof clickActions>;
 
-interface ILeafProps {
+export interface ILeafProps {
   role: string;
   tabIndex: number;
   onClick: EventCallback;
@@ -563,7 +559,7 @@ interface ILeafProps {
   "aria-disabled": boolean;
 }
 
-interface IBranchProps {
+export interface IBranchProps {
   onClick: EventCallback;
   className: string;
 }
@@ -599,7 +595,7 @@ export interface INodeRendererProps {
   treeState: ITreeViewState;
 }
 
-interface ITreeViewOnSelectProps {
+export interface ITreeViewOnSelectProps {
   element: INode;
   isBranch: boolean;
   isExpanded: boolean;
@@ -609,7 +605,7 @@ interface ITreeViewOnSelectProps {
   treeState: ITreeViewState;
 }
 
-interface ITreeViewOnExpandProps {
+export interface ITreeViewOnExpandProps {
   element: INode;
   isExpanded: boolean;
   isSelected: boolean;
