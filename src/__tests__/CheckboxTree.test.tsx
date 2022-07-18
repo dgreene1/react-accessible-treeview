@@ -118,6 +118,10 @@ test("propagateselect selects all child nodes", () => {
   const { queryAllByRole, container } = render(<MultiSelectCheckbox />);
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the first element with role["treeitem"]), but did not.`
+    );
   fireEvent.keyDown(document.activeElement, { key: "Enter" });
   fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
   const childNodes = container.querySelectorAll(
