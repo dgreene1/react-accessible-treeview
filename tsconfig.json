@@ -16,7 +16,11 @@
     "preserveConstEnums": true,
     "pretty": true,
     "target": "es6",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true
   },
   "exclude": ["node_modules", "dist"]
 }

@@ -42,7 +42,7 @@ function DirectoryTreeView() {
         <TreeView
           data={data}
           aria-label="directory tree"
-          onBlur={({
+          onBlur={() => ({
             treeState,
             dispatch,
           }: {
@@ -86,7 +86,17 @@ test("clicking a branch node toggles aria-expanded", () => {
   const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   const inner = node.querySelector(".tree-node");
+  if (inner == null) {
+    throw new Error(
+      "Expected to find an element with the following selector, but did not: .tree-node"
+    );
+  }
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
   fireEvent.click(inner);
   expect(nodes[0]).toHaveAttribute("aria-expanded", "true");
@@ -101,7 +111,17 @@ test("clicking a node makes aria-selected=true ", () => {
   const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   const inner = node.querySelector(".tree-node");
+  if (inner == null) {
+    throw new Error(
+      "Expected to find an element with the following selector, but did not: .tree-node"
+    );
+  }
   expect(inner).toBeTruthy();
   fireEvent.click(inner);
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
@@ -117,6 +137,11 @@ test("Key bindings toggle aria-expanded", () => {
   const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
 
   fireEvent.keyDown(node, { key: " " });
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
@@ -138,6 +163,11 @@ test("Spacebar sets aria-selected=true ", () => {
   const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   fireEvent.keyDown(node, { key: " " });
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
 });
@@ -149,6 +179,11 @@ test("Enter sets aria-selected=true ", () => {
   const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   fireEvent.keyDown(node, { key: "Enter" });
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
 });
@@ -162,6 +197,12 @@ test("Right arrow", () => {
   const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
+
   // When focus is on a closed node, opens the node; focus does not move.
   nodes[0].focus();
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
@@ -199,9 +240,14 @@ test("Left arrow", () => {
 
   //When focus is on a child node that is also either an end node or a closed node, moves focus to its parent node.
   fireEvent.keyDown(nodes[0], { key: "ArrowRight" });
-  const childNode: HTMLElement = container.querySelector(
+  const childNode: HTMLElement | null = container.querySelector(
     '[role="treeitem"][aria-level="2"][aria-posinset="1"]'
   );
+  if (childNode == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="2"][aria-posinset="1"]`
+    );
+  }
   childNode.focus();
   expect(document.activeElement).toEqual(childNode);
   fireEvent.keyDown(nodes[0], { key: "ArrowLeft" });

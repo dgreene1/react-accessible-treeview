@@ -1,7 +1,9 @@
-import { SyntheticEvent, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { INode, INodeRef } from ".";
 
-export type EventCallback = (event?: UIEvent | SyntheticEvent) => void;
+export type EventCallback = <T, E>(
+  event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
+) => void;
 
 export const composeHandlers = (
   ...handlers: EventCallback[]
@@ -28,8 +30,8 @@ export const symmetricDifference = (a: Set<number>, b: Set<number>) => {
   return new Set<number>([...difference(a, b), ...difference(b, a)]);
 };
 
-export const usePrevious = (x: Set<number>) => {
-  const ref = useRef(null);
+export const usePrevious = (x: Set<number>): Set<number> | undefined => {
+  const ref = useRef<Set<number> | undefined>();
   useEffect(() => {
     ref.current = x;
   }, [x]);
@@ -116,7 +118,7 @@ export const getNextAccessible = (
   id: number,
   expandedIds: Set<number>
 ) => {
-  let nodeId = data[id].id;
+  let nodeId: number | null = data[id].id;
   if (isBranchNode(data, nodeId) && expandedIds.has(nodeId)) {
     return data[nodeId].children[0];
   }
@@ -149,7 +151,13 @@ export const propagateSelectChange = (
     let currentId = id;
     while (true) {
       const parent = getParent(data, currentId);
-      if (parent === 0 || disabledIds.has(parent)) break;
+      if (
+        parent === 0 ||
+        parent == null ||
+        (parent != null && disabledIds.has(parent))
+      ) {
+        break;
+      }
       const enabledChildren = data[parent].children.filter(
         (x) => !disabledIds.has(x)
       );
@@ -181,26 +189,27 @@ export const getAccessibleRange = ({
   from: number;
   to: number;
 }) => {
-  const range = [];
+  const range: number[] = [];
   const max_loop = Object.keys(data).length;
   let count = 0;
-  let currentId = from;
+  let currentId: number | null = from;
   range.push(from);
   if (from < to) {
     while (count < max_loop) {
       currentId = getNextAccessible(data, currentId, expandedIds);
-      range.push(currentId);
+      currentId != null && range.push(currentId);
       if (currentId == null || currentId === to) break;
       count += 1;
     }
   } else if (from > to) {
     while (count < max_loop) {
       currentId = getPreviousAccessible(data, currentId, expandedIds);
-      range.push(currentId);
+      currentId != null && range.push(currentId);
       if (currentId == null || currentId === to) break;
       count += 1;
     }
   }
+
   return range;
 };
 
@@ -264,9 +273,13 @@ const isIE = () => window.navigator.userAgent.match(/Trident/);
 
 export const onComponentBlur = (
   event: React.FocusEvent,
-  treeNode: HTMLUListElement,
+  treeNode: HTMLUListElement | null,
   callback: () => void
 ) => {
+  if (treeNode == null) {
+    console.warn("ref not set on <ul>");
+    return;
+  }
   if (isIE()) {
     setTimeout(
       () => !treeNode.contains(document.activeElement) && callback(),

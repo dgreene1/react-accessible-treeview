@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
 import TreeView, { flattenTree } from "..";
-import { ITreeViewProps, ITreeViewState, TreeViewAction } from "../TreeView";
+import { ITreeViewProps } from "../TreeView";
 
 const folder = {
   name: "",
@@ -46,13 +46,8 @@ function DirectoryTreeView(props: {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          onBlur={({
-            treeState,
-            dispatch,
-          }: {
-            treeState: ITreeViewState;
-            dispatch: React.Dispatch<TreeViewAction>;
-          }) => {
+          onBlur={(event) => {
+            const { treeState, dispatch } = event;
             dispatch({
               type: "DESELECT",
               id: Array.from(treeState.selectedIds)[0],
@@ -74,6 +69,11 @@ test("Ctrl+A selects all nodes", () => {
   );
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
+  if (document.activeElement == null) {
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the first element with role["treeitem"]), but did not.`
+    );
+  }
   fireEvent.keyDown(document.activeElement, { key: "a", ctrlKey: true });
   nodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
 });
