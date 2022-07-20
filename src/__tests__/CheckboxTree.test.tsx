@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/extend-expect";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import TreeView, { flattenTree } from "..";
 
@@ -128,4 +128,69 @@ test("propagateselect selects all child nodes", () => {
     '[role="treeitem"][aria-level="2"]'
   );
   childNodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
+});
+
+test("should have the correct setsize and posinset values", async () => {
+  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the first element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+  const fruitsSpan = await screen.findByText("Fruits");
+
+  // Ensure that the active element is what we expect at this time
+  expect(document.activeElement).toContainHTML(fruitsSpan.outerHTML);
+  // Does the first level have right setsize and posinset?
+  expect(document.activeElement).toHaveAttribute("aria-posinset", "1");
+  expect(document.activeElement).toHaveAttribute("aria-setsize", "3");
+
+  // Now let's check the children of fruit to see if it worked too
+  const hopefullyAvocados = document.activeElement.querySelector(
+    '[aria-posinset="1"]'
+  );
+  expect(hopefullyAvocados).toHaveTextContent("Avocados");
+  expect(hopefullyAvocados).toHaveAttribute("aria-setsize", "5"); // Now let's check the children of fruit to see if it worked too
+  const hopefullyBananas = document.activeElement.querySelector(
+    '[aria-posinset="2"]'
+  );
+  expect(hopefullyBananas).toHaveTextContent("Bananas");
+  expect(hopefullyBananas).toHaveAttribute("aria-setsize", "5"); // Now let's check the children of fruit to see if it worked too
+  const hopefullyPears = document.activeElement.querySelector(
+    '[aria-posinset="5"]'
+  );
+  expect(hopefullyPears).toHaveTextContent("Pears");
+  expect(hopefullyPears).toHaveAttribute("aria-setsize", "5");
+
+  // To be thorough, let's test another category
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" });
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+
+  // Ensure that the active element is what we expect at this time
+  const drinksSpan = await screen.findByText("Drinks");
+  expect(document.activeElement).toContainHTML(drinksSpan.outerHTML);
+  expect(document.activeElement).toHaveAttribute("aria-posinset", "2"); // Now let's check the children of fruit to see if it worked too
+  expect(document.activeElement).toHaveAttribute("aria-setsize", "3"); // Now let's check the children of fruit to see if it worked too
+
+  // Let's check 2 nested levels
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
+  const teaSpan = await screen.findByText("Tea");
+  expect(document.activeElement).toContainHTML(teaSpan.outerHTML);
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+  const hopefullyBlackTea = document.activeElement.querySelector(
+    '[aria-posinset="1"]'
+  );
+  expect(hopefullyBlackTea).toHaveTextContent("Black Tea");
+  expect(hopefullyBlackTea).toHaveAttribute("aria-setsize", "4");
+  const hopefullyMatcha = document.activeElement.querySelector(
+    '[aria-posinset="4"]'
+  );
+  expect(hopefullyMatcha).toHaveTextContent("Matcha");
+  expect(hopefullyMatcha).toHaveAttribute("aria-setsize", "4");
 });
