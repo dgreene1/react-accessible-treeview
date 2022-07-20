@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 dist
-package-lock.json
+website/package-lock.json
 styleguide
-yarn.lock
+website/yarn.lock
+storybook-static

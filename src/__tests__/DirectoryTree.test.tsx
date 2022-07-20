@@ -1,7 +1,8 @@
-import React from "react";
 import "@testing-library/jest-dom/extend-expect";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
+import React from "react";
 import TreeView, { flattenTree } from "..";
+import { ITreeViewState, TreeViewAction } from "../TreeView";
 
 const folder = {
   name: "",
@@ -41,7 +42,13 @@ function DirectoryTreeView() {
         <TreeView
           data={data}
           aria-label="directory tree"
-          onBlur={({ treeState, dispatch }) => {
+          onBlur={() => ({
+            treeState,
+            dispatch,
+          }: {
+            treeState: ITreeViewState;
+            dispatch: React.Dispatch<TreeViewAction>;
+          }) => {
             dispatch({
               type: "DESELECT",
               id: Array.from(treeState.selectedIds)[0],
@@ -59,7 +66,7 @@ function DirectoryTreeView() {
 test("nodes have aria properties", () => {
   const { queryAllByRole } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   expect(nodes[0]).toHaveAttribute("aria-level", "1");
   expect(nodes[0]).toHaveAttribute("aria-posinset", "1");
   expect(nodes[0]).toHaveAttribute("aria-setsize", "5");
@@ -75,11 +82,21 @@ test("there is an element with role=tree", () => {
 test("clicking a branch node toggles aria-expanded", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
-  let node = container.querySelector(
+  const nodes = queryAllByRole("treeitem");
+  const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   const inner = node.querySelector(".tree-node");
+  if (inner == null) {
+    throw new Error(
+      "Expected to find an element with the following selector, but did not: .tree-node"
+    );
+  }
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
   fireEvent.click(inner);
   expect(nodes[0]).toHaveAttribute("aria-expanded", "true");
@@ -90,11 +107,21 @@ test("clicking a branch node toggles aria-expanded", () => {
 test("clicking a node makes aria-selected=true ", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
-  let node = container.querySelector(
+  const nodes = queryAllByRole("treeitem");
+  const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   const inner = node.querySelector(".tree-node");
+  if (inner == null) {
+    throw new Error(
+      "Expected to find an element with the following selector, but did not: .tree-node"
+    );
+  }
   expect(inner).toBeTruthy();
   fireEvent.click(inner);
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
@@ -106,10 +133,15 @@ test("clicking a node makes aria-selected=true ", () => {
 test("Key bindings toggle aria-expanded", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
-  let node = container.querySelector(
+  const nodes = queryAllByRole("treeitem");
+  const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
 
   fireEvent.keyDown(node, { key: " " });
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
@@ -127,10 +159,15 @@ test("Key bindings toggle aria-expanded", () => {
 test("Spacebar sets aria-selected=true ", () => {
   const { container, queryAllByRole } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
-  let node = container.querySelector(
+  const nodes = queryAllByRole("treeitem");
+  const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   fireEvent.keyDown(node, { key: " " });
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
 });
@@ -138,10 +175,15 @@ test("Spacebar sets aria-selected=true ", () => {
 test("Enter sets aria-selected=true ", () => {
   const { container, queryAllByRole } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
-  let node = container.querySelector(
+  const nodes = queryAllByRole("treeitem");
+  const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
   fireEvent.keyDown(node, { key: "Enter" });
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
 });
@@ -151,10 +193,16 @@ test("Enter sets aria-selected=true ", () => {
 test("Right arrow", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
-  let node = container.querySelector(
+  const nodes = queryAllByRole("treeitem");
+  const node = container.querySelector(
     '[role="treeitem"][aria-level="1"][aria-posinset="1"]'
   );
+  if (node == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="1"][aria-posinset="1"]`
+    );
+  }
+
   // When focus is on a closed node, opens the node; focus does not move.
   nodes[0].focus();
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
@@ -165,7 +213,7 @@ test("Right arrow", () => {
 
   // When focus is on a open node, moves focus to the first child node.
   fireEvent.keyDown(node, { key: "ArrowRight" });
-  let childNode = container.querySelector(
+  const childNode = container.querySelector(
     '[role="treeitem"][aria-level="2"][aria-posinset="1"]'
   );
   expect(document.activeElement).toEqual(childNode);
@@ -178,7 +226,7 @@ test("Right arrow", () => {
 test("Left arrow", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   //When focus is on an open node, closes the node.
   expect(nodes[0]).toHaveAttribute("aria-expanded", "false");
@@ -192,9 +240,14 @@ test("Left arrow", () => {
 
   //When focus is on a child node that is also either an end node or a closed node, moves focus to its parent node.
   fireEvent.keyDown(nodes[0], { key: "ArrowRight" });
-  let childNode = container.querySelector(
+  const childNode: HTMLElement | null = container.querySelector(
     '[role="treeitem"][aria-level="2"][aria-posinset="1"]'
   );
+  if (childNode == null) {
+    throw new Error(
+      `Expected to find an element with the following selector, but did not: [role="treeitem"][aria-level="2"][aria-posinset="1"]`
+    );
+  }
   childNode.focus();
   expect(document.activeElement).toEqual(childNode);
   fireEvent.keyDown(nodes[0], { key: "ArrowLeft" });
@@ -209,7 +262,7 @@ test("Up/Down Arrow", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
   //Up / Down Arrow: Moves focus to the previous / next node that is focusable without opening or closing a node.
 
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(nodes[0], { key: "ArrowDown" });
   expect(document.activeElement).toEqual(nodes[1]);
@@ -218,7 +271,7 @@ test("Up/Down Arrow", () => {
 
   fireEvent.keyDown(nodes[0], { key: "ArrowRight" });
   fireEvent.keyDown(nodes[0], { key: "ArrowDown" });
-  let childNode = container.querySelector(
+  const childNode = container.querySelector(
     '[role="treeitem"][aria-level="2"][aria-posinset="1"]'
   );
   expect(document.activeElement).toEqual(childNode);
@@ -229,7 +282,7 @@ test("Up/Down Arrow", () => {
 test("Home Key", () => {
   const { queryAllByRole } = render(<DirectoryTreeView />);
 
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[nodes.length - 1].focus();
   fireEvent.keyDown(nodes[0], { key: "Home" });
   expect(document.activeElement).toEqual(nodes[0]);
@@ -237,7 +290,7 @@ test("Home Key", () => {
 
 test("End Key", () => {
   const { queryAllByRole } = render(<DirectoryTreeView />);
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(nodes[0], { key: "End" });
   expect(document.activeElement).toEqual(nodes[nodes.length - 1]);
@@ -245,9 +298,9 @@ test("End Key", () => {
 
 test("Asterisk", () => {
   const { queryAllByRole, container } = render(<DirectoryTreeView />);
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
-  let rootNodes = container.querySelectorAll(
+  const rootNodes = container.querySelectorAll(
     '.tree-branch-wrapper[role="treeitem"][aria-level="1"]'
   );
   expect(rootNodes.length).toBeTruthy();
@@ -258,7 +311,7 @@ test("Asterisk", () => {
 
 test("Single character typeahead", () => {
   const { queryAllByRole, getByText } = render(<DirectoryTreeView />);
-  let nodes = queryAllByRole("treeitem");
+  const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   fireEvent.keyDown(nodes[0], { key: "p" });
   expect(document.activeElement).toEqual(getByText("package.json"));
