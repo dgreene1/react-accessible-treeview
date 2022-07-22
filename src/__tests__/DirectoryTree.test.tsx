@@ -322,3 +322,18 @@ test("Single character typeahead", () => {
   fireEvent.keyDown(nodes[0], { key: "s" });
   expect(document.activeElement).toEqual(getByText("src").parentElement);
 });
+
+test("expect aria-selected and aria-multiselectable='false' is set when nodeAction undefined", () => {
+  const { queryAllByRole } = render(<DirectoryTreeView />);
+  const treeNodes = queryAllByRole("tree");
+  expect(treeNodes[0]).toHaveAttribute("aria-multiselectable", "false");
+
+  const nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the first element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "Enter" });
+  expect(nodes[0]).toHaveAttribute("aria-selected", "true");
+});
