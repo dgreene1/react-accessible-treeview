@@ -474,6 +474,7 @@ const useTree = ({
         data,
         idsToUpdate,
         selectedIds,
+        halfSelectedIds,
         disabledIds
       );
       for (const id of every) {
@@ -997,7 +998,10 @@ const Node = (props: INodeProps) => {
           handleExpand,
           treeState: state,
         })}
-        <NodeGroup getClasses={getClasses} {...props} />
+        <NodeGroup
+          getClasses={getClasses}
+          {...removeIrrelevantGroupProps(props)}
+        />
       </>
     </li>
   ) : (
@@ -1022,9 +1026,24 @@ const Node = (props: INodeProps) => {
   );
 };
 
-interface INodeGroupProps extends INodeProps {
+interface INodeGroupProps extends Omit<INodeProps, "setsize" | "posinset"> {
   getClasses: (className: string) => string;
+  /** don't send this. The NodeGroup render function, determines it for you */
+  setsize?: undefined;
+  /** don't send this. The NodeGroup render function, determines it for you */
+  posinset?: undefined;
 }
+
+/**
+ * It's convenient to pass props down to the child, but we don't want to pass everything since it would create incorrect values for setsize and posinset
+ */
+const removeIrrelevantGroupProps = (
+  nodeProps: INodeProps
+): Omit<INodeGroupProps, "getClasses"> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { setsize, posinset, ...rest } = nodeProps;
+  return rest;
+};
 
 const NodeGroup = ({
   data,
@@ -1037,13 +1056,15 @@ const NodeGroup = ({
 }: INodeGroupProps) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
-      element.children.map((x) => (
+      element.children.map((x, index) => (
         <Node
           data={data}
           expandedIds={expandedIds}
           baseClassNames={baseClassNames}
           key={x}
           element={data[x]}
+          setsize={element.children.length}
+          posinset={index + 1}
           level={level + 1}
           {...rest}
         />
