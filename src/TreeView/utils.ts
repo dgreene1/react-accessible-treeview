@@ -140,6 +140,7 @@ export const propagateSelectChange = (
   data: INode[],
   ids: Set<number>,
   selectedIds: Set<number>,
+  halfSelectedIds: Set<number>,
   disabledIds: Set<number>
 ) => {
   const changes = {
@@ -162,7 +163,7 @@ export const propagateSelectChange = (
         (x) => !disabledIds.has(x)
       );
       if (enabledChildren.length === 0) break;
-      const some = enabledChildren.some((x) => selectedIds.has(x));
+      const some = enabledChildren.some((x) => selectedIds.has(x) || halfSelectedIds.has(x) || changes.some.has(x));
       if (!some) {
         changes.none.add(parent);
       } else {
