@@ -64,9 +64,10 @@ function MultiSelectCheckbox() {
             getNodeProps,
             handleSelect,
             handleExpand,
+            isHalfSelected,
           }) => {
             return (
-              <div {...getNodeProps({ onClick: handleExpand })}>
+              <div {...getNodeProps({ onClick: handleExpand })} className={`${isHalfSelected ? 'half-selected' : ''}`}>
                 <div
                   className="checkbox-icon"
                   onClick={(e) => {
@@ -128,6 +129,28 @@ test("propagateselect selects all child nodes", () => {
     '[role="treeitem"][aria-level="2"]'
   );
   childNodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
+});
+
+test("propagateselectupwards half-selects all parent nodes", () => {
+  const { queryAllByRole, container } = render(<MultiSelectCheckbox />);
+  const nodes = queryAllByRole("treeitem");
+  nodes[1].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Drinks group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Apple Juice
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Chocolate
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Coffee
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Tea
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }) //Tea group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Black Tea
+  fireEvent.keyDown(document.activeElement, { key: "Enter" });
+
+  const nodeLevel3Parents = container.querySelectorAll('.half-selected');
+  expect(nodeLevel3Parents.length).toBe(2);
 });
 
 test("should have the correct setsize and posinset values", async () => {

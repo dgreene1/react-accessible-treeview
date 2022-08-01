@@ -473,6 +473,7 @@ const useTree = ({
         data,
         idsToUpdate,
         selectedIds,
+        halfSelectedIds,
         disabledIds
       );
       for (const id of every) {
