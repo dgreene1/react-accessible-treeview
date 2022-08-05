@@ -626,7 +626,14 @@ export interface ITreeViewOnExpandProps {
   treeState: ITreeViewState;
 }
 
-type NodeAction = "check" | "select";
+const nodeActions = {
+  check: "check",
+  select: "select",
+} as const;
+
+export const NODE_ACTIONS = Object.freeze(Object.values(nodeActions));
+
+export type NodeAction = ValueOf<typeof nodeActions>;
 
 export interface ITreeViewProps {
   /** Tree data*/
@@ -1394,6 +1401,9 @@ TreeView.propTypes = {
 
   /** action to perform on click */
   clickAction: PropTypes.oneOf(CLICK_ACTIONS),
+
+  /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
+  nodeAction: PropTypes.oneOf(NODE_ACTIONS),
 };
 
 export default TreeView;
