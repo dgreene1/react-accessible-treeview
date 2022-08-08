@@ -477,35 +477,35 @@ const useTree = ({
 
     //controlled deselection
     if (diffDeselectedIds.size) {
-      for (const toggleSelectedId of diffDeselectedIds) {
+      for (const toggleDeselectedId of diffDeselectedIds) {
         dispatch({
           type: treeTypes.deselect,
-          id: toggleSelectedId,
+          id: toggleDeselectedId,
           multiSelect,
           controlled: true,
-          lastInteractedWith: toggleSelectedId,
+          lastInteractedWith: toggleDeselectedId,
         });
       }
     }
 
     //controlled selection
     if (diffSelectedIds.size) {
-      for (const toggleCheckedId of diffSelectedIds) {
+      for (const toggleSelectedId of diffSelectedIds) {
         dispatch({
           type: treeTypes.select,
-          id: toggleCheckedId,
+          id: toggleSelectedId,
           multiSelect,
           controlled: true,
-          lastInteractedWith: toggleCheckedId,
+          lastInteractedWith: toggleSelectedId,
         });
         propagateSelect &&
-          !disabledIds.has(toggleCheckedId) &&
+          !disabledIds.has(toggleSelectedId) &&
           dispatch({
             type: treeTypes.changeSelectMany,
-            ids: propagatedIds(data, [toggleCheckedId], disabledIds),
+            ids: propagatedIds(data, [toggleSelectedId], disabledIds),
             select: true,
             multiSelect,
-            lastInteractedWith: toggleCheckedId,
+            lastInteractedWith: toggleSelectedId,
           });
       }
     }
