@@ -253,8 +253,25 @@ export const getAriaSelected = ({
   isSelected: boolean;
   isDisabled: boolean;
   multiSelect: boolean;
-}) => {
+}): boolean | undefined => {
   if (isDisabled) return undefined;
+  if (multiSelect) return isSelected;
+  return isSelected ? true : undefined;
+};
+
+export const getAriaChecked = ({
+  isSelected,
+  isDisabled,
+  isHalfSelected,
+  multiSelect,
+}: {
+  isSelected: boolean;
+  isDisabled: boolean;
+  isHalfSelected: boolean;
+  multiSelect: boolean;
+}): boolean | undefined | "mixed" => {
+  if (isDisabled) return undefined;
+  if (isHalfSelected) return "mixed";
   if (multiSelect) return isSelected;
   return isSelected ? true : undefined;
 };

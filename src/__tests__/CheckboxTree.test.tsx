@@ -59,6 +59,7 @@ function MultiSelectCheckbox() {
           propagateSelect
           propagateSelectUpwards
           togglableSelect
+          nodeAction="check"
           nodeRenderer={({
             element,
             getNodeProps,
@@ -93,11 +94,11 @@ test("Shift + Up / Down Arrow", () => {
   fireEvent.keyDown(nodes[0], { key: "ArrowDown", shiftKey: true });
 
   expect(document.activeElement).toEqual(nodes[1]);
-  expect(nodes[1]).toHaveAttribute("aria-selected", "true");
+  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
 
   fireEvent.keyDown(nodes[0], { key: "ArrowUp", shiftKey: true });
   expect(document.activeElement).toEqual(nodes[0]);
-  expect(nodes[0]).toHaveAttribute("aria-selected", "true");
+  expect(nodes[0]).toHaveAttribute("aria-checked", "true");
 });
 
 test("Shift + Up / Down Arrow", () => {
@@ -108,11 +109,11 @@ test("Shift + Up / Down Arrow", () => {
   fireEvent.keyDown(nodes[0], { key: "ArrowDown", shiftKey: true });
 
   expect(document.activeElement).toEqual(nodes[1]);
-  expect(nodes[1]).toHaveAttribute("aria-selected", "true");
+  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
 
   fireEvent.keyDown(nodes[0], { key: "ArrowUp", shiftKey: true });
   expect(document.activeElement).toEqual(nodes[0]);
-  expect(nodes[0]).toHaveAttribute("aria-selected", "true");
+  expect(nodes[0]).toHaveAttribute("aria-checked", "true");
 });
 
 test("propagateselect selects all child nodes", () => {
@@ -128,7 +129,31 @@ test("propagateselect selects all child nodes", () => {
   const childNodes = container.querySelectorAll(
     '[role="treeitem"][aria-level="2"]'
   );
-  childNodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
+  childNodes.forEach((x) => expect(x).toHaveAttribute("aria-checked", "true"));
+});
+
+test("expect when nodeAction='check', aria-multiselectable is not set and aria-checked is set", () => {
+  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const treeNodes = queryAllByRole("tree");
+  expect(treeNodes[0]).not.toHaveAttribute("aria-multiselectable");
+
+  const nodes = queryAllByRole("treeitem");
+  nodes.forEach((x) => expect(x).toHaveAttribute("aria-checked"));
+});
+
+test("expect when nodeAction='check', parent node indeterminate's state is set when a children node is checked ", () => {
+  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the first element with role["treeitem"]), but did not.`
+    );
+
+  nodes[0].focus();
+  fireEvent.keyDown(nodes[0], { key: "ArrowRight" });
+  fireEvent.keyDown(nodes[0], { key: "ArrowDown", shiftKey: true });
+  expect(nodes[0]).toHaveAttribute("aria-checked", "mixed");
 });
 
 test("propagateselectupwards half-selects all parent nodes", () => {

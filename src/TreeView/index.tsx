@@ -7,6 +7,7 @@ import {
   EventCallback,
   focusRef,
   getAccessibleRange,
+  getAriaChecked,
   getAriaSelected,
   getDescendants,
   getLastAccessible,
@@ -546,7 +547,15 @@ export const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
 type ValueOf<T> = T[keyof T];
 export type ClickActions = ValueOf<typeof clickActions>;
 
-export interface ILeafProps {
+type ActionableNode =
+  | {
+      "aria-selected": boolean | undefined;
+    }
+  | {
+      "aria-checked": boolean | undefined | "mixed";
+    };
+
+export type LeafProps = ActionableNode & {
   role: string;
   tabIndex: number;
   onClick: EventCallback;
@@ -558,7 +567,7 @@ export interface ILeafProps {
   "aria-selected": boolean;
   disabled: boolean;
   "aria-disabled": boolean;
-}
+};
 
 export interface IBranchProps {
   onClick: EventCallback;
@@ -571,7 +580,7 @@ export interface INodeRendererProps {
   /** A function which gives back the props to pass to the node */
   getNodeProps: (args?: {
     onClick?: EventCallback;
-  }) => IBranchProps | ILeafProps;
+  }) => IBranchProps | LeafProps;
   /** Whether the rendered node is a branch node */
   isBranch: boolean;
   /** Whether the rendered node is selected */
@@ -617,6 +626,15 @@ export interface ITreeViewOnExpandProps {
   treeState: ITreeViewState;
 }
 
+const nodeActions = {
+  check: "check",
+  select: "select",
+} as const;
+
+export const NODE_ACTIONS = Object.freeze(Object.values(nodeActions));
+
+export type NodeAction = ValueOf<typeof nodeActions>;
+
 export interface ITreeViewProps {
   /** Tree data*/
   data: INode[];
@@ -628,6 +646,8 @@ export interface ITreeViewProps {
   className?: string;
   /** Render prop for the node */
   nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
+  nodeAction?: NodeAction;
   /** Array with the ids of the default expanded nodes */
   defaultExpandedIds?: number[];
   /** Array with the ids of the default selected nodes */
@@ -675,6 +695,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       defaultSelectedIds = [],
       defaultDisabledIds = [],
       clickAction = clickActions.select,
+      nodeAction = "select",
       onBlur,
       ...other
     },
@@ -704,7 +725,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       <ul
         className={cx(baseClassNames.root, className)}
         role="tree"
-        aria-multiselectable={multiSelect}
+        aria-multiselectable={nodeAction === "select" ? multiSelect : undefined}
         ref={innerRef}
         onBlur={(event) => {
           onComponentBlur(event, innerRef.current, () => {
@@ -752,6 +773,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
             multiSelect={multiSelect}
             togglableSelect={togglableSelect}
             clickAction={clickAction}
+            nodeAction={nodeAction}
           />
         ))}
       </ul>
@@ -763,6 +785,7 @@ interface INodeProps {
   element: INode;
   dispatch: React.Dispatch<TreeViewAction>;
   data: INode[];
+  nodeAction: NodeAction;
   selectedIds: Set<number>;
   tabbableId: number;
   isFocused: boolean;
@@ -800,6 +823,7 @@ const Node = (props: INodeProps) => {
     nodeRefs,
     baseClassNames,
     nodeRenderer,
+    nodeAction,
     setsize,
     posinset,
     level,
@@ -895,7 +919,23 @@ const Node = (props: INodeProps) => {
       [`${className}--focused`]: tabbableId === element.id && isFocused,
     });
   };
-
+  const ariaActionProp =
+    nodeAction === "select"
+      ? {
+          "aria-selected": getAriaSelected({
+            isSelected: selectedIds.has(element.id),
+            isDisabled: disabledIds.has(element.id),
+            multiSelect,
+          }),
+        }
+      : {
+          "aria-checked": getAriaChecked({
+            isSelected: selectedIds.has(element.id),
+            isDisabled: disabledIds.has(element.id),
+            isHalfSelected: halfSelectedIds.has(element.id),
+            multiSelect,
+          }),
+        };
   const getLeafProps = (args: { onClick?: EventCallback } = {}) => {
     const { onClick } = args;
     return {
@@ -914,13 +954,9 @@ const Node = (props: INodeProps) => {
       "aria-setsize": setsize,
       "aria-posinset": posinset,
       "aria-level": level,
-      "aria-selected": getAriaSelected({
-        isSelected: selectedIds.has(element.id),
-        isDisabled: disabledIds.has(element.id),
-        multiSelect,
-      }),
       disabled: disabledIds.has(element.id),
       "aria-disabled": disabledIds.has(element.id),
+      ...ariaActionProp,
     };
   };
 
@@ -939,11 +975,6 @@ const Node = (props: INodeProps) => {
     <li
       role="treeitem"
       aria-expanded={expandedIds.has(element.id)}
-      aria-selected={getAriaSelected({
-        isSelected: selectedIds.has(element.id),
-        isDisabled: disabledIds.has(element.id),
-        multiSelect,
-      })}
       aria-setsize={setsize}
       aria-posinset={posinset}
       aria-level={level}
@@ -955,6 +986,7 @@ const Node = (props: INodeProps) => {
         }
       }}
       className={baseClassNames.branchWrapper}
+      {...ariaActionProp}
     >
       <>
         {nodeRenderer({
@@ -1369,6 +1401,9 @@ TreeView.propTypes = {
 
   /** action to perform on click */
   clickAction: PropTypes.oneOf(CLICK_ACTIONS),
+
+  /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
+  nodeAction: PropTypes.oneOf(NODE_ACTIONS),
 };
 
 export default TreeView;

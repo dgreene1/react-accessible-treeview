@@ -2,7 +2,7 @@ import TreeView, {
   ClickActions,
   CLICK_ACTIONS,
   IBranchProps,
-  ILeafProps,
+  LeafProps,
   INode,
   INodeRendererProps,
   ITreeViewOnExpandProps,
@@ -25,7 +25,7 @@ export {
   INodeRendererProps,
   ClickActions,
   IBranchProps,
-  ILeafProps,
+  LeafProps,
   ITreeViewState,
 };
 export default TreeView;

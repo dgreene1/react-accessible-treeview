@@ -77,3 +77,20 @@ test("Ctrl+A selects all nodes", () => {
   fireEvent.keyDown(document.activeElement, { key: "a", ctrlKey: true });
   nodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
 });
+
+test("expect aria-select and aria-multiselectable='true' is set when nodeAction undefined", () => {
+  const { queryAllByRole } = render(
+    <DirectoryTreeView defaultExpandedIds={data.map((x) => x.id)} />
+  );
+  const treeNodes = queryAllByRole("tree");
+  expect(treeNodes[0]).toHaveAttribute("aria-multiselectable", "true");
+
+  const nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the first element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "a", ctrlKey: true });
+  nodes.forEach((x) => expect(x).toHaveAttribute("aria-selected", "true"));
+});
