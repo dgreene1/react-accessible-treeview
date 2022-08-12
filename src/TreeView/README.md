@@ -99,6 +99,11 @@ The array can also be generated from a nested object using the <code>flattenTree
 - _Arguments_: `onExpand({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
   Note: the function uses the state _after_ the expansion.
 
+### onLoadData
+
+- _Arguments_: `onLoadData({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
+  Note: the function uses the state _after_ inital data is loaded and on expansion .
+
 <br/> <br/>
 
 ### Keyboard Navigation

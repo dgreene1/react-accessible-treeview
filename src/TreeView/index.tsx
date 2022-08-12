@@ -20,6 +20,7 @@ import {
   propagateSelectChange,
   symmetricDifference,
   usePrevious,
+  usePreviousData,
 } from "./utils";
 
 export interface INode {
@@ -31,6 +32,8 @@ export interface INode {
   children: number[];
   /** The parent of the node; null for the root node */
   parent: number | null;
+  /** Used to indicated whether a node is branch to be able load async data onExpand*/
+  isBranch?: boolean;
 }
 export type INodeRef = HTMLLIElement | HTMLDivElement;
 export type INodeRefs = null | React.RefObject<{
@@ -376,6 +379,8 @@ interface IUseTreeProps {
   multiSelect?: boolean;
   propagateSelectUpwards?: boolean;
   propagateSelect?: boolean;
+  onLoadData?: (props: ITreeViewOnLoadDataProps) => void;
+  togglableSelect?: boolean;
 }
 const useTree = ({
   data,
@@ -385,7 +390,10 @@ const useTree = ({
   nodeRefs,
   onSelect,
   onExpand,
+  onLoadData,
+  togglableSelect,
   multiSelect,
+  propagateSelect,
   propagateSelectUpwards,
 }: IUseTreeProps) => {
   const [state, dispatch] = useReducer(treeReducer, {
@@ -414,7 +422,8 @@ const useTree = ({
   useEffect(() => {
     if (onSelect != null && onSelect !== noop) {
       for (const toggledId of toggledIds) {
-        const isBranch = isBranchNode(data, toggledId);
+        const isBranch =
+          isBranchNode(data, toggledId) || !!data[tabbableId].isBranch;
         onSelect({
           element: data[toggledId],
           isBranch: isBranch,
@@ -460,6 +469,44 @@ const useTree = ({
     halfSelectedIds,
     prevExpandedIds,
     onExpand,
+    state,
+  ]);
+
+  const prevData = usePreviousData(data) || new Set<INode[]>();
+  useEffect(() => {
+    const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
+    if (onLoadData != null && onLoadData !== noop) {
+      for (const id of toggledExpandIds) {
+        onLoadData({
+          element: data[id],
+          isExpanded: expandedIds.has(id),
+          isSelected: selectedIds.has(id),
+          isDisabled: disabledIds.has(id),
+          isHalfSelected: halfSelectedIds.has(id),
+          treeState: state,
+        });
+      }
+      if (prevData !== data && togglableSelect && propagateSelect) {
+        for (const id of expandedIds) {
+          selectedIds.has(id) &&
+            dispatch({
+              type: treeTypes.changeSelectMany,
+              ids: propagatedIds(data, [id], disabledIds),
+              select: true,
+              multiSelect,
+              lastInteractedWith: id,
+            });
+        }
+      }
+    }
+  }, [
+    data,
+    selectedIds,
+    expandedIds,
+    disabledIds,
+    halfSelectedIds,
+    prevExpandedIds,
+    onLoadData,
     state,
   ]);
 
@@ -626,6 +673,15 @@ export interface ITreeViewOnExpandProps {
   treeState: ITreeViewState;
 }
 
+export interface ITreeViewOnLoadDataProps {
+  element: INode;
+  isExpanded: boolean;
+  isSelected: boolean;
+  isHalfSelected: boolean;
+  isDisabled: boolean;
+  treeState: ITreeViewState;
+}
+
 const nodeActions = {
   check: "check",
   select: "select",
@@ -642,6 +698,8 @@ export interface ITreeViewProps {
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   /** Function called when a node changes its expanded state */
   onExpand?: (props: ITreeViewOnExpandProps) => void;
+  /** Function called to load data asynchronously on expand */
+  onLoadData?: (props: ITreeViewOnExpandProps) => void;
   /** className to add to the outermost ul */
   className?: string;
   /** Render prop for the node */
@@ -684,6 +742,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       nodeRenderer,
       onSelect = noop,
       onExpand = noop,
+      onLoadData = noop,
       className = "",
       multiSelect = false,
       propagateSelect = false,
@@ -710,6 +769,8 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       nodeRefs,
       onSelect,
       onExpand,
+      onLoadData,
+      togglableSelect,
       multiSelect,
       propagateSelect,
       propagateSelectUpwards,
@@ -971,7 +1032,7 @@ const Node = (props: INodeProps) => {
     };
   };
 
-  return isBranchNode(data, element.id) ? (
+  return isBranchNode(data, element.id) || element.isBranch ? (
     <li
       role="treeitem"
       aria-expanded={expandedIds.has(element.id)}
@@ -1063,6 +1124,7 @@ const NodeGroup = ({
 }: INodeGroupProps) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
+      element.children.length > 0 &&
       element.children.map((x, index) => (
         <Node
           data={data}
@@ -1228,7 +1290,10 @@ const handleKeyDown = ({
     }
     case "ArrowLeft": {
       event.preventDefault();
-      if (isBranchNode(data, id) && expandedIds.has(tabbableId)) {
+      if (
+        (isBranchNode(data, id) || element.isBranch) &&
+        expandedIds.has(tabbableId)
+      ) {
         if (propagateCollapse) {
           const ids = [id, ...getDescendants(data, id, new Set<number>())];
           dispatch({
@@ -1261,7 +1326,7 @@ const handleKeyDown = ({
     }
     case "ArrowRight": {
       event.preventDefault();
-      if (isBranchNode(data, id)) {
+      if (isBranchNode(data, id) || element.isBranch) {
         if (expandedIds.has(tabbableId)) {
           dispatch({
             type: treeTypes.focus,
@@ -1298,8 +1363,8 @@ const handleKeyDown = ({
       if (parentId == null) {
         throw new Error("parentId of element is null");
       }
-      const nodes = data[parentId].children.filter((x) =>
-        isBranchNode(data, x)
+      const nodes = data[parentId].children.filter(
+        (x) => isBranchNode(data, x) || data[x].isBranch
       );
       dispatch({
         type: treeTypes.expandMany,
@@ -1387,7 +1452,8 @@ TreeView.propTypes = {
   /** If true, selecting a node will also select its descendants */
   propagateSelect: PropTypes.bool,
 
-  /** If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected)*/
+  /** If true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox
+   * will be automatically selected if all of its children are selected)*/
   propagateSelectUpwards: PropTypes.bool,
 
   /** Allows multiple nodes to be selected */
@@ -1399,11 +1465,19 @@ TreeView.propTypes = {
   /** Wether the selected state is togglable */
   togglableSelect: PropTypes.bool,
 
+  /** Indicates what action will be performed on a node which informs the correct aria-*
+   * properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
+  nodeAction: PropTypes.oneOf(NODE_ACTIONS),
+
   /** action to perform on click */
   clickAction: PropTypes.oneOf(CLICK_ACTIONS),
 
-  /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
-  nodeAction: PropTypes.oneOf(NODE_ACTIONS),
+  /** Custom onBlur event that is triggered when focusing out of the component
+   * as a whole (moving focus between the nodes won't trigger it) */
+  onBlur: PropTypes.func,
+
+  /** Function called to load data asynchronously on expand */
+  onLoadData: PropTypes.func,
 };
 
 export default TreeView;

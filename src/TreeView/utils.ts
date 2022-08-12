@@ -38,6 +38,14 @@ export const usePrevious = (x: Set<number>): Set<number> | undefined => {
   return ref.current;
 };
 
+export const usePreviousData = (value: INode[] | undefined) => {
+  const ref = useRef<INode[] | undefined>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+};
+
 export const isBranchNode = (data: INode[], i: number) =>
   data[i].children != null && data[i].children.length > 0;
 
@@ -163,7 +171,10 @@ export const propagateSelectChange = (
         (x) => !disabledIds.has(x)
       );
       if (enabledChildren.length === 0) break;
-      const some = enabledChildren.some((x) => selectedIds.has(x) || halfSelectedIds.has(x) || changes.some.has(x));
+      const some = enabledChildren.some(
+        (x) =>
+          selectedIds.has(x) || halfSelectedIds.has(x) || changes.some.has(x)
+      );
       if (!some) {
         changes.none.add(parent);
       } else {
