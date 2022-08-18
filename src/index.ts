@@ -10,6 +10,7 @@ import TreeView, {
   ITreeViewProps,
   ITreeViewState,
   TreeViewAction,
+  ITreeViewOnLoadDataProps,
 } from "./TreeView";
 import { EventCallback, flattenTree } from "./TreeView/utils";
 
@@ -20,6 +21,7 @@ export {
   ITreeViewOnSelectProps,
   CLICK_ACTIONS,
   ITreeViewOnExpandProps,
+  ITreeViewOnLoadDataProps,
   EventCallback,
   TreeViewAction,
   INodeRendererProps,
