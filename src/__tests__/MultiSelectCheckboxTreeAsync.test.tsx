@@ -63,7 +63,7 @@ describe("Async MultiSelectCheckboxTree", () => {
     };
 
     const onLoadData: ITreeViewProps["onLoadData"] = ({ element }) => {
-      new Promise<void>((resolve) => {
+      return new Promise<void>((resolve) => {
         if (element.children.length > 0) {
           resolve();
           return;

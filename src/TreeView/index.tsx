@@ -379,7 +379,8 @@ interface IUseTreeProps {
   multiSelect?: boolean;
   propagateSelectUpwards?: boolean;
   propagateSelect?: boolean;
-  onLoadData?: (props: ITreeViewOnLoadDataProps) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLoadData?: (props: ITreeViewOnLoadDataProps) => Promise<any>;
   togglableSelect?: boolean;
 }
 const useTree = ({
@@ -475,7 +476,7 @@ const useTree = ({
   const prevData = usePreviousData(data) || new Set<INode[]>();
   useEffect(() => {
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
-    if (onLoadData != null && onLoadData !== noop) {
+    if (onLoadData) {
       for (const id of toggledExpandIds) {
         onLoadData({
           element: data[id],
@@ -699,7 +700,8 @@ export interface ITreeViewProps {
   /** Function called when a node changes its expanded state */
   onExpand?: (props: ITreeViewOnExpandProps) => void;
   /** Function called to load data asynchronously on expand */
-  onLoadData?: (props: ITreeViewOnExpandProps) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLoadData?: (props: ITreeViewOnLoadDataProps) => Promise<any>;
   /** className to add to the outermost ul */
   className?: string;
   /** Render prop for the node */
@@ -742,7 +744,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       nodeRenderer,
       onSelect = noop,
       onExpand = noop,
-      onLoadData = noop,
+      onLoadData,
       className = "",
       multiSelect = false,
       propagateSelect = false,

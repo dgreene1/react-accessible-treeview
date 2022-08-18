@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
 import { AiOutlineLoading } from "react-icons/ai";
@@ -32,6 +32,7 @@ const initialData = [
     children: [],
     id: 3,
     parent: 0,
+    isBranch: true,
   },
   {
     name: "Pine colada",
@@ -47,8 +48,10 @@ const initialData = [
   },
 ];
 
-function AsyncMultiSelectCheckbox() {
+function MultiSelectCheckboxAsync() {
+  const loadedAlertElement = useRef(null);
   const [data, setData] = useState(initialData);
+  const [nodesAlreadyLoaded, setNodesAlreadyLoaded] = useState([]);
 
   const updateTreeData = (list, id, children) => {
     const data = list.map((node) => {
@@ -63,7 +66,7 @@ function AsyncMultiSelectCheckbox() {
   };
 
   const onLoadData = ({ element }) => {
-    new Promise((resolve) => {
+    return new Promise((resolve) => {
       if (element.children.length > 0) {
         resolve();
         return;
@@ -72,7 +75,7 @@ function AsyncMultiSelectCheckbox() {
         setData((value) =>
           updateTreeData(value, element.id, [
             {
-              name: "Child Node",
+              name: `Child Node ${value.length}`,
               children: [],
               id: value.length,
               parent: element.id,
@@ -91,14 +94,40 @@ function AsyncMultiSelectCheckbox() {
     });
   };
 
+  const wrappedOnLoadData = async (props) => {
+    const nodeHasNoChildData = props.element.children.length === 0;
+    const nodeHasAlreadyBeenLoaded = nodesAlreadyLoaded.find(
+      (e) => e.id === props.element.id
+    );
+
+    await onLoadData(props);
+
+    if (nodeHasNoChildData && !nodeHasAlreadyBeenLoaded) {
+      const el = loadedAlertElement.current;
+      setNodesAlreadyLoaded([...nodesAlreadyLoaded, props.element]);
+      el && (el.innerHTML = `${props.element.name} loaded`);
+
+      // Clearing aria-live region so loaded node alerts no longer appear in DOM
+      setTimeout(() => {
+        el && (el.innerHTML = "");
+      }, 5000);
+    }
+  };
+
   return (
     <>
       <div>
+        <div
+          className="visually-hidden"
+          ref={loadedAlertElement}
+          role="alert"
+          aria-live="polite"
+        ></div>
         <div className="checkbox">
           <TreeView
             data={data}
             aria-label="Checkbox tree"
-            onLoadData={onLoadData}
+            onLoadData={wrappedOnLoadData}
             multiSelect
             propagateSelect
             togglableSelect
@@ -184,4 +213,4 @@ const CheckBoxIcon = ({ variant, ...rest }) => {
   }
 };
 
-export default AsyncMultiSelectCheckbox;
+export default MultiSelectCheckboxAsync;
