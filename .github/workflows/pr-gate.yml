@@ -2,7 +2,7 @@ name: PR gate workflow
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["master"]
 
 jobs:
   pr-gate:
