@@ -15,6 +15,7 @@
     "@docusaurus/preset-classic": "^2.0.0-alpha.24",
     "@reach/tabs": "^0.1.6",
     "@reach/tooltip": "^0.2.2",
+    "a-dummy-react-accessible-treeview": "^2.5.1",
     "classnames": "^2.2.6",
     "react": "^16.8.4",
     "react-accessible-treeview": "^2.1.3",
