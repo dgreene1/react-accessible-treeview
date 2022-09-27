@@ -50,7 +50,7 @@ jobs:
       - run: git checkout -b ${{ env.NEW_BRANCH_NAME }}
       # add/commit/push the files that contain this new version
 
-      - name: update docs package.json version
+      - name: Update to new version of react-accessible-treeview in website/package.json
         working-directory: website
         run: |
           npm i a-dummy-react-accessible-treeview@${{ github.event.inputs.newPackageJsonVersion }}
