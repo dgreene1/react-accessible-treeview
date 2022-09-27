@@ -53,7 +53,7 @@ jobs:
       - name: Update to new version of react-accessible-treeview in website/package.json
         working-directory: website
         run: |
-          npm i a-dummy-react-accessible-treeview@${{ github.event.inputs.newPackageJsonVersion }}
+          npm i react-accessible-treeview@${{ github.event.inputs.newPackageJsonVersion }}
           git add package.json
       - run: git add package-lock.json package.json
       - run: git config --global user.email "actions@github.com"

@@ -1,5 +1,5 @@
 {
-  "name": "a-dummy-react-accessible-treeview",
+  "name": "react-accessible-treeview",
   "description": "A react component that implements the treeview pattern as described by the WAI-ARIA Authoring Practices.",
   "version": "2.1.4",
   "author": "lissitz (https://github.com/lissitz)",
