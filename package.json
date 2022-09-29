@@ -1,7 +1,7 @@
 {
   "name": "react-accessible-treeview",
   "description": "A react component that implements the treeview pattern as described by the WAI-ARIA Authoring Practices.",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "author": "lissitz (https://github.com/lissitz)",
   "main": "dist/react-accessible-treeview.cjs.js",
   "module": "dist/react-accessible-treeview.esm.js",
