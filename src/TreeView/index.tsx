@@ -82,6 +82,7 @@ export type TreeViewAction =
       type: "SELECT";
       id: number;
       multiSelect?: boolean;
+      controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: number | null;
@@ -90,6 +91,7 @@ export type TreeViewAction =
       type: "DESELECT";
       id: number;
       multiSelect?: boolean;
+      controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: number | null;
@@ -223,7 +225,7 @@ const treeReducer = (
       };
     }
     case treeTypes.select: {
-      if (state.disabledIds.has(action.id)) return state;
+      if (!action.controlled && state.disabledIds.has(action.id)) return state;
       let selectedIds;
       if (action.multiSelect) {
         selectedIds = new Set<number>(state.selectedIds);
@@ -247,7 +249,7 @@ const treeReducer = (
       };
     }
     case treeTypes.deselect: {
-      if (state.disabledIds.has(action.id)) return state;
+      if (!action.controlled && state.disabledIds.has(action.id)) return state;
       let selectedIds;
       if (action.multiSelect) {
         selectedIds = new Set<number>(state.selectedIds);
@@ -370,6 +372,7 @@ const treeReducer = (
 
 interface IUseTreeProps {
   data: INode[];
+  controlledIds?: number[];
   defaultExpandedIds?: number[];
   defaultSelectedIds?: number[];
   defaultDisabledIds?: number[];
@@ -385,6 +388,7 @@ interface IUseTreeProps {
 }
 const useTree = ({
   data,
+  controlledIds,
   defaultExpandedIds,
   defaultSelectedIds,
   defaultDisabledIds,
@@ -398,7 +402,7 @@ const useTree = ({
   propagateSelectUpwards,
 }: IUseTreeProps) => {
   const [state, dispatch] = useReducer(treeReducer, {
-    selectedIds: new Set<number>(defaultSelectedIds),
+    selectedIds: new Set<number>(controlledIds || defaultSelectedIds),
     tabbableId: data[0].children[0],
     isFocused: false,
     expandedIds: new Set<number>(defaultExpandedIds),
@@ -511,18 +515,66 @@ const useTree = ({
     state,
   ]);
 
+  useEffect(() => {
+    const toggleControlledIds = new Set<number>(controlledIds);
+    //nodes need to be selected
+    const diffSelectedIds = difference(toggleControlledIds, prevSelectedIds);
+    //nodes to be deselected
+    const diffDeselectedIds = difference(prevSelectedIds, toggleControlledIds);
+
+    //controlled deselection
+    if (diffDeselectedIds.size) {
+      for (const toggleDeselectedId of diffDeselectedIds) {
+        dispatch({
+          type: treeTypes.deselect,
+          id: toggleDeselectedId,
+          multiSelect,
+          controlled: true,
+          lastInteractedWith: toggleDeselectedId,
+        });
+      }
+    }
+
+    //controlled selection
+    if (diffSelectedIds.size) {
+      for (const toggleSelectedId of diffSelectedIds) {
+        dispatch({
+          type: treeTypes.select,
+          id: toggleSelectedId,
+          multiSelect,
+          controlled: true,
+          lastInteractedWith: toggleSelectedId,
+        });
+        propagateSelect &&
+          !disabledIds.has(toggleSelectedId) &&
+          dispatch({
+            type: treeTypes.changeSelectMany,
+            ids: propagatedIds(data, [toggleSelectedId], disabledIds),
+            select: true,
+            multiSelect,
+            lastInteractedWith: toggleSelectedId,
+          });
+      }
+    }
+  }, [controlledIds]);
+
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards && multiSelect) {
       const idsToUpdate = new Set<number>(toggledIds);
-      if (lastInteractedWith) {
+      if (
+        lastInteractedWith &&
+        lastAction !== treeTypes.focus &&
+        lastAction !== treeTypes.collapse &&
+        lastAction !== treeTypes.expand &&
+        lastAction !== treeTypes.toggle
+      ) {
         idsToUpdate.add(lastInteractedWith);
       }
       const { every, some, none } = propagateSelectChange(
         data,
         idsToUpdate,
         selectedIds,
-        halfSelectedIds,
         disabledIds
       );
       for (const id of every) {
@@ -712,6 +764,8 @@ export interface ITreeViewProps {
   defaultExpandedIds?: number[];
   /** Array with the ids of the default selected nodes */
   defaultSelectedIds?: number[];
+  /** Array with the ids of controlled selected nodes */
+  selectedIds?: number[];
   /** Array with the ids of the default disabled nodes */
   defaultDisabledIds?: number[];
   /** If true, collapsing a node will also collapse its descendants */
@@ -741,6 +795,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   function TreeView(
     {
       data,
+      selectedIds,
       nodeRenderer,
       onSelect = noop,
       onExpand = noop,
@@ -765,6 +820,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     const nodeRefs = useRef({});
     const [state, dispatch] = useTree({
       data,
+      controlledIds: selectedIds,
       defaultExpandedIds,
       defaultSelectedIds,
       defaultDisabledIds,
@@ -1444,6 +1500,9 @@ TreeView.propTypes = {
 
   /** Array with the ids of the default selected nodes*/
   defaultSelectedIds: PropTypes.array,
+
+  /** Array with the ids of controlled selected nodes */
+  selectedIds: PropTypes.array,
 
   /** Array with the ids of the default disabled nodes*/
   defaultDisabledIds: PropTypes.array,

@@ -148,7 +148,6 @@ export const propagateSelectChange = (
   data: INode[],
   ids: Set<number>,
   selectedIds: Set<number>,
-  halfSelectedIds: Set<number>,
   disabledIds: Set<number>
 ) => {
   const changes = {
@@ -173,7 +172,7 @@ export const propagateSelectChange = (
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
         (x) =>
-          selectedIds.has(x) || halfSelectedIds.has(x) || changes.some.has(x)
+          selectedIds.has(x) || changes.some.has(x)
       );
       if (!some) {
         changes.none.add(parent);
@@ -265,7 +264,7 @@ export const getAriaSelected = ({
   isDisabled: boolean;
   multiSelect: boolean;
 }): boolean | undefined => {
-  if (isDisabled) return undefined;
+  if (isDisabled) return isSelected;
   if (multiSelect) return isSelected;
   return isSelected ? true : undefined;
 };
@@ -281,7 +280,7 @@ export const getAriaChecked = ({
   isHalfSelected: boolean;
   multiSelect: boolean;
 }): boolean | undefined | "mixed" => {
-  if (isDisabled) return undefined;
+  if (isDisabled) return isSelected;
   if (isHalfSelected) return "mixed";
   if (multiSelect) return isSelected;
   return isSelected ? true : undefined;

@@ -17,7 +17,7 @@
     "@reach/tooltip": "^0.2.2",
     "classnames": "^2.2.6",
     "react": "^16.8.4",
-    "react-accessible-treeview": "^2.1.3",
+    "react-accessible-treeview": "^2.2.0",
     "react-dom": "^16.8.4",
     "react-icons": "^3.7.0"
   },
