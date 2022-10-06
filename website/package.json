@@ -37,6 +37,7 @@
     "react-accessible-treeview": "../"
   },
   "devDependencies": {
+    "@types/react": "^18.0.21",
     "raw-loader": "^3.1.0",
     "relative-deps": "^0.2.0"
   }
