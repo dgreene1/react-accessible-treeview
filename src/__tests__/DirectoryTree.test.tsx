@@ -2,7 +2,6 @@ import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
 import TreeView, { flattenTree } from "..";
-import { ITreeViewState, TreeViewAction } from "../TreeView";
 
 const folder = {
   name: "",
@@ -42,18 +41,6 @@ function DirectoryTreeView() {
         <TreeView
           data={data}
           aria-label="directory tree"
-          onBlur={() => ({
-            treeState,
-            dispatch,
-          }: {
-            treeState: ITreeViewState;
-            dispatch: React.Dispatch<TreeViewAction>;
-          }) => {
-            dispatch({
-              type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0],
-            });
-          }}
           nodeRenderer={({ element, getNodeProps }) => (
             <div {...getNodeProps()}>{element.name}</div>
           )}

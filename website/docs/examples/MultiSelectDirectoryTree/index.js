@@ -44,12 +44,6 @@ function MultiSelectDirectoryTreeView() {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          onBlur={({ treeState, dispatch }) => {
-            dispatch({
-              type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0],
-            });
-          }}
           nodeRenderer={({
             element,
             isBranch,
