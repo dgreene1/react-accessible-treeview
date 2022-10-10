@@ -812,10 +812,10 @@ export interface ITreeViewProps {
   nodeAction?: NodeAction;
   /** Array with the ids of the default expanded nodes */
   defaultExpandedIds?: number[];
-  /** Array with the ids of controlled expanded nodes */
-  expandedIds?: number[];
   /** Array with the ids of the default selected nodes */
   defaultSelectedIds?: number[];
+  /** Array with the ids of controlled expanded nodes */
+  expandedIds?: number[];
   /** Array with the ids of controlled selected nodes */
   selectedIds?: number[];
   /** Array with the ids of the default disabled nodes */
@@ -1552,11 +1552,11 @@ TreeView.propTypes = {
   /** Array with the ids of the default expanded nodes*/
   defaultExpandedIds: PropTypes.array,
 
-  /** Array with the ids of controlled expanded nodes */
-  expandedIds: PropTypes.array,
-
   /** Array with the ids of the default selected nodes*/
   defaultSelectedIds: PropTypes.array,
+
+  /** Array with the ids of controlled expanded nodes */
+  expandedIds: PropTypes.array,
 
   /** Array with the ids of controlled selected nodes */
   selectedIds: PropTypes.array,
