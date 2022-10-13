@@ -373,6 +373,7 @@ const treeReducer = (
 interface IUseTreeProps {
   data: INode[];
   controlledIds?: number[];
+  controlledExpandedIds?: number[];
   defaultExpandedIds?: number[];
   defaultSelectedIds?: number[];
   defaultDisabledIds?: number[];
@@ -389,6 +390,7 @@ interface IUseTreeProps {
 const useTree = ({
   data,
   controlledIds,
+  controlledExpandedIds,
   defaultExpandedIds,
   defaultSelectedIds,
   defaultDisabledIds,
@@ -405,7 +407,7 @@ const useTree = ({
     selectedIds: new Set<number>(controlledIds || defaultSelectedIds),
     tabbableId: data[0].children[0],
     isFocused: false,
-    expandedIds: new Set<number>(defaultExpandedIds),
+    expandedIds: new Set<number>(controlledExpandedIds || defaultExpandedIds),
     halfSelectedIds: new Set<number>(),
     lastUserSelect: data[0].children[0],
     lastInteractedWith: null,
@@ -557,6 +559,54 @@ const useTree = ({
       }
     }
   }, [controlledIds]);
+
+  useEffect(() => {
+    const toggleControlledExpandedIds = new Set<number>(controlledExpandedIds);
+    //nodes need to be expanded
+    const diffExpandedIds = difference(
+      toggleControlledExpandedIds,
+      prevExpandedIds
+    );
+    //nodes to be collapsed
+    const diffCollapseIds = difference(
+      prevExpandedIds,
+      toggleControlledExpandedIds
+    );
+    //controlled collapsing
+    if (diffCollapseIds.size) {
+      for (const id of diffCollapseIds) {
+        if (isBranchNode(data, id) || data[id].isBranch) {
+          const ids = [id, ...getDescendants(data, id, new Set<number>())];
+          dispatch({
+            type: treeTypes.collapseMany,
+            ids: ids,
+            lastInteractedWith: id,
+          });
+        }
+      }
+    }
+    //controlled expanding
+    if (diffExpandedIds.size) {
+      for (const id of diffExpandedIds) {
+        if (isBranchNode(data, id) || data[id].isBranch) {
+          const parentId = getParent(data, id);
+          if (parentId) {
+            dispatch({
+              type: treeTypes.expandMany,
+              ids: [id, parentId],
+              lastInteractedWith: id,
+            });
+          } else {
+            dispatch({
+              type: treeTypes.expand,
+              id: id,
+              lastInteractedWith: id,
+            });
+          }
+        }
+      }
+    }
+  }, [controlledExpandedIds]);
 
   //Update parent if a child changes
   useEffect(() => {
@@ -764,6 +814,8 @@ export interface ITreeViewProps {
   defaultExpandedIds?: number[];
   /** Array with the ids of the default selected nodes */
   defaultSelectedIds?: number[];
+  /** Array with the ids of controlled expanded nodes */
+  expandedIds?: number[];
   /** Array with the ids of controlled selected nodes */
   selectedIds?: number[];
   /** Array with the ids of the default disabled nodes */
@@ -812,6 +864,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       defaultDisabledIds = [],
       clickAction = clickActions.select,
       nodeAction = "select",
+      expandedIds,
       onBlur,
       ...other
     },
@@ -821,6 +874,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     const [state, dispatch] = useTree({
       data,
       controlledIds: selectedIds,
+      controlledExpandedIds: expandedIds,
       defaultExpandedIds,
       defaultSelectedIds,
       defaultDisabledIds,
@@ -1499,6 +1553,9 @@ TreeView.propTypes = {
 
   /** Array with the ids of the default selected nodes*/
   defaultSelectedIds: PropTypes.array,
+
+  /** Array with the ids of controlled expanded nodes */
+  expandedIds: PropTypes.array,
 
   /** Array with the ids of controlled selected nodes */
   selectedIds: PropTypes.array,
