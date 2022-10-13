@@ -1230,8 +1230,7 @@ const handleKeyDown = ({
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { 0: root, ...dataWithoutRoot } = data;
+      const dataWithoutRoot = data.filter((x) => x.id !== 0);
       const ids = Object.values(dataWithoutRoot)
         .map((x) => x.id)
         .filter((id) => !disabledIds.has(id));
