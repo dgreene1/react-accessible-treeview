@@ -1,7 +1,7 @@
 {
   "name": "react-accessible-treeview",
   "description": "A react component that implements the treeview pattern as described by the WAI-ARIA Authoring Practices.",
-  "version": "2.1.4",
+  "version": "2.3.0",
   "author": "lissitz (https://github.com/lissitz)",
   "main": "dist/react-accessible-treeview.cjs.js",
   "module": "dist/react-accessible-treeview.esm.js",
@@ -52,7 +52,7 @@
     "rollup-plugin-typescript2": "^0.32.1",
     "ts-jest": "^28.0.5",
     "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.4"
   },
   "scripts": {
     "build": "rollup -c",
