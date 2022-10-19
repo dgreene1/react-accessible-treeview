@@ -2,6 +2,8 @@
 title: API Reference
 ---
 
+# TESTING IF PUBLISH IS AUTOMATIC
+
 ## Prop Types
 
 | Prop name                | Type          | Default value | Description                                                                                                                                                               |
