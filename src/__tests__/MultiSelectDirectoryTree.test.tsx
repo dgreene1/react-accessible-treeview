@@ -46,13 +46,6 @@ function DirectoryTreeView(props: {
           togglableSelect
           clickAction="EXCLUSIVE_SELECT"
           multiSelect
-          onBlur={(event) => {
-            const { treeState, dispatch } = event;
-            dispatch({
-              type: "DESELECT",
-              id: Array.from(treeState.selectedIds)[0],
-            });
-          }}
           nodeRenderer={({ element, getNodeProps }) => (
             <div {...getNodeProps()}>{element.name}</div>
           )}
