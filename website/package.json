@@ -11,8 +11,8 @@
     "prepare": "relative-deps"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.24",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.24",
+    "@docusaurus/core": "^2.1.0",
+    "@docusaurus/preset-classic": "^2.1.0",
     "@reach/tabs": "^0.1.6",
     "@reach/tooltip": "^0.2.2",
     "classnames": "^2.2.6",
@@ -38,6 +38,8 @@
   },
   "devDependencies": {
     "raw-loader": "^3.1.0",
-    "relative-deps": "^0.2.0"
+    "relative-deps": "^1.0.7",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
   }
 }

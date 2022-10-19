@@ -26,7 +26,8 @@ A react component that implements the treeview pattern as described by the [WAI-
 | `defaultSelectedIds`     | `array`       | `[]`          | Array with the ids of the default selected nodes                                                                                                                          |
 | `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                          |
 | `defaultDisabledIds`     | `array`       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
-| `selectedIds`            | `array`       | `[]`          | (Controlled) Array with the ids that should be selected           |
+| `selectedIds`            | `array`       | `[]`          | (Controlled) Array with the ids that should be selected                                                                                                                   |
+| `expandedIds`            | `array`       | `[]`          | (Controlled) Array with the ids of branch node that should be expanded                                                                                                    |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
 
 <br/> <br/>
@@ -35,12 +36,13 @@ A react component that implements the treeview pattern as described by the [WAI-
 
 An array of nodes. Nodes are objects with the following structure:
 
-| Property   | Type        | Default  | Description                                              |
-| ---------- | ----------- | -------- | -------------------------------------------------------- |
-| `id`       | `number`    | required | A nonnegative interger that uniquely identifies the node |
-| `name`     | `string`    | required | Used to match on key press                               |
-| `children` | `array[id]` | required | An array with the ids of the children nodes.             |
-| `parent`   | `id`        | required | The parent of the node. `null` for the root node         |
+| Property   | Type        | Default  | Description                                                                                      |
+| ---------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `id`       | `number`    | required | A nonnegative interger that uniquely identifies the node                                         |
+| `name`     | `string`    | required | Used to match on key press                                                                       |
+| `children` | `array[id]` | required | An array with the ids of the children nodes.                                                     |
+| `parent`   | `id`        | required | The parent of the node. `null` for the root node                                                 |
+| `isBranch` | `boolean`   | optional | Used to indicated whether a node is branch to be able load async data onExpand, default is false |
 
 The first item of the array represents the root node and won't be displayed.
 

@@ -10,7 +10,10 @@ A react component that implements the treeview pattern as described by the [WAI-
 - Highly customizable through the use of the render prop and prop getter patterns.
 - WAI-ARIA compliant.
 
-[Documentation and demo](https://react-accessible-treeview.netlify.com)
+### Documentation and Demo
+
+- https://dgreene1.github.io/react-accessible-treeview
+- [Archived documenation page](https://react-accessible-treeview.netlify.app/)
 
 ## Prop Types
 
@@ -31,6 +34,7 @@ A react component that implements the treeview pattern as described by the [WAI-
 | `defaultExpandedIds`     | `array`       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                          |
 | `defaultDisabledIds`     | `array`       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
 | `selectedIds`            | `array`       | `[]`          | (Controlled) Array with the ids that should be selected                                                                                                                   |
+| `expandedIds`            | `array`       | `[]`          | (Controlled) Array with the ids of branch node that should be expanded                                                                                                    |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
 | `onBlur`                 | `func`        | `noop`        | Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it).                                    |
 
@@ -40,12 +44,13 @@ A react component that implements the treeview pattern as described by the [WAI-
 
 An array of nodes. Nodes are objects with the following structure:
 
-| Property   | Type        | Default  | Description                                             |
-| ---------- | ----------- | -------- | ------------------------------------------------------- |
-| `id`       | `number`    | required | A nonnegative integer that uniquely identifies the node |
-| `name`     | `string`    | required | Used to match on key press                              |
-| `children` | `array[id]` | required | An array with the ids of the children nodes.            |
-| `parent`   | `id`        | required | The parent of the node. `null` for the root node        |
+| Property   | Type        | Default  | Description                                                                                      |
+| ---------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `id`       | `number`    | required | A nonnegative integer that uniquely identifies the node                                          |
+| `name`     | `string`    | required | Used to match on key press                                                                       |
+| `children` | `array[id]` | required | An array with the ids of the children nodes.                                                     |
+| `parent`   | `id`        | required | The parent of the node. `null` for the root node                                                 |
+| `isBranch` | `boolean`   | optional | Used to indicated whether a node is branch to be able load async data onExpand, default is false |
 
 The first item of the array represents the root node and won't be displayed.
 
@@ -105,7 +110,11 @@ The array can also be generated from a nested object using the `flattenTree` hel
 - _Arguments_: `onExpand({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
   Note: the function uses the state _after_ the expansion.
 
-<br/> <br/>
+## onLoadData
+
+- _Arguments_: `onLoadData({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
+  Note: the function uses the state _after_ inital data is loaded and on expansion .
+  <br/> <br/>
 
 ## Keyboard Navigation
 

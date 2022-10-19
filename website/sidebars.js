@@ -10,10 +10,13 @@ module.exports = {
     Documentation: ["api"],
     Examples: [
       "examples-Basic",
+      "examples-ControlledExpandedNode",
       "examples-DirectoryTree",
       "examples-MultiSelectDirectoryTree",
       "examples-MultiSelectCheckbox",
       "examples-MultiSelectCheckboxDisabled",
+      "examples-MultiSelectCheckboxAsync",
+      "examples-MultiSelectCheckboxControlled",
     ],
   },
 };
