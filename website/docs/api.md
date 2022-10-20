@@ -2,7 +2,7 @@
 title: API Reference
 ---
 
-# TESTING IF PUBLISH IS AUTOMATIC
+# Change some stuff
 
 ## Prop Types
 
