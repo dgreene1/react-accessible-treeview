@@ -2,8 +2,6 @@
 title: API Reference
 ---
 
-# Change some stuff
-
 ## Prop Types
 
 | Prop name                | Type          | Default value | Description                                                                                                                                                               |
