@@ -9,10 +9,10 @@ module.exports = {
   title: "react-accessible-treeview",
   tagline:
     "A React component that implements the treeview pattern as described by the WAI-ARIA Authoring Practices.",
-  url: "https://lissitz.github.io",
+  url: "https://yhy-1.github.io",
   baseUrl: "/react-accessible-treeview/",
   favicon: "static/favicon.ico",
-  organizationName: "lissitz", // Usually your GitHub org/user name.
+  organizationName: "yhy-1", // Usually your GitHub org/user name.
   projectName: "react-accessible-treeview", // Usually your repo name.
   trailingSlash: false,
   themeConfig: {
