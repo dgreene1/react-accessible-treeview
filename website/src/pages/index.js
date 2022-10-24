@@ -34,8 +34,8 @@ const features = [
     component: <CheckboxTree />,
     description: (
       <>
-        Highly customizable throug'@docusaurus/withBaseUrl'h the use of the
-        render prop and prop getter patterns.
+        Highly customizable through the use of the render prop and prop getter
+        patterns.
       </>
     ),
   },
@@ -71,7 +71,7 @@ function Home() {
         {features && features.length && (
           <section className={styles.features}>
             <div className="container">
-              <div className="row">
+              <div className="row" style={{ flexWrap: "nowrap" }}>
                 {features.map(({ component, title, description }, idx) => (
                   <div
                     key={idx}
