@@ -2,8 +2,6 @@
 title: API Reference
 ---
 
-# testing
-
 ## Prop Types
 
 | Prop name                | Type          | Default value | Description                                                                                                                                                               |
