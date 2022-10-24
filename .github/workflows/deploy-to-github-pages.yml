@@ -19,6 +19,9 @@ jobs:
         run: npm ci
       - name: Deploy website
         working-directory: ./website
+        env:
+          GIT_USER: github-actions[bot]
+          GIT_PASS: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm i
           npm run deploy
