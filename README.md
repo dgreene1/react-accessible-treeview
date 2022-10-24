@@ -13,7 +13,6 @@ A react component that implements the treeview pattern as described by the [WAI-
 ### Documentation and Demo
 
 - https://dgreene1.github.io/react-accessible-treeview
-- [Archived documenation page](https://react-accessible-treeview.netlify.app/)
 
 ## Prop Types
 
