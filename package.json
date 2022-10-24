@@ -72,7 +72,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lissitz/react-accessible-treeview.git"
+    "url": "https://github.com/dgreene1/react-accessible-treeview.git"
   },
   "homepage": "https://dgreene1.github.io/react-accessible-treeview/",
   "husky": {
