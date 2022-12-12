@@ -172,8 +172,8 @@ describe("Async MultiSelectCheckboxTree", () => {
     );
     //after data is loaded
     await waitFor(() => {
-      expect(screen.getByText("Child Node")).not.toBeNull();
-      expect(screen.getByText("Another Child Node")).not.toBeNull();
+      expect(screen.findByText("Child Node")).not.toBeNull();
+      expect(screen.findByText("Another Child Node")).not.toBeNull();
     });
     rerender(<AsyncMultiSelectCheckbox />);
   });
@@ -197,8 +197,8 @@ describe("Async MultiSelectCheckboxTree", () => {
     );
     //after data is loaded
     await waitFor(() => {
-      expect(screen.getByText("Child Node")).not.toBeNull();
-      expect(screen.getByText("Another Child Node")).not.toBeNull();
+      expect(screen.findByText("Child Node")).not.toBeNull();
+      expect(screen.findByText("Another Child Node")).not.toBeNull();
     });
     //ensure all children are propagrate when parent is selected
     const childNodes = container.querySelectorAll(
@@ -237,8 +237,8 @@ describe("Async MultiSelectCheckboxTree", () => {
     );
     //ensure data is loaded
     await waitFor(() => {
-      expect(screen.getByText("Child Node")).not.toBeNull();
-      expect(screen.getByText("Another Child Node")).not.toBeNull();
+      expect(screen.findByText("Child Node")).not.toBeNull();
+      expect(screen.findByText("Another Child Node")).not.toBeNull();
     });
   });
 });
