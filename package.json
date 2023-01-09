@@ -6,11 +6,21 @@
   "main": "dist/react-accessible-treeview.cjs.js",
   "module": "dist/react-accessible-treeview.esm.js",
   "types": "dist/index.d.ts",
+  "engines": {
+    "npm": ">=8.3.0"
+  },
   "peerDependencies": {
     "classnames": "^2.2.6",
     "prop-types": "^15.7.2",
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.2.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.2.0"
+  },
+  "overrides": {
+    "@storybook/react": {
+      "trim-newlines": "^3.0.1",
+      "trim": "^0.0.3",
+      "glob-parent": "^5.1.2"
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -20,7 +30,7 @@
     "@storybook/addon-actions": "^6.5.13",
     "@storybook/addon-links": "^6.5.13",
     "@storybook/addons": "^6.5.13",
-    "@storybook/react": "^6.5.13",
+    "@storybook/react": "^6.5.15",
     "@testing-library/dom": "^8.16.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.4.0",
