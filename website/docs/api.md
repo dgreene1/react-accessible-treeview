@@ -33,7 +33,7 @@ An array of nodes. Nodes are objects with the following structure:
 
 | Property   | Type        | Default  | Description                                                                                      |
 | ---------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `id`       | `number`    | required | A nonnegative integer that uniquely identifies the node                                          |
+| `id`       | `number`    | required | A nonnegative integer that uniquely identifies the node. `0` for the root node                   |
 | `name`     | `string`    | required | Used to match on key press                                                                       |
 | `children` | `array[id]` | required | An array with the ids of the children nodes.                                                     |
 | `parent`   | `id`        | required | The parent of the node. `null` for the root node                                                 |
