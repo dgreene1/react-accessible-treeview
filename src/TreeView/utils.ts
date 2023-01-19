@@ -49,9 +49,15 @@ export const usePreviousData = (value: INode[] | undefined) => {
 export const isBranchNode = (data: INode[], i: number) =>
   data[i].children != null && data[i].children.length > 0;
 
+export const scrollToRef = (ref: INodeRef) => {
+  if (ref != null && ref.scrollIntoView) {
+    ref.scrollIntoView({ block: "nearest" });
+  }
+};
+
 export const focusRef = (ref: INodeRef) => {
   if (ref != null && ref.focus) {
-    ref.focus();
+    ref.focus({ preventScroll: true });
   }
 };
 
@@ -171,8 +177,7 @@ export const propagateSelectChange = (
       );
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
-        (x) =>
-          selectedIds.has(x) || changes.some.has(x)
+        (x) => selectedIds.has(x) || changes.some.has(x)
       );
       if (!some) {
         changes.none.add(parent);
