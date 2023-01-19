@@ -324,3 +324,36 @@ test("expect aria-selected and aria-multiselectable='false' is set when nodeActi
   fireEvent.keyDown(document.activeElement, { key: "Enter" });
   expect(nodes[0]).toHaveAttribute("aria-selected", "true");
 });
+
+test("Scrolls to the leaf node", () => {
+  const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+  try {
+    const focusSpy = jest.spyOn(HTMLElement.prototype, "focus");
+
+    //jsdom doesn't implement scrollIntoView, so we need to stub it instead of
+    //using a spy.
+    let scrollIntoViewCalledWith: null | Element = null;
+    HTMLElement.prototype.scrollIntoView = function() {
+      scrollIntoViewCalledWith = this;
+    };
+
+    const { queryAllByRole } = render(<DirectoryTreeView />);
+
+    //Use the down arrow to move the focus to the sub-tree
+    const nodes = queryAllByRole("treeitem");
+    nodes[0].focus();
+    fireEvent.keyDown(nodes[0], { key: "ArrowDown" });
+
+    expect(document.activeElement).toEqual(nodes[1]);
+    expect(document.activeElement?.tagName).toEqual("LI");
+    expect(focusSpy).toHaveBeenCalledWith({
+      preventScroll: true,
+    });
+    expect(scrollIntoViewCalledWith).toEqual(
+      nodes[1].querySelector("div.tree-node")
+    );
+  } finally {
+    jest.restoreAllMocks();
+    HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  }
+});
