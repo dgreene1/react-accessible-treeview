@@ -334,6 +334,7 @@ test("Scrolls to the leaf node", () => {
     //using a spy.
     let scrollIntoViewCalledWith: null | Element = null;
     HTMLElement.prototype.scrollIntoView = function() {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       scrollIntoViewCalledWith = this;
     };
 
