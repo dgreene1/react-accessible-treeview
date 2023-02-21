@@ -374,6 +374,7 @@ interface IUseTreeProps {
   data: INode[];
   controlledIds?: number[];
   controlledExpandedIds?: number[];
+  controlledDisabledIds?: number[];
   defaultExpandedIds?: number[];
   defaultSelectedIds?: number[];
   defaultDisabledIds?: number[];
@@ -391,6 +392,7 @@ const useTree = ({
   data,
   controlledIds,
   controlledExpandedIds,
+  controlledDisabledIds,
   defaultExpandedIds,
   defaultSelectedIds,
   defaultDisabledIds,
@@ -411,7 +413,7 @@ const useTree = ({
     halfSelectedIds: new Set<number>(),
     lastUserSelect: data[0].children[0],
     lastInteractedWith: null,
-    disabledIds: new Set<number>(defaultDisabledIds),
+    disabledIds: new Set<number>(controlledDisabledIds || defaultDisabledIds),
   });
 
   const {
@@ -607,6 +609,41 @@ const useTree = ({
       }
     }
   }, [controlledExpandedIds]);
+
+  const prevDisabledIds = usePrevious(disabledIds) || new Set<number>();
+  useEffect(() => {
+    const toggleControlledDisabledIds = new Set<number>(controlledDisabledIds);
+    //nodes need to be disabled
+    const diffIdsToDisable = difference(
+      toggleControlledDisabledIds,
+      prevDisabledIds
+    );
+    //nodes to be enabled
+    const diffIdsToEnable = difference(
+      prevDisabledIds,
+      toggleControlledDisabledIds
+    );
+
+    //controlled enabling
+    if (diffIdsToEnable.size) {
+      for (const idToEnable of diffIdsToEnable) {
+        dispatch({
+          type: treeTypes.enable,
+          id: idToEnable,
+        });
+      }
+    }
+
+    //controlled disabling
+    if (diffIdsToDisable.size) {
+      for (const idToDisable of diffIdsToDisable) {
+        dispatch({
+          type: treeTypes.disable,
+          id: idToDisable,
+        });
+      }
+    }
+  }, [controlledDisabledIds]);
 
   //Update parent if a child changes
   useEffect(() => {
@@ -818,6 +855,8 @@ export interface ITreeViewProps {
   expandedIds?: number[];
   /** Array with the ids of controlled selected nodes */
   selectedIds?: number[];
+  /** Array with the ids of controlled disabled nodes */
+  disabledIds?: number[];
   /** Array with the ids of the default disabled nodes */
   defaultDisabledIds?: number[];
   /** If true, collapsing a node will also collapse its descendants */
@@ -848,6 +887,8 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     {
       data,
       selectedIds,
+      expandedIds,
+      disabledIds,
       nodeRenderer,
       onSelect = noop,
       onExpand = noop,
@@ -864,7 +905,6 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       defaultDisabledIds = [],
       clickAction = clickActions.select,
       nodeAction = "select",
-      expandedIds,
       onBlur,
       ...other
     },
@@ -875,6 +915,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       data,
       controlledIds: selectedIds,
       controlledExpandedIds: expandedIds,
+      controlledDisabledIds: disabledIds,
       defaultExpandedIds,
       defaultSelectedIds,
       defaultDisabledIds,
