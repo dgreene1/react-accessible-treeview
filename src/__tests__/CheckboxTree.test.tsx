@@ -48,10 +48,12 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function MultiSelectCheckbox({
+function CheckboxTree({
   propagateSelect = true,
+  multiSelect = true,
 }: {
   propagateSelect?: boolean;
+  multiSelect?: boolean;
 }) {
   return (
     <div>
@@ -59,7 +61,7 @@ function MultiSelectCheckbox({
         <TreeView
           data={data}
           aria-label="Checkbox tree"
-          multiSelect
+          multiSelect={multiSelect}
           propagateSelect={propagateSelect}
           propagateSelectUpwards
           togglableSelect
@@ -94,7 +96,7 @@ function MultiSelectCheckbox({
 }
 
 test("Shift + Up / Down Arrow", () => {
-  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const { queryAllByRole } = render(<CheckboxTree />);
 
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
@@ -109,7 +111,7 @@ test("Shift + Up / Down Arrow", () => {
 });
 
 test("Shift + Up / Down Arrow", () => {
-  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const { queryAllByRole } = render(<CheckboxTree />);
 
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
@@ -124,7 +126,7 @@ test("Shift + Up / Down Arrow", () => {
 });
 
 test("propagateselect selects all child nodes", () => {
-  const { queryAllByRole, container } = render(<MultiSelectCheckbox />);
+  const { queryAllByRole, container } = render(<CheckboxTree />);
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   if (document.activeElement == null)
@@ -140,7 +142,7 @@ test("propagateselect selects all child nodes", () => {
 });
 
 test("expect when nodeAction='check', aria-multiselectable is not set and aria-checked is set", () => {
-  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const { queryAllByRole } = render(<CheckboxTree />);
   const treeNodes = queryAllByRole("tree");
   expect(treeNodes[0]).not.toHaveAttribute("aria-multiselectable");
 
@@ -149,7 +151,7 @@ test("expect when nodeAction='check', aria-multiselectable is not set and aria-c
 });
 
 test("expect when nodeAction='check', parent node indeterminate's state is set when a children node is checked ", () => {
-  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const { queryAllByRole } = render(<CheckboxTree />);
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   if (document.activeElement == null)
@@ -163,8 +165,32 @@ test("expect when nodeAction='check', parent node indeterminate's state is set w
   expect(nodes[0]).toHaveAttribute("aria-checked", "mixed");
 });
 
-test("propagateselectupwards half-selects all parent nodes", () => {
-  const { queryAllByRole, container } = render(<MultiSelectCheckbox />);
+test("propagateselectupwards half-selects all parent nodes in multiselect", () => {
+  const { queryAllByRole, container } = render(<CheckboxTree />);
+  const nodes = queryAllByRole("treeitem");
+  nodes[1].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Drinks group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Apple Juice
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Chocolate
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Coffee
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Tea
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Tea group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Black Tea
+  fireEvent.keyDown(document.activeElement, { key: "Enter" });
+
+  const nodeLevel3Parents = container.querySelectorAll(".half-selected");
+  expect(nodeLevel3Parents.length).toBe(2);
+});
+
+test("propagateselectupwards half-selects all parent nodes in single select", () => {
+  const { queryAllByRole, container } = render(
+    <CheckboxTree multiSelect={false} />
+  );
   const nodes = queryAllByRole("treeitem");
   nodes[1].focus();
   if (document.activeElement == null)
@@ -187,7 +213,7 @@ test("propagateselectupwards half-selects all parent nodes", () => {
 
 test("propagateselectdownwards parent with selected descendants should be half-selected or checked", () => {
   const { queryAllByRole, container } = render(
-    <MultiSelectCheckbox propagateSelect={false} />
+    <CheckboxTree propagateSelect={false} />
   );
   const nodes = queryAllByRole("treeitem");
   nodes[1].focus();
@@ -211,7 +237,7 @@ test("propagateselectdownwards parent with selected descendants should be half-s
 });
 
 test("should have the correct setsize and posinset values", async () => {
-  const { queryAllByRole } = render(<MultiSelectCheckbox />);
+  const { queryAllByRole } = render(<CheckboxTree />);
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
   if (document.activeElement == null)

@@ -250,13 +250,8 @@ const treeReducer = (
     }
     case treeTypes.deselect: {
       if (!action.controlled && state.disabledIds.has(action.id)) return state;
-      let selectedIds;
-      if (action.multiSelect) {
-        selectedIds = new Set<number>(state.selectedIds);
-        selectedIds.delete(action.id);
-      } else {
-        selectedIds = new Set<number>();
-      }
+      const selectedIds = new Set<number>(state.selectedIds);
+      selectedIds.delete(action.id);
       const halfSelectedIds = new Set<number>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
       return {
@@ -610,7 +605,7 @@ const useTree = ({
 
   //Update parent if a child changes
   useEffect(() => {
-    if (propagateSelectUpwards && multiSelect) {
+    if (propagateSelectUpwards) {
       const idsToUpdate = new Set<number>(toggledIds);
       if (
         lastInteractedWith &&
