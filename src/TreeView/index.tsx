@@ -1053,9 +1053,20 @@ const Node = (props: INodeProps) => {
         lastInteractedWith: element.id,
       });
     } else if (event.ctrlKey || clickActions.select) {
+      const isSelectedAndHasSelectedDescendants =
+        isBranchNode(data, element.id) &&
+        selectedIds.has(element.id) &&
+        [...getDescendants(data, element.id, new Set<number>())].some((item) =>
+          [...selectedIds].includes(item)
+        );
+
       //Select
       dispatch({
-        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        type: togglableSelect
+          ? isSelectedAndHasSelectedDescendants
+            ? treeTypes.halfSelect
+            : treeTypes.toggleSelect
+          : treeTypes.select,
         id: element.id,
         multiSelect,
         lastInteractedWith: element.id,
@@ -1489,8 +1500,19 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
+      const isSelectedAndHasSelectedDescendants =
+        isBranchNode(data, element.id) &&
+        selectedIds.has(element.id) &&
+        [...getDescendants(data, element.id, new Set<number>())].some((item) =>
+          [...selectedIds].includes(item)
+        );
+
       dispatch({
-        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        type: togglableSelect
+          ? isSelectedAndHasSelectedDescendants
+            ? treeTypes.halfSelect
+            : treeTypes.toggleSelect
+          : treeTypes.select,
         id: id,
         multiSelect,
         lastInteractedWith: id,

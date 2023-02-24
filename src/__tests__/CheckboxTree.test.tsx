@@ -48,7 +48,11 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function MultiSelectCheckbox() {
+function MultiSelectCheckbox({
+  propagateSelect = true,
+}: {
+  propagateSelect?: boolean;
+}) {
   return (
     <div>
       <div className="checkbox">
@@ -56,7 +60,7 @@ function MultiSelectCheckbox() {
           data={data}
           aria-label="Checkbox tree"
           multiSelect
-          propagateSelect
+          propagateSelect={propagateSelect}
           propagateSelectUpwards
           togglableSelect
           nodeAction="check"
@@ -68,7 +72,10 @@ function MultiSelectCheckbox() {
             isHalfSelected,
           }) => {
             return (
-              <div {...getNodeProps({ onClick: handleExpand })} className={`${isHalfSelected ? 'half-selected' : ''}`}>
+              <div
+                {...getNodeProps({ onClick: handleExpand })}
+                className={`${isHalfSelected ? "half-selected" : ""}`}
+              >
                 <div
                   className="checkbox-icon"
                   onClick={(e) => {
@@ -170,12 +177,37 @@ test("propagateselectupwards half-selects all parent nodes", () => {
   fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Chocolate
   fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Coffee
   fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Tea
-  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }) //Tea group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Tea group
   fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Black Tea
   fireEvent.keyDown(document.activeElement, { key: "Enter" });
 
-  const nodeLevel3Parents = container.querySelectorAll('.half-selected');
+  const nodeLevel3Parents = container.querySelectorAll(".half-selected");
   expect(nodeLevel3Parents.length).toBe(2);
+});
+
+test("propagateselectdownwards parent with selected descendants should be half-selected or checked", () => {
+  const { queryAllByRole, container } = render(
+    <MultiSelectCheckbox propagateSelect={false} />
+  );
+  const nodes = queryAllByRole("treeitem");
+  nodes[1].focus();
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Drinks group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Apple Juice
+  fireEvent.keyDown(document.activeElement, { key: "Enter" }); // Apple Juice
+  expect(container.querySelectorAll(".half-selected").length).toBe(1);
+
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); //Drinks
+  fireEvent.keyDown(document.activeElement, { key: "Enter" });
+  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
+  expect(container.querySelectorAll(".half-selected").length).toBe(0);
+
+  fireEvent.keyDown(document.activeElement, { key: "Enter" }); //Drinks
+  expect(container.querySelectorAll(".half-selected").length).toBe(1);
 });
 
 test("should have the correct setsize and posinset values", async () => {
