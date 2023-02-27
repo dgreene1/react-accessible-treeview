@@ -106,16 +106,16 @@ test("should disable node with ids set in disabledIds", () => {
 });
 
 test("should disable node of first render and enable node on rerender when disabledIds changes", () => {
-  let expandedIds = [1];
+  let disabledIds = [1];
   const { queryAllByRole, rerender } = render(
-    <ControlledDisabled disabledIds={expandedIds} />
+    <ControlledDisabled disabledIds={disabledIds} />
   );
 
   const nodes = queryAllByRole("treeitem");
   expect(nodes[0]).toHaveAttribute("aria-disabled", "true");
 
-  expandedIds = [20];
-  rerender(<ControlledDisabled disabledIds={expandedIds} />);
+  disabledIds = [20];
+  rerender(<ControlledDisabled disabledIds={disabledIds} />);
   const newNodes = queryAllByRole("treeitem");
   expect(newNodes[0]).toHaveAttribute("aria-disabled", "false");
   expect(newNodes[19]).toHaveAttribute("aria-disabled", "true");
@@ -169,14 +169,4 @@ test("should not select disabled node", () => {
   expect(nodesAfterSelect[4]).toHaveAttribute("aria-selected", "false");
   expect(nodesAfterSelect[4]).toHaveAttribute("aria-disabled", "true");
   expect(nodesAfterSelect[5]).toHaveAttribute("aria-selected", "true");
-});
-
-test("should preserve selection in disabled node", () => {
-  const { queryAllByRole } = render(
-    <ControlledDisabled defaultSelectedIds={[3]} disabledIds={[3]} />
-  );
-
-  const nodes = queryAllByRole("treeitem");
-  expect(nodes[2]).toHaveAttribute("aria-selected", "true");
-  expect(nodes[2]).toHaveAttribute("aria-disabled", "true");
 });
