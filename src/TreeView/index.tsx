@@ -21,6 +21,7 @@ import {
   symmetricDifference,
   usePrevious,
   usePreviousData,
+  isBranchSelectedAndHasSelectedDescendants,
 } from "./utils";
 
 export interface INode {
@@ -1048,12 +1049,11 @@ const Node = (props: INodeProps) => {
         lastInteractedWith: element.id,
       });
     } else if (event.ctrlKey || clickActions.select) {
-      const isSelectedAndHasSelectedDescendants =
-        isBranchNode(data, element.id) &&
-        selectedIds.has(element.id) &&
-        [...getDescendants(data, element.id, new Set<number>())].some((item) =>
-          [...selectedIds].includes(item)
-        );
+      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
+        data,
+        element.id,
+        selectedIds
+      );
 
       //Select
       dispatch({
@@ -1495,12 +1495,11 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
-      const isSelectedAndHasSelectedDescendants =
-        isBranchNode(data, element.id) &&
-        selectedIds.has(element.id) &&
-        [...getDescendants(data, element.id, new Set<number>())].some((item) =>
-          [...selectedIds].includes(item)
-        );
+      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
+        data,
+        element.id,
+        selectedIds
+      );
 
       dispatch({
         type: togglableSelect

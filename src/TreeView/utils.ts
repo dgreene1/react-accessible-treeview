@@ -171,8 +171,7 @@ export const propagateSelectChange = (
       );
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
-        (x) =>
-          selectedIds.has(x) || changes.some.has(x)
+        (x) => selectedIds.has(x) || changes.some.has(x)
       );
       if (!some) {
         changes.none.add(parent);
@@ -316,4 +315,18 @@ export const onComponentBlur = (
   } else {
     !treeNode.contains(event.nativeEvent.relatedTarget as Node) && callback();
   }
+};
+
+export const isBranchSelectedAndHasSelectedDescendants = (
+  data: INode[],
+  elementId: number,
+  selectedIds: Set<number>
+) => {
+  return (
+    isBranchNode(data, elementId) &&
+    selectedIds.has(elementId) &&
+    [...getDescendants(data, elementId, new Set<number>())].some((item) =>
+      [...selectedIds].includes(item)
+    )
+  );
 };
