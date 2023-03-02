@@ -621,7 +621,8 @@ const useTree = ({
         data,
         idsToUpdate,
         selectedIds,
-        disabledIds
+        disabledIds,
+        halfSelectedIds
       );
       for (const id of every) {
         if (!selectedIds.has(id)) {
