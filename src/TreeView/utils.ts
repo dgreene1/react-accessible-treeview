@@ -59,6 +59,29 @@ export const getParent = (data: INode[], id: number) => {
   return data[id].parent;
 };
 
+export const getAncestors = (
+  data: INode[],
+  childId: number,
+  disabledIds: Set<number>
+) => {
+  let currentId = childId;
+  const ancestors: number[] = [];
+  while (true) {
+    const parent = getParent(data, currentId);
+    if (
+      parent === 0 ||
+      parent == null ||
+      (parent != null && disabledIds.has(parent))
+    ) {
+      break;
+    }
+    ancestors.push(parent);
+
+    currentId = parent;
+  }
+  return ancestors;
+};
+
 export const getDescendants = (
   data: INode[],
   id: number,
@@ -149,7 +172,8 @@ export const propagateSelectChange = (
   ids: Set<number>,
   selectedIds: Set<number>,
   disabledIds: Set<number>,
-  halfSelectedIds: Set<number>
+  halfSelectedIds: Set<number>,
+  multiSelect?: boolean
 ) => {
   const changes = {
     every: new Set<number>(),
@@ -176,7 +200,23 @@ export const propagateSelectChange = (
           selectedIds.has(x) || changes.some.has(x) || halfSelectedIds.has(x)
       );
       if (!some) {
-        changes.none.add(parent);
+        const allAncestors = getAncestors(data, currentId, disabledIds);
+        const selectedAncestorId = [...selectedIds].find((id) => {
+          return allAncestors.includes(id);
+        });
+        if (!multiSelect && selectedAncestorId) {
+          const descendants = getDescendants(
+            data,
+            selectedAncestorId,
+            disabledIds
+          );
+          descendants.forEach((id) => {
+            halfSelectedIds.has(id) && changes.none.add(id);
+          });
+          break;
+        } else {
+          changes.none.add(parent);
+        }
       } else {
         if (enabledChildren.every((x) => selectedIds.has(x))) {
           changes.every.add(parent);

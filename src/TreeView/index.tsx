@@ -253,8 +253,14 @@ const treeReducer = (
       if (!action.controlled && state.disabledIds.has(action.id)) return state;
       const selectedIds = new Set<number>(state.selectedIds);
       selectedIds.delete(action.id);
-      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
-      halfSelectedIds.delete(action.id);
+      let halfSelectedIds;
+      if (action.multiSelect) {
+        halfSelectedIds = new Set<number>(state.halfSelectedIds);
+        halfSelectedIds.delete(action.id);
+      } else {
+        halfSelectedIds = new Set<number>();
+      }
+
       return {
         ...state,
         selectedIds,
@@ -622,7 +628,8 @@ const useTree = ({
         idsToUpdate,
         selectedIds,
         disabledIds,
-        halfSelectedIds
+        halfSelectedIds,
+        multiSelect
       );
       for (const id of every) {
         if (!selectedIds.has(id)) {
