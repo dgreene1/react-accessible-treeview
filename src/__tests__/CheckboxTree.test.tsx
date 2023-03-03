@@ -165,7 +165,7 @@ test("expect when nodeAction='check', parent node indeterminate's state is set w
   expect(nodes[0]).toHaveAttribute("aria-checked", "mixed");
 });
 
-test("propagateselectupwards half-selects all parent nodes in multiselect", () => {
+test("propagateSelectUpwards half-selects all parent nodes in multiselect", () => {
   const { queryAllByRole, container } = render(<CheckboxTree />);
   const nodes = queryAllByRole("treeitem");
   nodes[1].focus();
@@ -187,7 +187,7 @@ test("propagateselectupwards half-selects all parent nodes in multiselect", () =
   expect(nodeLevel3Parents.length).toBe(2);
 });
 
-test("propagateselectupwards half-selects all parent nodes in single select", () => {
+test("propagateSelectUpwards works correctly in single select", () => {
   const { queryAllByRole, container } = render(
     <CheckboxTree multiSelect={false} />
   );
@@ -197,21 +197,32 @@ test("propagateselectupwards half-selects all parent nodes in single select", ()
     throw new Error(
       `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
     );
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Drinks
-  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Drinks group
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Apple Juice
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Chocolate
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Coffee
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Tea
-  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Tea group
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Black Tea
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Drinks group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Apple Juice
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Chocolate
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Coffee
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Tea
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Tea group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Black Tea
   fireEvent.keyDown(document.activeElement, { key: "Enter" });
 
-  const nodeLevel3Parents = container.querySelectorAll(".half-selected");
-  expect(nodeLevel3Parents.length).toBe(2);
+  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1); // Black Tea
+  expect(container.querySelectorAll(".half-selected").length).toBe(2); // Drinks, Tea
+
+  //After selecting 1st level parent (Drinks) it should unselect 2nd (Tea) and 3rd level (Black Tea)
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Tea
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Tea collapsed
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Drinks group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Drinks
+  fireEvent.keyDown(document.activeElement, { key: "Enter" });
+
+  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
+  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1);
+  expect(container.querySelectorAll(".half-selected").length).toBe(0);
 });
 
-test("propagateselectdownwards parent with selected descendants should be half-selected or checked", () => {
+test("parent with selected descendants should be half-selected or checked in multiselect with propagateSelect={false}", () => {
   const { queryAllByRole, container } = render(
     <CheckboxTree propagateSelect={false} />
   );
@@ -221,19 +232,29 @@ test("propagateselectdownwards parent with selected descendants should be half-s
     throw new Error(
       `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
     );
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Drinks
-  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); //Drinks group
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Apple Juice
-  fireEvent.keyDown(document.activeElement, { key: "Enter" }); // Apple Juice
-  expect(container.querySelectorAll(".half-selected").length).toBe(1);
-
-  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); //Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Drinks group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Apple Juice
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Chocolate
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Coffee
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Tea
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Tea group
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Black Tea
   fireEvent.keyDown(document.activeElement, { key: "Enter" });
-  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
-  expect(container.querySelectorAll(".half-selected").length).toBe(0);
 
-  fireEvent.keyDown(document.activeElement, { key: "Enter" }); //Drinks
-  expect(container.querySelectorAll(".half-selected").length).toBe(1);
+  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1); // Black Tea
+  expect(container.querySelectorAll(".half-selected").length).toBe(2); // Drinks, Tea
+
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Tea
+  fireEvent.keyDown(document.activeElement, { key: "Enter" });
+
+  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(2); // Black Tea, Tea
+  expect(container.querySelectorAll(".half-selected").length).toBe(1); // Drinks
+
+  fireEvent.keyDown(document.activeElement, { key: "Enter" }); // Tea
+
+  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1); // Black Tea
+  expect(container.querySelectorAll(".half-selected").length).toBe(2); // Drinks, Tea
 });
 
 test("should have the correct setsize and posinset values", async () => {
