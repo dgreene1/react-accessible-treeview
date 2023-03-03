@@ -200,9 +200,12 @@ export const propagateSelectChange = (
           selectedIds.has(x) || changes.some.has(x) || halfSelectedIds.has(x)
       );
       if (!some) {
-        const allAncestors = getAncestors(data, currentId, disabledIds);
-        const selectedAncestorId = [...selectedIds].find((id) => {
-          return allAncestors.includes(id);
+        const selectedAncestorId = getAncestors(
+          data,
+          currentId,
+          disabledIds
+        ).find((id) => {
+          return selectedIds.has(id);
         });
         if (!multiSelect && selectedAncestorId) {
           const descendants = getDescendants(
@@ -367,8 +370,8 @@ export const isBranchSelectedAndHasSelectedDescendants = (
   return (
     isBranchNode(data, elementId) &&
     selectedIds.has(elementId) &&
-    [...getDescendants(data, elementId, new Set<number>())].some((item) =>
-      [...selectedIds].includes(item)
+    getDescendants(data, elementId, new Set<number>()).some((item) =>
+      selectedIds.has(item)
     )
   );
 };
