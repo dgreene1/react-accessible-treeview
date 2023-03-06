@@ -170,3 +170,34 @@ test("should not select disabled node", () => {
   expect(nodesAfterSelect[4]).toHaveAttribute("aria-disabled", "true");
   expect(nodesAfterSelect[5]).toHaveAttribute("aria-selected", "true");
 });
+
+test("should disable children when parent is disabled", () => {
+  const parentId = 7;
+  const childrenIds: number[] = [];
+  const getAllChildren = (id: number) => {
+    data[id].children.forEach((id: number) => {
+      if (data[id]?.children.length) {
+        childrenIds.push(id);
+        return getAllChildren(id);
+      }
+      return childrenIds.push(id);
+    });
+
+    return test;
+  };
+  getAllChildren(parentId);
+  const { queryAllByRole } = render(
+    <ControlledDisabled disabledIds={[parentId]} />
+  );
+
+  const nodes = queryAllByRole("treeitem");
+
+  nodes.forEach((node, index) => {
+    const nodeIndex = index + 1;
+    if (childrenIds.includes(nodeIndex) || nodeIndex === parentId) {
+      expect(node).toHaveAttribute("aria-disabled", "true");
+    } else {
+      expect(node).toHaveAttribute("aria-disabled", "false");
+    }
+  });
+});

@@ -641,6 +641,22 @@ const useTree = ({
           type: treeTypes.disable,
           id: idToDisable,
         });
+
+        disableChildrenRecursively(idToDisable);
+      }
+    }
+
+    function disableChildrenRecursively(idToDisable: number) {
+      if (isBranchNode(data, idToDisable)) {
+        data[idToDisable].children.forEach((item) => {
+          if (data[item]?.children) {
+            disableChildrenRecursively(item);
+          }
+          dispatch({
+            type: treeTypes.disable,
+            id: item,
+          });
+        });
       }
     }
   }, [controlledDisabledIds]);
