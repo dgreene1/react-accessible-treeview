@@ -59,6 +59,29 @@ export const getParent = (data: INode[], id: number) => {
   return data[id].parent;
 };
 
+export const getAncestors = (
+  data: INode[],
+  childId: number,
+  disabledIds: Set<number>
+) => {
+  let currentId = childId;
+  const ancestors: number[] = [];
+  while (true) {
+    const parent = getParent(data, currentId);
+    if (
+      parent === 0 ||
+      parent == null ||
+      (parent != null && disabledIds.has(parent))
+    ) {
+      break;
+    }
+    ancestors.push(parent);
+
+    currentId = parent;
+  }
+  return ancestors;
+};
+
 export const getDescendants = (
   data: INode[],
   id: number,
@@ -148,7 +171,9 @@ export const propagateSelectChange = (
   data: INode[],
   ids: Set<number>,
   selectedIds: Set<number>,
-  disabledIds: Set<number>
+  disabledIds: Set<number>,
+  halfSelectedIds: Set<number>,
+  multiSelect?: boolean
 ) => {
   const changes = {
     every: new Set<number>(),
@@ -172,10 +197,29 @@ export const propagateSelectChange = (
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
         (x) =>
-          selectedIds.has(x) || changes.some.has(x)
+          selectedIds.has(x) || changes.some.has(x) || halfSelectedIds.has(x)
       );
       if (!some) {
-        changes.none.add(parent);
+        const selectedAncestorId = getAncestors(
+          data,
+          currentId,
+          disabledIds
+        ).find((id) => {
+          return selectedIds.has(id);
+        });
+        if (!multiSelect && selectedAncestorId) {
+          const descendants = getDescendants(
+            data,
+            selectedAncestorId,
+            disabledIds
+          );
+          descendants.forEach((id) => {
+            halfSelectedIds.has(id) && changes.none.add(id);
+          });
+          break;
+        } else {
+          changes.none.add(parent);
+        }
       } else {
         if (enabledChildren.every((x) => selectedIds.has(x))) {
           changes.every.add(parent);
@@ -316,4 +360,18 @@ export const onComponentBlur = (
   } else {
     !treeNode.contains(event.nativeEvent.relatedTarget as Node) && callback();
   }
+};
+
+export const isBranchSelectedAndHasSelectedDescendants = (
+  data: INode[],
+  elementId: number,
+  selectedIds: Set<number>
+) => {
+  return (
+    isBranchNode(data, elementId) &&
+    selectedIds.has(elementId) &&
+    getDescendants(data, elementId, new Set<number>()).some((item) =>
+      selectedIds.has(item)
+    )
+  );
 };
