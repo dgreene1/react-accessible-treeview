@@ -28,7 +28,7 @@ A react component that implements the treeview pattern as described by the [WAI-
 | `defaultDisabledIds`     | `array`       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
 | `selectedIds`            | `array`       | `[]`          | (Controlled) Array with the ids that should be selected                                                                                                                   |
 | `expandedIds`            | `array`       | `[]`          | (Controlled) Array with the ids of branch node that should be expanded                                                                                                    |
-| `disabledIds`            | `array`       | `[]`          | (Controlled) Array with the id of nodes that should be disabled                                                                                                    |
+| `disabledIds`            | `array`       | `[]`          | (Controlled) Array with the id of nodes that should be disabled. Please note that all children of a disabled node will also be disabled.                                                                                               |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
 
 <br/> <br/>
