@@ -201,3 +201,34 @@ test("should disable children when parent is disabled", () => {
     }
   });
 });
+
+test("should disable children when parent is disabled in defaultDisabledIds", () => {
+  const parentId = 7;
+  const childrenIds: number[] = [];
+  const getAllChildren = (id: number) => {
+    data[id].children.forEach((id: number) => {
+      if (data[id]?.children.length) {
+        childrenIds.push(id);
+        return getAllChildren(id);
+      }
+      return childrenIds.push(id);
+    });
+
+    return test;
+  };
+  getAllChildren(parentId);
+  const { queryAllByRole } = render(
+    <ControlledDisabled defaultDisabledIds={[parentId]} />
+  );
+
+  const nodes = queryAllByRole("treeitem");
+
+  nodes.forEach((node, index) => {
+    const nodeIndex = index + 1;
+    if (childrenIds.includes(nodeIndex) || nodeIndex === parentId) {
+      expect(node).toHaveAttribute("aria-disabled", "true");
+    } else {
+      expect(node).toHaveAttribute("aria-disabled", "false");
+    }
+  });
+});

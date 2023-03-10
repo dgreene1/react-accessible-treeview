@@ -614,7 +614,9 @@ const useTree = ({
 
   const prevDisabledIds = usePrevious(disabledIds) || new Set<number>();
   useEffect(() => {
-    const toggleControlledDisabledIds = new Set<number>(controlledDisabledIds);
+    const toggleControlledDisabledIds = new Set<number>(
+      controlledDisabledIds || defaultDisabledIds
+    );
     //nodes need to be disabled
     const diffIdsToDisable = difference(
       toggleControlledDisabledIds,
@@ -661,7 +663,7 @@ const useTree = ({
         });
       }
     }
-  }, [controlledDisabledIds]);
+  }, [controlledDisabledIds, defaultDisabledIds]);
 
   //Update parent if a child changes
   useEffect(() => {
