@@ -18,6 +18,7 @@ import {
   onComponentBlur,
   propagatedIds,
   propagateSelectChange,
+  scrollToRef,
   symmetricDifference,
   usePrevious,
   usePreviousData,
@@ -380,6 +381,7 @@ interface IUseTreeProps {
   defaultSelectedIds?: number[];
   defaultDisabledIds?: number[];
   nodeRefs: INodeRefs;
+  leafRefs: INodeRefs;
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   onExpand?: (props: ITreeViewOnExpandProps) => void;
   multiSelect?: boolean;
@@ -397,6 +399,7 @@ const useTree = ({
   defaultSelectedIds,
   defaultDisabledIds,
   nodeRefs,
+  leafRefs,
   onSelect,
   onExpand,
   onLoadData,
@@ -680,11 +683,17 @@ const useTree = ({
   //Focus
   useEffect(() => {
     if (lastInteractedWith == null) return;
-    else if (tabbableId != null && nodeRefs?.current != null) {
+    else if (
+      tabbableId != null &&
+      nodeRefs?.current != null &&
+      leafRefs?.current != null
+    ) {
       const tabbableNode = nodeRefs.current[tabbableId];
+      const leafNode = leafRefs.current[lastInteractedWith];
+      scrollToRef(leafNode);
       focusRef(tabbableNode);
     }
-  }, [tabbableId, nodeRefs, lastInteractedWith]);
+  }, [tabbableId, nodeRefs, leafRefs, lastInteractedWith]);
 
   // The "as const" technique tells Typescript that this is a tuple not an array
   return [state, dispatch] as const;
@@ -875,6 +884,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     ref
   ) {
     const nodeRefs = useRef({});
+    const leafRefs = useRef({});
     const [state, dispatch] = useTree({
       data,
       controlledIds: selectedIds,
@@ -883,6 +893,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       defaultSelectedIds,
       defaultDisabledIds,
       nodeRefs,
+      leafRefs,
       onSelect,
       onExpand,
       onLoadData,
@@ -942,6 +953,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
             state={state}
             dispatch={dispatch}
             nodeRefs={nodeRefs}
+            leafRefs={leafRefs}
             baseClassNames={baseClassNames}
             nodeRenderer={nodeRenderer}
             propagateCollapse={propagateCollapse}
@@ -971,6 +983,7 @@ interface INodeProps {
   halfSelectedIds: Set<number>;
   lastUserSelect: number;
   nodeRefs: INodeRefs;
+  leafRefs: INodeRefs;
   baseClassNames: typeof baseClassNames;
   nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
   setsize: number;
@@ -998,6 +1011,7 @@ const Node = (props: INodeProps) => {
     halfSelectedIds,
     lastUserSelect,
     nodeRefs,
+    leafRefs,
     baseClassNames,
     nodeRenderer,
     nodeAction,
@@ -1133,8 +1147,9 @@ const Node = (props: INodeProps) => {
           ? composeHandlers(handleSelect, handleFocus)
           : composeHandlers(onClick, handleFocus),
       ref: (x: INodeRef) => {
-        if (nodeRefs?.current != null) {
+        if (nodeRefs?.current != null && leafRefs?.current != null) {
           nodeRefs.current[element.id] = x;
+          leafRefs.current[element.id] = x;
         }
       },
       className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
@@ -1147,7 +1162,7 @@ const Node = (props: INodeProps) => {
     };
   };
 
-  const getBranchProps = (args: { onClick?: EventCallback } = {}) => {
+  const getBranchLeafProps = (args: { onClick?: EventCallback } = {}) => {
     const { onClick } = args;
     return {
       onClick:
@@ -1155,6 +1170,11 @@ const Node = (props: INodeProps) => {
           ? composeHandlers(handleSelect, handleExpand, handleFocus)
           : composeHandlers(onClick, handleFocus),
       className: cx(getClasses(baseClassNames.node), baseClassNames.branch),
+      ref: (x: INodeRef) => {
+        if (leafRefs?.current != null) {
+          leafRefs.current[element.id] = x;
+        }
+      },
     };
   };
 
@@ -1184,7 +1204,7 @@ const Node = (props: INodeProps) => {
           isExpanded: expandedIds.has(element.id),
           isDisabled: disabledIds.has(element.id),
           dispatch,
-          getNodeProps: getBranchProps,
+          getNodeProps: getBranchLeafProps,
           setsize,
           posinset,
           level,
