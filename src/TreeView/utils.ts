@@ -202,6 +202,7 @@ export const propagateSelectChange = (
       );
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
+        (x) =>
           selectedIds.has(x) || changes.some.has(x) || halfSelectedIds.has(x)
       );
       if (!some) {
