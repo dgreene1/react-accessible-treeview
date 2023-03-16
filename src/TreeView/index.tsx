@@ -22,6 +22,7 @@ import {
   symmetricDifference,
   usePrevious,
   usePreviousData,
+  isBranchSelectedAndHasSelectedDescendants,
 } from "./utils";
 
 export interface INode {
@@ -251,15 +252,16 @@ const treeReducer = (
     }
     case treeTypes.deselect: {
       if (!action.controlled && state.disabledIds.has(action.id)) return state;
-      let selectedIds;
+      const selectedIds = new Set<number>(state.selectedIds);
+      selectedIds.delete(action.id);
+      let halfSelectedIds;
       if (action.multiSelect) {
-        selectedIds = new Set<number>(state.selectedIds);
-        selectedIds.delete(action.id);
+        halfSelectedIds = new Set<number>(state.halfSelectedIds);
+        halfSelectedIds.delete(action.id);
       } else {
-        selectedIds = new Set<number>();
+        halfSelectedIds = new Set<number>();
       }
-      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
-      halfSelectedIds.delete(action.id);
+
       return {
         ...state,
         selectedIds,
@@ -613,7 +615,7 @@ const useTree = ({
 
   //Update parent if a child changes
   useEffect(() => {
-    if (propagateSelectUpwards && multiSelect) {
+    if (propagateSelectUpwards) {
       const idsToUpdate = new Set<number>(toggledIds);
       if (
         lastInteractedWith &&
@@ -628,7 +630,9 @@ const useTree = ({
         data,
         idsToUpdate,
         selectedIds,
-        disabledIds
+        disabledIds,
+        halfSelectedIds,
+        multiSelect
       );
       for (const id of every) {
         if (!selectedIds.has(id)) {
@@ -1067,9 +1071,19 @@ const Node = (props: INodeProps) => {
         lastInteractedWith: element.id,
       });
     } else if (event.ctrlKey || clickActions.select) {
+      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
+        data,
+        element.id,
+        selectedIds
+      );
+
       //Select
       dispatch({
-        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        type: togglableSelect
+          ? isSelectedAndHasSelectedDescendants
+            ? treeTypes.halfSelect
+            : treeTypes.toggleSelect
+          : treeTypes.select,
         id: element.id,
         multiSelect,
         lastInteractedWith: element.id,
@@ -1509,8 +1523,18 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
+      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
+        data,
+        element.id,
+        selectedIds
+      );
+
       dispatch({
-        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
+        type: togglableSelect
+          ? isSelectedAndHasSelectedDescendants
+            ? treeTypes.halfSelect
+            : treeTypes.toggleSelect
+          : treeTypes.select,
         id: id,
         multiSelect,
         lastInteractedWith: id,
