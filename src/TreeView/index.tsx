@@ -932,7 +932,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           selectedIds: state.selectedIds,
           disabledIds: state.disabledIds,
           halfSelectedIds: state.halfSelectedIds,
-          clickAction: clickAction,
+          clickAction,
           dispatch,
           propagateCollapse,
           propagateSelect,
