@@ -932,6 +932,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           selectedIds: state.selectedIds,
           disabledIds: state.disabledIds,
           halfSelectedIds: state.halfSelectedIds,
+          clickAction: clickAction,
           dispatch,
           propagateCollapse,
           propagateSelect,
@@ -1070,7 +1071,7 @@ const Node = (props: INodeProps) => {
         ids,
         lastInteractedWith: element.id,
       });
-    } else if (event.ctrlKey || clickActions.select) {
+    } else if (event.ctrlKey || clickAction === clickActions.select) {
       const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
         data,
         element.id,
@@ -1299,6 +1300,7 @@ const handleKeyDown = ({
   multiSelect,
   expandOnKeyboardSelect,
   togglableSelect,
+  clickAction,
 }: {
   data: INode[];
   tabbableId: number;
@@ -1312,6 +1314,7 @@ const handleKeyDown = ({
   multiSelect?: boolean;
   expandOnKeyboardSelect?: boolean;
   togglableSelect?: boolean;
+  clickAction: ClickActions;
 }) => (event: React.KeyboardEvent) => {
   const element = data[tabbableId];
   const id = element.id;
@@ -1523,6 +1526,11 @@ const handleKeyDown = ({
     case " ":
     case "Spacebar":
       event.preventDefault();
+
+      if (clickAction === clickActions.focus) {
+        return;
+      }
+
       const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
         data,
         element.id,
