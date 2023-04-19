@@ -23,17 +23,21 @@ import {
   usePrevious,
   usePreviousData,
   isBranchSelectedAndHasSelectedDescendants,
+  getTreeParent,
+  getTreeNode,
 } from "./utils";
+
+export type NodeId = number;
 
 export interface INode {
   /** A non-negative integer that uniquely identifies the node */
-  id: number;
+  id: NodeId;
   /** Used to match on key press */
   name: string;
   /** An array with the ids of the children nodes */
-  children: number[];
+  children: NodeId[];
   /** The parent of the node; null for the root node */
-  parent: number | null;
+  parent: NodeId | null;
   /** Used to indicated whether a node is branch to be able load async data onExpand*/
   isBranch?: boolean;
 }
@@ -71,78 +75,78 @@ const treeTypes = {
 } as const;
 
 export type TreeViewAction =
-  | { type: "COLLAPSE"; id: number; lastInteractedWith?: number | null }
-  | { type: "COLLAPSE_MANY"; ids: number[]; lastInteractedWith?: number | null }
-  | { type: "EXPAND"; id: number; lastInteractedWith?: number | null }
-  | { type: "EXPAND_MANY"; ids: number[]; lastInteractedWith?: number | null }
+  | { type: "COLLAPSE"; id: NodeId; lastInteractedWith?: NodeId | null }
+  | { type: "COLLAPSE_MANY"; ids: NodeId[]; lastInteractedWith?: NodeId | null }
+  | { type: "EXPAND"; id: NodeId; lastInteractedWith?: NodeId | null }
+  | { type: "EXPAND_MANY"; ids: NodeId[]; lastInteractedWith?: NodeId | null }
   | {
       type: "HALF_SELECT";
-      id: number;
-      lastInteractedWith?: number | null;
+      id: NodeId;
+      lastInteractedWith?: NodeId | null;
     }
   | {
       type: "SELECT";
-      id: number;
+      id: NodeId;
       multiSelect?: boolean;
       controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
-      lastInteractedWith?: number | null;
+      lastInteractedWith?: NodeId | null;
     }
   | {
       type: "DESELECT";
-      id: number;
+      id: NodeId;
       multiSelect?: boolean;
       controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
-      lastInteractedWith?: number | null;
+      lastInteractedWith?: NodeId | null;
     }
-  | { type: "TOGGLE"; id: number; lastInteractedWith?: number | null }
+  | { type: "TOGGLE"; id: NodeId; lastInteractedWith?: NodeId | null }
   | {
       type: "TOGGLE_SELECT";
-      id: number;
+      id: NodeId;
       multiSelect?: boolean;
       NotUserAction?: boolean;
-      lastInteractedWith?: number | null;
+      lastInteractedWith?: NodeId | null;
     }
   | {
       type: "SELECT_MANY";
-      ids: number[];
+      ids: NodeId[];
       select?: boolean;
       multiSelect?: boolean;
-      lastInteractedWith?: number | null;
+      lastInteractedWith?: NodeId | null;
     }
   | { type: "EXCLUSIVE_SELECT_MANY" }
   | {
       type: "EXCLUSIVE_CHANGE_SELECT_MANY";
-      ids: number[];
+      ids: NodeId[];
       select?: boolean;
       multiSelect?: boolean;
-      lastInteractedWith?: number | null;
+      lastInteractedWith?: NodeId | null;
     }
-  | { type: "FOCUS"; id: number; lastInteractedWith?: number | null }
+  | { type: "FOCUS"; id: NodeId; lastInteractedWith?: NodeId | null }
   | { type: "BLUR" }
-  | { type: "DISABLE"; id: number }
-  | { type: "ENABLE"; id: number };
+  | { type: "DISABLE"; id: NodeId }
+  | { type: "ENABLE"; id: NodeId };
 
 export interface ITreeViewState {
   /** Set of the ids of the expanded nodes */
-  expandedIds: Set<number>;
+  expandedIds: Set<NodeId>;
   /** Set of the ids of the selected nodes */
-  disabledIds: Set<number>;
+  disabledIds: Set<NodeId>;
   /** Set of the ids of the selected nodes */
-  halfSelectedIds: Set<number>;
+  halfSelectedIds: Set<NodeId>;
   /** Set of the ids of the selected nodes */
-  selectedIds: Set<number>;
+  selectedIds: Set<NodeId>;
   /** Id of the node with tabindex = 0 */
-  tabbableId: number;
+  tabbableId: NodeId;
   /** Whether the tree has focus */
   isFocused: boolean;
   /** Last selection made directly by the user */
-  lastUserSelect: number;
+  lastUserSelect: NodeId;
   /** Last node interacted with */
-  lastInteractedWith?: number | null;
+  lastInteractedWith?: NodeId | null;
   lastAction?: TreeViewAction["type"];
 }
 
@@ -152,7 +156,7 @@ const treeReducer = (
 ): ITreeViewState => {
   switch (action.type) {
     case treeTypes.collapse: {
-      const expandedIds = new Set<number>(state.expandedIds);
+      const expandedIds = new Set<NodeId>(state.expandedIds);
       expandedIds.delete(action.id);
       return {
         ...state,
@@ -164,7 +168,7 @@ const treeReducer = (
       };
     }
     case treeTypes.collapseMany: {
-      const expandedIds = new Set<number>(state.expandedIds);
+      const expandedIds = new Set<NodeId>(state.expandedIds);
       for (const id of action.ids) {
         expandedIds.delete(id);
       }
@@ -176,7 +180,7 @@ const treeReducer = (
       };
     }
     case treeTypes.expand: {
-      const expandedIds = new Set<number>(state.expandedIds);
+      const expandedIds = new Set<NodeId>(state.expandedIds);
       expandedIds.add(action.id);
       return {
         ...state,
@@ -188,7 +192,7 @@ const treeReducer = (
       };
     }
     case treeTypes.expandMany: {
-      const expandedIds = new Set<number>([
+      const expandedIds = new Set<NodeId>([
         ...state.expandedIds,
         ...action.ids,
       ]);
@@ -200,7 +204,7 @@ const treeReducer = (
       };
     }
     case treeTypes.toggle: {
-      const expandedIds = new Set<number>(state.expandedIds);
+      const expandedIds = new Set<NodeId>(state.expandedIds);
       if (state.expandedIds.has(action.id)) expandedIds.delete(action.id);
       else expandedIds.add(action.id);
       return {
@@ -214,8 +218,8 @@ const treeReducer = (
     }
     case treeTypes.halfSelect: {
       if (state.disabledIds.has(action.id)) return state;
-      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
-      const selectedIds = new Set<number>(state.selectedIds);
+      const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
+      const selectedIds = new Set<NodeId>(state.selectedIds);
       halfSelectedIds.add(action.id);
       selectedIds.delete(action.id);
       return {
@@ -230,14 +234,14 @@ const treeReducer = (
       if (!action.controlled && state.disabledIds.has(action.id)) return state;
       let selectedIds;
       if (action.multiSelect) {
-        selectedIds = new Set<number>(state.selectedIds);
+        selectedIds = new Set<NodeId>(state.selectedIds);
         selectedIds.add(action.id);
       } else {
-        selectedIds = new Set<number>();
+        selectedIds = new Set<NodeId>();
         selectedIds.add(action.id);
       }
 
-      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
+      const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
       return {
         ...state,
@@ -252,14 +256,14 @@ const treeReducer = (
     }
     case treeTypes.deselect: {
       if (!action.controlled && state.disabledIds.has(action.id)) return state;
-      const selectedIds = new Set<number>(state.selectedIds);
+      const selectedIds = new Set<NodeId>(state.selectedIds);
       selectedIds.delete(action.id);
       let halfSelectedIds;
       if (action.multiSelect) {
-        halfSelectedIds = new Set<number>(state.halfSelectedIds);
+        halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
         halfSelectedIds.delete(action.id);
       } else {
-        halfSelectedIds = new Set<number>();
+        halfSelectedIds = new Set<NodeId>();
       }
 
       return {
@@ -278,15 +282,15 @@ const treeReducer = (
       let selectedIds;
       const isSelected = state.selectedIds.has(action.id);
       if (action.multiSelect) {
-        selectedIds = new Set<number>(state.selectedIds);
+        selectedIds = new Set<NodeId>(state.selectedIds);
         if (isSelected) selectedIds.delete(action.id);
         else selectedIds.add(action.id);
       } else {
-        selectedIds = new Set<number>();
+        selectedIds = new Set<NodeId>();
         if (!isSelected) selectedIds.add(action.id);
       }
 
-      const halfSelectedIds = new Set<number>(state.halfSelectedIds);
+      const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
       return {
         ...state,
@@ -300,13 +304,13 @@ const treeReducer = (
       };
     }
     case treeTypes.changeSelectMany: {
-      let selectedIds: Set<number>;
+      let selectedIds: Set<NodeId>;
       const ids = action.ids.filter((id) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
-          selectedIds = new Set<number>([...state.selectedIds, ...ids]);
+          selectedIds = new Set<NodeId>([...state.selectedIds, ...ids]);
         } else {
-          selectedIds = difference(state.selectedIds, new Set<number>(ids));
+          selectedIds = difference(state.selectedIds, new Set<NodeId>(ids));
         }
         const halfSelectedIds = difference(state.halfSelectedIds, selectedIds);
         return {
@@ -320,13 +324,13 @@ const treeReducer = (
       return state;
     }
     case treeTypes.exclusiveChangeSelectMany: {
-      let selectedIds: Set<number>;
+      let selectedIds: Set<NodeId>;
       const ids = action.ids.filter((id) => !state.disabledIds.has(id));
       if (action.multiSelect) {
         if (action.select) {
-          selectedIds = new Set<number>(ids);
+          selectedIds = new Set<NodeId>(ids);
         } else {
-          selectedIds = difference(state.selectedIds, new Set<number>(ids));
+          selectedIds = difference(state.selectedIds, new Set<NodeId>(ids));
         }
         const halfSelectedIds = difference(state.halfSelectedIds, selectedIds);
         return {
@@ -353,7 +357,7 @@ const treeReducer = (
         isFocused: false,
       };
     case treeTypes.disable: {
-      const disabledIds = new Set<number>(state.disabledIds);
+      const disabledIds = new Set<NodeId>(state.disabledIds);
       disabledIds.add(action.id);
       return {
         ...state,
@@ -361,7 +365,7 @@ const treeReducer = (
       };
     }
     case treeTypes.enable: {
-      const disabledIds = new Set<number>(state.disabledIds);
+      const disabledIds = new Set<NodeId>(state.disabledIds);
       disabledIds.delete(action.id);
       return {
         ...state,
@@ -374,12 +378,12 @@ const treeReducer = (
 };
 
 interface IUseTreeProps {
-  data: INode[];
-  controlledIds?: number[];
-  controlledExpandedIds?: number[];
-  defaultExpandedIds?: number[];
-  defaultSelectedIds?: number[];
-  defaultDisabledIds?: number[];
+  data: TreeViewData;
+  controlledIds?: NodeId[];
+  controlledExpandedIds?: NodeId[];
+  defaultExpandedIds?: NodeId[];
+  defaultSelectedIds?: NodeId[];
+  defaultDisabledIds?: NodeId[];
   nodeRefs: INodeRefs;
   leafRefs: INodeRefs;
   onSelect?: (props: ITreeViewOnSelectProps) => void;
@@ -408,15 +412,16 @@ const useTree = ({
   propagateSelect,
   propagateSelectUpwards,
 }: IUseTreeProps) => {
+  const treeParentNode = getTreeParent(data);
   const [state, dispatch] = useReducer(treeReducer, {
-    selectedIds: new Set<number>(controlledIds || defaultSelectedIds),
-    tabbableId: data[0].children[0],
+    selectedIds: new Set<NodeId>(controlledIds || defaultSelectedIds),
+    tabbableId: treeParentNode.children[0],
     isFocused: false,
-    expandedIds: new Set<number>(controlledExpandedIds || defaultExpandedIds),
-    halfSelectedIds: new Set<number>(),
-    lastUserSelect: data[0].children[0],
+    expandedIds: new Set<NodeId>(controlledExpandedIds || defaultExpandedIds),
+    halfSelectedIds: new Set<NodeId>(),
+    lastUserSelect: treeParentNode.children[0],
     lastInteractedWith: null,
-    disabledIds: new Set<number>(defaultDisabledIds),
+    disabledIds: new Set<NodeId>(defaultDisabledIds),
   });
 
   const {
@@ -435,9 +440,9 @@ const useTree = ({
     if (onSelect != null && onSelect !== noop) {
       for (const toggledId of toggledIds) {
         const isBranch =
-          isBranchNode(data, toggledId) || !!data[tabbableId].isBranch;
+          isBranchNode(data, toggledId) || !!data.get(tabbableId)?.isBranch;
         onSelect({
-          element: data[toggledId],
+          element: getTreeNode(data, toggledId),
           isBranch: isBranch,
           isExpanded: isBranch ? expandedIds.has(toggledId) : false,
           isSelected: selectedIds.has(toggledId),
@@ -464,7 +469,7 @@ const useTree = ({
     if (onExpand != null && onExpand !== noop) {
       for (const id of toggledExpandIds) {
         onExpand({
-          element: data[id],
+          element: getTreeNode(data, id),
           isExpanded: expandedIds.has(id),
           isSelected: selectedIds.has(id),
           isDisabled: disabledIds.has(id),
@@ -490,7 +495,7 @@ const useTree = ({
     if (onLoadData) {
       for (const id of toggledExpandIds) {
         onLoadData({
-          element: data[id],
+          element: getTreeNode(data, id),
           isExpanded: expandedIds.has(id),
           isSelected: selectedIds.has(id),
           isDisabled: disabledIds.has(id),
@@ -580,7 +585,7 @@ const useTree = ({
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
-        if (isBranchNode(data, id) || data[id].isBranch) {
+        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
           const ids = [id, ...getDescendants(data, id, new Set<number>())];
           dispatch({
             type: treeTypes.collapseMany,
@@ -593,7 +598,7 @@ const useTree = ({
     //controlled expanding
     if (diffExpandedIds.size) {
       for (const id of diffExpandedIds) {
-        if (isBranchNode(data, id) || data[id].isBranch) {
+        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
           const parentId = getParent(data, id);
           if (parentId) {
             dispatch({
@@ -807,9 +812,11 @@ export const NODE_ACTIONS = Object.freeze(Object.values(nodeActions));
 
 export type NodeAction = ValueOf<typeof nodeActions>;
 
+export type TreeViewData = Map<NodeId, INode>;
+
 export interface ITreeViewProps {
   /** Tree data*/
-  data: INode[];
+  data: TreeViewData;
   /** Function called when a node changes its selected state */
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   /** Function called when a node changes its expanded state */
@@ -942,12 +949,12 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
         })}
         {...other}
       >
-        {data[0].children.map((x, index) => (
+        {getTreeParent(data).children.map((x, index) => (
           <Node
             key={x}
             data={data}
-            element={data[x]}
-            setsize={data[0].children.length}
+            element={getTreeNode(data, x)}
+            setsize={getTreeParent(data).children.length}
             posinset={index + 1}
             level={1}
             {...state}
@@ -974,15 +981,15 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
 interface INodeProps {
   element: INode;
   dispatch: React.Dispatch<TreeViewAction>;
-  data: INode[];
+  data: TreeViewData;
   nodeAction: NodeAction;
-  selectedIds: Set<number>;
-  tabbableId: number;
+  selectedIds: Set<NodeId>;
+  tabbableId: NodeId;
   isFocused: boolean;
-  expandedIds: Set<number>;
-  disabledIds: Set<number>;
-  halfSelectedIds: Set<number>;
-  lastUserSelect: number;
+  expandedIds: Set<NodeId>;
+  disabledIds: Set<NodeId>;
+  halfSelectedIds: Set<NodeId>;
+  lastUserSelect: NodeId;
   nodeRefs: INodeRefs;
   leafRefs: INodeRefs;
   baseClassNames: typeof baseClassNames;
@@ -1278,7 +1285,7 @@ const NodeGroup = ({
           expandedIds={expandedIds}
           baseClassNames={baseClassNames}
           key={x}
-          element={data[x]}
+          element={getTreeNode(data, x)}
           setsize={element.children.length}
           posinset={index + 1}
           level={level + 1}
@@ -1302,12 +1309,12 @@ const handleKeyDown = ({
   togglableSelect,
   clickAction,
 }: {
-  data: INode[];
-  tabbableId: number;
-  expandedIds: Set<number>;
-  selectedIds: Set<number>;
-  disabledIds: Set<number>;
-  halfSelectedIds: Set<number>;
+  data: TreeViewData;
+  tabbableId: NodeId;
+  expandedIds: Set<NodeId>;
+  selectedIds: Set<NodeId>;
+  disabledIds: Set<NodeId>;
+  halfSelectedIds: Set<NodeId>;
   dispatch: React.Dispatch<TreeViewAction>;
   propagateCollapse?: boolean;
   propagateSelect?: boolean;
@@ -1316,12 +1323,13 @@ const handleKeyDown = ({
   togglableSelect?: boolean;
   clickAction: ClickActions;
 }) => (event: React.KeyboardEvent) => {
-  const element = data[tabbableId];
+  const element = getTreeNode(data, tabbableId);
   const id = element.id;
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
-      const dataWithoutRoot = data.filter((x) => x.id !== 0);
+      // const dataWithoutRoot = data.filter((x) => x.id !== 0);
+      const dataWithoutRoot = Array.from(data).map(([, x]) => x).filter((x) => x.id !== 0);
       const ids = Object.values(dataWithoutRoot)
         .map((x) => x.id)
         .filter((id) => !disabledIds.has(id));
@@ -1340,7 +1348,7 @@ const handleKeyDown = ({
     ) {
       const newId =
         event.key === "Home"
-          ? data[0].children[0]
+          ? getTreeParent(data).children[0]
           : getLastAccessible(data, id, expandedIds);
       const range = getAccessibleRange({
         data,
@@ -1457,7 +1465,7 @@ const handleKeyDown = ({
           });
         }
       } else {
-        const isRoot = data[0].children.includes(id);
+        const isRoot = getTreeParent(data).children.includes(id);
         if (!isRoot) {
           const parentId = getParent(data, id);
           if (parentId == null) {
@@ -1491,13 +1499,13 @@ const handleKeyDown = ({
       event.preventDefault();
       dispatch({
         type: treeTypes.focus,
-        id: data[0].children[0],
-        lastInteractedWith: data[0].children[0],
+        id: getTreeParent(data).children[0],
+        lastInteractedWith: getTreeParent(data).children[0],
       });
       break;
     case "End": {
       event.preventDefault();
-      const lastAccessible = getLastAccessible(data, data[0].id, expandedIds);
+      const lastAccessible = getLastAccessible(data, getTreeParent(data).id, expandedIds);
       dispatch({
         type: treeTypes.focus,
         id: lastAccessible,
@@ -1511,8 +1519,8 @@ const handleKeyDown = ({
       if (parentId == null) {
         throw new Error("parentId of element is null");
       }
-      const nodes = data[parentId].children.filter(
-        (x) => isBranchNode(data, x) || data[x].isBranch
+      const nodes = getTreeNode(data, parentId).children.filter(
+        (x) => isBranchNode(data, x) || getTreeNode(data, x).isBranch
       );
       dispatch({
         type: treeTypes.expandMany,
@@ -1564,11 +1572,11 @@ const handleKeyDown = ({
         let currentId = getNextAccessible(data, id, expandedIds);
         while (currentId !== id) {
           if (currentId == null) {
-            currentId = data[0].children[0];
+            currentId = getTreeParent(data).children[0];
             continue;
           }
           if (
-            data[currentId].name[0].toLowerCase() === event.key.toLowerCase()
+            getTreeNode(data, currentId).name[0].toLowerCase() === event.key.toLowerCase()
           ) {
             dispatch({
               type: treeTypes.focus,
@@ -1586,7 +1594,7 @@ const handleKeyDown = ({
 
 TreeView.propTypes = {
   /** Tree data*/
-  data: PropTypes.array.isRequired,
+  data: PropTypes.instanceOf(Map<number, INode>).isRequired,
 
   /** Function called when a node changes its selected state */
   onSelect: PropTypes.func,

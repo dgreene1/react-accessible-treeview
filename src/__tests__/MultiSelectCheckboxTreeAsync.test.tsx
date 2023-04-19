@@ -2,11 +2,13 @@ import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React, { useState } from "react";
 import TreeView, { INode, ITreeViewProps } from "..";
+import { NodeId, TreeViewData } from "../TreeView";
 
 describe("Async MultiSelectCheckboxTree", () => {
-  let initialData: INode[] = [];
+  let treeData: INode[] = [];
+  let initialData: TreeViewData;
   beforeEach(() => {
-    initialData = [
+    treeData = [
       {
         name: "",
         id: 0,
@@ -46,12 +48,19 @@ describe("Async MultiSelectCheckboxTree", () => {
         parent: 2,
       },
     ];
+    initialData = new Map(treeData.map((node, index) => [index, node]));
   });
-  function AsyncMultiSelectCheckbox() {
-    const [data, setData] = useState<INode[]>(initialData);
 
-    const updateTreeData = (list: INode[], id: number, children: INode[]) => {
-      const data = list.map((node) => {
+
+  function AsyncMultiSelectCheckbox() {
+    const [data, setData] = useState<TreeViewData>(initialData);
+
+    const updateTreeData = (
+      list: TreeViewData,
+      id: NodeId,
+      children: INode[]
+    ) => {
+      const data = Array.from(list).map(([,node]) => {
         if (node.id === id) {
           node.children = children.map((el) => {
             return el.id;
@@ -59,7 +68,10 @@ describe("Async MultiSelectCheckboxTree", () => {
         }
         return node;
       });
-      return data.concat(children);
+      const newMapData = new Map();
+      data.concat(children).forEach((node) => newMapData.set(node.id, node));
+  
+      return newMapData;
     };
 
     const onLoadData: ITreeViewProps["onLoadData"] = ({ element }) => {
@@ -74,14 +86,14 @@ describe("Async MultiSelectCheckboxTree", () => {
               {
                 name: "Child Node",
                 children: [],
-                id: value.length,
+                id: value.size,
                 parent: element.id,
                 isBranch: true,
               },
               {
                 name: "Another Child Node",
                 children: [],
-                id: value.length + 1,
+                id: value.size + 1,
                 parent: element.id,
               },
             ])

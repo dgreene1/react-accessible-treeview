@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { INode, INodeRef } from ".";
+import { INode, INodeRef, NodeId, TreeViewData } from ".";
 
 export type EventCallback = <T, E>(
   event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
@@ -26,28 +26,30 @@ export const difference = (a: Set<number>, b: Set<number>) => {
   return s;
 };
 
-export const symmetricDifference = (a: Set<number>, b: Set<number>) => {
-  return new Set<number>([...difference(a, b), ...difference(b, a)]);
+export const symmetricDifference = (a: Set<NodeId>, b: Set<NodeId>) => {
+  return new Set<NodeId>([...difference(a, b), ...difference(b, a)]);
 };
 
-export const usePrevious = (x: Set<number>): Set<number> | undefined => {
-  const ref = useRef<Set<number> | undefined>();
+export const usePrevious = (x: Set<NodeId>): Set<NodeId> | undefined => {
+  const ref = useRef<Set<NodeId> | undefined>();
   useEffect(() => {
     ref.current = x;
   }, [x]);
   return ref.current;
 };
 
-export const usePreviousData = (value: INode[] | undefined) => {
-  const ref = useRef<INode[] | undefined>();
+export const usePreviousData = (value: TreeViewData | undefined) => {
+  const ref = useRef<TreeViewData | undefined>();
   useEffect(() => {
     ref.current = value;
   });
   return ref.current;
 };
 
-export const isBranchNode = (data: INode[], i: number) =>
-  data[i].children != null && data[i].children.length > 0;
+export const isBranchNode = (data: TreeViewData, i: number) => {
+  const node = getTreeNode(data, i);
+  return node.children != null && node.children.length > 0;
+};
 
 export const scrollToRef = (ref: INodeRef) => {
   if (ref != null && ref.scrollIntoView) {
@@ -61,17 +63,17 @@ export const focusRef = (ref: INodeRef) => {
   }
 };
 
-export const getParent = (data: INode[], id: number) => {
-  return data[id].parent;
+export const getParent = (data: TreeViewData, id: NodeId) => {
+  return getTreeNode(data, id).parent;
 };
 
 export const getAncestors = (
-  data: INode[],
-  childId: number,
-  disabledIds: Set<number>
+  data: TreeViewData,
+  childId: NodeId,
+  disabledIds: Set<NodeId>
 ) => {
   let currentId = childId;
-  const ancestors: number[] = [];
+  const ancestors: NodeId[] = [];
   while (true) {
     const parent = getParent(data, currentId);
     if (
@@ -89,13 +91,13 @@ export const getAncestors = (
 };
 
 export const getDescendants = (
-  data: INode[],
-  id: number,
-  disabledIds: Set<number>
+  data: TreeViewData,
+  id: NodeId,
+  disabledIds: Set<NodeId>
 ) => {
-  const descendants: number[] = [];
-  const getDescendantsHelper = (data: INode[], id: number) => {
-    const node = data[id];
+  const descendants: NodeId[] = [];
+  const getDescendantsHelper = (data: TreeViewData, id: NodeId) => {
+    const node = getTreeNode(data, id);
     if (node.children == null) return;
     for (const childId of node.children.filter((x) => !disabledIds.has(x))) {
       descendants.push(childId);
@@ -106,10 +108,10 @@ export const getDescendants = (
   return descendants;
 };
 
-export const getSibling = (data: INode[], id: number, diff: number) => {
+export const getSibling = (data: TreeViewData, id: NodeId, diff: number) => {
   const parentId = getParent(data, id);
   if (parentId != null) {
-    const parent = data[parentId];
+    const parent = getTreeNode(data, parentId);
     const index = parent.children.indexOf(id);
     const siblingIndex = index + diff;
     if (parent.children[siblingIndex]) {
@@ -119,28 +121,35 @@ export const getSibling = (data: INode[], id: number, diff: number) => {
   return null;
 };
 
+// @ToDo: refactor
 export const getLastAccessible = (
-  data: INode[],
-  id: number,
-  expandedIds: Set<number>
+  data: TreeViewData,
+  id: NodeId,
+  expandedIds: Set<NodeId>
 ) => {
-  let node = data[id];
-  const isRoot = data[0].id === id;
+  let node = getTreeNode(data, id);
+  const isRoot = getTreeParent(data).id === id;
   if (isRoot) {
-    node = data[data[id].children[data[id].children.length - 1]];
+    // node = data[data[id].children[data[id].children.length - 1]];
+    node = getTreeNode(
+      data,
+      getTreeNode(data, id).children[getTreeNode(data, id).children.length - 1]
+    );
+    // What is the diff with
+    // node = getTreeNode(data, node.children[node.children.length - 1]);
   }
   while (expandedIds.has(node.id) && isBranchNode(data, node.id)) {
-    node = data[node.children[node.children.length - 1]];
+    node = getTreeNode(data, node.children[node.children.length - 1]);
   }
   return node.id;
 };
 
 export const getPreviousAccessible = (
-  data: INode[],
-  id: number,
-  expandedIds: Set<number>
+  data: TreeViewData,
+  id: NodeId,
+  expandedIds: Set<NodeId>
 ) => {
-  if (id === data[0].children[0]) {
+  if (id === getTreeParent(data).children[0]) {
     return null;
   }
   const previous = getSibling(data, id, -1);
@@ -151,13 +160,13 @@ export const getPreviousAccessible = (
 };
 
 export const getNextAccessible = (
-  data: INode[],
-  id: number,
-  expandedIds: Set<number>
+  data: TreeViewData,
+  id: NodeId,
+  expandedIds: Set<NodeId>
 ) => {
-  let nodeId: number | null = data[id].id;
+  let nodeId: NodeId | null = getTreeNode(data, id).id;
   if (isBranchNode(data, nodeId) && expandedIds.has(nodeId)) {
-    return data[nodeId].children[0];
+    return getTreeNode(data, nodeId).children[0];
   }
   while (true) {
     const next = getSibling(data, nodeId, 1);
@@ -174,17 +183,17 @@ export const getNextAccessible = (
 };
 
 export const propagateSelectChange = (
-  data: INode[],
-  ids: Set<number>,
-  selectedIds: Set<number>,
-  disabledIds: Set<number>,
-  halfSelectedIds: Set<number>,
+  data: TreeViewData,
+  ids: Set<NodeId>,
+  selectedIds: Set<NodeId>,
+  disabledIds: Set<NodeId>,
+  halfSelectedIds: Set<NodeId>,
   multiSelect?: boolean
 ) => {
   const changes = {
-    every: new Set<number>(),
-    some: new Set<number>(),
-    none: new Set<number>(),
+    every: new Set<NodeId>(),
+    some: new Set<NodeId>(),
+    none: new Set<NodeId>(),
   };
   for (const id of ids) {
     let currentId = id;
@@ -197,7 +206,7 @@ export const propagateSelectChange = (
       ) {
         break;
       }
-      const enabledChildren = data[parent].children.filter(
+      const enabledChildren = getTreeNode(data, parent).children.filter(
         (x) => !disabledIds.has(x)
       );
       if (enabledChildren.length === 0) break;
@@ -245,15 +254,15 @@ export const getAccessibleRange = ({
   from,
   to,
 }: {
-  data: INode[];
-  expandedIds: Set<number>;
-  from: number;
-  to: number;
+  data: TreeViewData;
+  expandedIds: Set<NodeId>;
+  from: NodeId;
+  to: NodeId;
 }) => {
-  const range: number[] = [];
-  const max_loop = Object.keys(data).length;
+  const range: NodeId[] = [];
+  const max_loop = data.size;
   let count = 0;
-  let currentId: number | null = from;
+  let currentId: NodeId | null = from;
   range.push(from);
   if (from < to) {
     while (count < max_loop) {
@@ -275,30 +284,33 @@ export const getAccessibleRange = ({
 };
 
 interface ITreeNode {
+  id?: NodeId;
   name: string;
   children?: ITreeNode[];
 }
-
-export const flattenTree = function(tree: ITreeNode): INode[] {
+// @ToDo: refactor to use id from ITreeNode if present
+export const flattenTree = function(tree: ITreeNode): TreeViewData {
   let count = 0;
-  const flattenedTree: INode[] = [];
+  const flattenedTree: TreeViewData = new Map<NodeId, INode>();
 
-  const flattenTreeHelper = function(tree: ITreeNode, parent: number | null) {
+  const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
     const node: INode = {
       id: count,
       name: tree.name,
       children: [],
       parent,
     };
-    flattenedTree[count] = node;
+    flattenedTree.set(count, node);
     count += 1;
     if (tree.children == null || tree.children.length === 0) return;
     for (const child of tree.children) {
       flattenTreeHelper(child, node.id);
     }
-    node.children = flattenedTree
-      .filter((x) => x.parent === node.id)
-      .map((x: INode) => x.id);
+    for (const child of flattenedTree.values()) {
+      if (child.parent === node.id) {
+        node.children.push(child.id);
+      }
+    }
   };
 
   flattenTreeHelper(tree, null);
@@ -337,9 +349,9 @@ export const getAriaChecked = ({
 };
 
 export const propagatedIds = (
-  data: INode[],
-  ids: number[],
-  disabledIds: Set<number>
+  data: TreeViewData,
+  ids: NodeId[],
+  disabledIds: Set<NodeId>
 ) =>
   ids.concat(
     ...ids
@@ -369,8 +381,8 @@ export const onComponentBlur = (
 };
 
 export const isBranchSelectedAndHasSelectedDescendants = (
-  data: INode[],
-  elementId: number,
+  data: TreeViewData,
+  elementId: NodeId,
   selectedIds: Set<number>
 ) => {
   return (
@@ -380,4 +392,31 @@ export const isBranchSelectedAndHasSelectedDescendants = (
       selectedIds.has(item)
     )
   );
+};
+
+export const getTreeParent = (data: TreeViewData): INode => {
+  let parentNode: INode | null = null;
+
+  for (const node of data.values()) {
+    if (node.parent === null) {
+      parentNode = node;
+      break;
+    }
+  }
+
+  if (!parentNode) {
+    throw Error("TreeView data must contain parent node.");
+  }
+
+  return parentNode;
+};
+
+export const getTreeNode = (data: TreeViewData, id: NodeId): INode => {
+  const treeNode = data.get(id);
+
+  if (!treeNode) {
+    throw Error("TreeView data node can't be null.");
+  }
+
+  return treeNode;
 };

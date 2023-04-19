@@ -58,7 +58,9 @@ function DirectoryTreeView(props: {
 
 test("Ctrl+A selects all nodes", () => {
   const { queryAllByRole } = render(
-    <DirectoryTreeView defaultExpandedIds={data.map((x) => x.id)} />
+    <DirectoryTreeView
+      defaultExpandedIds={Array.from(data).map(([, x]) => x.id)}
+    />
   );
   const nodes = queryAllByRole("treeitem");
   nodes[0].focus();
@@ -73,7 +75,9 @@ test("Ctrl+A selects all nodes", () => {
 
 test("expect aria-select and aria-multiselectable='true' is set when nodeAction undefined", () => {
   const { queryAllByRole } = render(
-    <DirectoryTreeView defaultExpandedIds={data.map((x) => x.id)} />
+    <DirectoryTreeView
+      defaultExpandedIds={Array.from(data).map(([, x]) => x.id)}
+    />
   );
   const treeNodes = queryAllByRole("tree");
   expect(treeNodes[0]).toHaveAttribute("aria-multiselectable", "true");
