@@ -25,6 +25,7 @@ import {
   isBranchSelectedAndHasSelectedDescendants,
   getTreeParent,
   getTreeNode,
+  mapTreeViewData,
 } from "./utils";
 
 export type NodeId = number;
@@ -867,6 +868,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   function TreeView(
     {
       data,
+      // data: treeViewData,
       selectedIds,
       nodeRenderer,
       onSelect = noop,
@@ -890,10 +892,13 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     },
     ref
   ) {
+    const treeViewData: TreeViewData = Array.isArray(data)
+      ? mapTreeViewData(data)
+      : data;
     const nodeRefs = useRef({});
     const leafRefs = useRef({});
     const [state, dispatch] = useTree({
-      data,
+      data: treeViewData,
       controlledIds: selectedIds,
       controlledExpandedIds: expandedIds,
       defaultExpandedIds,
@@ -933,7 +938,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           });
         }}
         onKeyDown={handleKeyDown({
-          data,
+          data: treeViewData,
           tabbableId: state.tabbableId,
           expandedIds: state.expandedIds,
           selectedIds: state.selectedIds,
@@ -949,12 +954,12 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
         })}
         {...other}
       >
-        {getTreeParent(data).children.map((x, index) => (
+        {getTreeParent(treeViewData).children.map((x, index) => (
           <Node
             key={x}
-            data={data}
-            element={getTreeNode(data, x)}
-            setsize={getTreeParent(data).children.length}
+            data={treeViewData}
+            element={getTreeNode(treeViewData, x)}
+            setsize={getTreeParent(treeViewData).children.length}
             posinset={index + 1}
             level={1}
             {...state}
@@ -1328,8 +1333,9 @@ const handleKeyDown = ({
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
-      // const dataWithoutRoot = data.filter((x) => x.id !== 0);
-      const dataWithoutRoot = Array.from(data).map(([, x]) => x).filter((x) => x.id !== 0);
+      const dataWithoutRoot = Array.from(data)
+        .map(([, x]) => x)
+        .filter((x) => x.id !== 0);
       const ids = Object.values(dataWithoutRoot)
         .map((x) => x.id)
         .filter((id) => !disabledIds.has(id));
@@ -1505,7 +1511,11 @@ const handleKeyDown = ({
       break;
     case "End": {
       event.preventDefault();
-      const lastAccessible = getLastAccessible(data, getTreeParent(data).id, expandedIds);
+      const lastAccessible = getLastAccessible(
+        data,
+        getTreeParent(data).id,
+        expandedIds
+      );
       dispatch({
         type: treeTypes.focus,
         id: lastAccessible,
@@ -1576,7 +1586,8 @@ const handleKeyDown = ({
             continue;
           }
           if (
-            getTreeNode(data, currentId).name[0].toLowerCase() === event.key.toLowerCase()
+            getTreeNode(data, currentId).name[0].toLowerCase() ===
+            event.key.toLowerCase()
           ) {
             dispatch({
               type: treeTypes.focus,
@@ -1594,7 +1605,12 @@ const handleKeyDown = ({
 
 TreeView.propTypes = {
   /** Tree data*/
-  data: PropTypes.instanceOf(Map<number, INode>).isRequired,
+  data: (props, propName) => {
+    if (Array.isArray(props[propName]) || props[propName] instanceof Map) {
+      return null;
+    }
+    return new Error("TreeView data type must me eigther Array or Map.");
+  },
 
   /** Function called when a node changes its selected state */
   onSelect: PropTypes.func,

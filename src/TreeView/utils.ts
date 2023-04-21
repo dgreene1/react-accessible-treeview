@@ -16,8 +16,8 @@ export const composeHandlers = (
   }
 };
 
-export const difference = (a: Set<number>, b: Set<number>) => {
-  const s = new Set<number>();
+export const difference = (a: Set<NodeId>, b: Set<NodeId>) => {
+  const s = new Set<NodeId>();
   for (const v of a) {
     if (!b.has(v)) {
       s.add(v);
@@ -46,7 +46,7 @@ export const usePreviousData = (value: TreeViewData | undefined) => {
   return ref.current;
 };
 
-export const isBranchNode = (data: TreeViewData, i: number) => {
+export const isBranchNode = (data: TreeViewData, i: NodeId) => {
   const node = getTreeNode(data, i);
   return node.children != null && node.children.length > 0;
 };
@@ -288,20 +288,25 @@ interface ITreeNode {
   name: string;
   children?: ITreeNode[];
 }
-// @ToDo: refactor to use id from ITreeNode if present
+
 export const flattenTree = function(tree: ITreeNode): TreeViewData {
-  let count = 0;
+  let internalCount = 0;
   const flattenedTree: TreeViewData = new Map<NodeId, INode>();
 
   const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
     const node: INode = {
-      id: count,
+      id: tree.id || internalCount,
       name: tree.name,
       children: [],
       parent,
     };
-    flattenedTree.set(count, node);
-    count += 1;
+
+    if (flattenedTree.has(node.id)) {
+      throw Error("TreeView node must has unique ids");
+    }
+
+    flattenedTree.set(node.id, node);
+    internalCount += 1;
     if (tree.children == null || tree.children.length === 0) return;
     for (const child of tree.children) {
       flattenTreeHelper(child, node.id);
@@ -383,7 +388,7 @@ export const onComponentBlur = (
 export const isBranchSelectedAndHasSelectedDescendants = (
   data: TreeViewData,
   elementId: NodeId,
-  selectedIds: Set<number>
+  selectedIds: Set<NodeId>
 ) => {
   return (
     isBranchNode(data, elementId) &&
@@ -414,9 +419,13 @@ export const getTreeParent = (data: TreeViewData): INode => {
 export const getTreeNode = (data: TreeViewData, id: NodeId): INode => {
   const treeNode = data.get(id);
 
-  if (!treeNode) {
-    throw Error("TreeView data node can't be null.");
+  if (treeNode == null) {
+    throw Error(`Node with id=${id} doesn't exist in the tree.`);
   }
 
   return treeNode;
+};
+
+export const mapTreeViewData = (data: INode[]): TreeViewData => {
+  return new Map<NodeId, INode>(data.map((node: INode) => [node.id, node]));
 };

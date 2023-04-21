@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
 import { AiOutlineLoading } from "react-icons/ai";
@@ -6,7 +6,7 @@ import TreeView from "react-accessible-treeview";
 import cx from "classnames";
 import "./styles.css";
 
-const treeData = [
+const initialData = [
   {
     name: "",
     id: 0,
@@ -48,17 +48,13 @@ const treeData = [
   },
 ];
 
-const initialData = new Map(treeData.map((node, index) => [index, node]));
-
 function MultiSelectCheckboxAsync() {
   const loadedAlertElement = useRef(null);
   const [data, setData] = useState(initialData);
   const [nodesAlreadyLoaded, setNodesAlreadyLoaded] = useState([]);
 
-  useEffect(() => console.log(data), [data]);
-
   const updateTreeData = (list, id, children) => {
-    const data = Array.from(list).map(([,node]) => {
+    const data = list.map((node) => {
       if (node.id === id) {
         node.children = children.map((el) => {
           return el.id;
@@ -66,10 +62,7 @@ function MultiSelectCheckboxAsync() {
       }
       return node;
     });
-    const newMapData = new Map();
-    data.concat(children).forEach((node) => newMapData.set(node.id, node));
-
-    return newMapData;
+    return data.concat(children);
   };
 
   const onLoadData = ({ element }) => {
@@ -82,16 +75,16 @@ function MultiSelectCheckboxAsync() {
         setData((value) =>
           updateTreeData(value, element.id, [
             {
-              name: `Child Node ${value.size}`,
+              name: `Child Node ${value.length}`,
               children: [],
-              id: value.size,
+              id: value.length,
               parent: element.id,
               isBranch: true,
             },
             {
               name: "Another child Node",
               children: [],
-              id: value.size + 1,
+              id: value.length + 1,
               parent: element.id,
             },
           ])
