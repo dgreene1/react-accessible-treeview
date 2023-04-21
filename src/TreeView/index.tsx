@@ -28,7 +28,7 @@ import {
   mapTreeViewData,
 } from "./utils";
 
-export type NodeId = number;
+export type NodeId = number | string;
 
 export interface INode {
   /** A non-negative integer that uniquely identifies the node */
@@ -44,7 +44,7 @@ export interface INode {
 }
 export type INodeRef = HTMLLIElement | HTMLDivElement;
 export type INodeRefs = null | React.RefObject<{
-  [key: number]: INodeRef;
+  [key: NodeId]: INodeRef;
 }>;
 
 const baseClassNames = {
@@ -529,7 +529,7 @@ const useTree = ({
   ]);
 
   useEffect(() => {
-    const toggleControlledIds = new Set<number>(controlledIds);
+    const toggleControlledIds = new Set<NodeId>(controlledIds);
     //nodes need to be selected
     const diffSelectedIds = difference(toggleControlledIds, prevSelectedIds);
     //nodes to be deselected
@@ -572,7 +572,7 @@ const useTree = ({
   }, [controlledIds]);
 
   useEffect(() => {
-    const toggleControlledExpandedIds = new Set<number>(controlledExpandedIds);
+    const toggleControlledExpandedIds = new Set<NodeId>(controlledExpandedIds);
     //nodes need to be expanded
     const diffExpandedIds = difference(
       toggleControlledExpandedIds,
@@ -622,7 +622,7 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards) {
-      const idsToUpdate = new Set<number>(toggledIds);
+      const idsToUpdate = new Set<NodeId>(toggledIds);
       if (
         lastInteractedWith &&
         lastAction !== treeTypes.focus &&
@@ -1042,9 +1042,9 @@ const Node = (props: INodeProps) => {
   const handleExpand: EventCallback = (event) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
-      const ids: number[] = [
+      const ids: NodeId[] = [
         element.id,
-        ...getDescendants(data, element.id, new Set<number>()),
+        ...getDescendants(data, element.id, new Set<NodeId>()),
       ];
       dispatch({
         type: treeTypes.collapseMany,
