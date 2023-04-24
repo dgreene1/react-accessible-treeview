@@ -817,7 +817,7 @@ export type TreeViewData = Map<NodeId, INode>;
 
 export interface ITreeViewProps {
   /** Tree data*/
-  data: TreeViewData;
+  data: TreeViewData | INode[];
   /** Function called when a node changes its selected state */
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   /** Function called when a node changes its expanded state */
@@ -832,15 +832,15 @@ export interface ITreeViewProps {
   /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
   nodeAction?: NodeAction;
   /** Array with the ids of the default expanded nodes */
-  defaultExpandedIds?: number[];
+  defaultExpandedIds?: NodeId[];
   /** Array with the ids of the default selected nodes */
-  defaultSelectedIds?: number[];
+  defaultSelectedIds?: NodeId[];
   /** Array with the ids of controlled expanded nodes */
-  expandedIds?: number[];
+  expandedIds?: NodeId[];
   /** Array with the ids of controlled selected nodes */
-  selectedIds?: number[];
+  selectedIds?: NodeId[];
   /** Array with the ids of the default disabled nodes */
-  defaultDisabledIds?: number[];
+  defaultDisabledIds?: NodeId[];
   /** If true, collapsing a node will also collapse its descendants */
   propagateCollapse?: boolean;
   /** If true, selecting a node will also select its descendants */
@@ -868,7 +868,6 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   function TreeView(
     {
       data,
-      // data: treeViewData,
       selectedIds,
       nodeRenderer,
       onSelect = noop,
