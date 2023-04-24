@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import React from "react";
 import TreeView, { INode, TreeViewData } from "../TreeView";
 import { render } from "@testing-library/react";
-import { flattenTree } from "../TreeView/utils";
+import { flattenTreeMap } from "../TreeView/utils";
 
 const initialTreeNode = {
   name: "",
@@ -60,7 +60,7 @@ const nodeDataWithIds = [
   { id: 24, name: "Vegetables", children: [], parent: 12 },
 ];
 
-const mapDataType = flattenTree(initialTreeNode);
+const mapDataType = flattenTreeMap(initialTreeNode);
 
 interface TreeViewDataTypeProps {
   data: INode[] | TreeViewData;

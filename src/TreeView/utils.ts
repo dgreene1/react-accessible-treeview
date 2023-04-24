@@ -289,11 +289,40 @@ interface ITreeNode {
   children?: ITreeNode[];
 }
 
-export const flattenTree = function(tree: ITreeNode): TreeViewData {
+export const flattenTree = function(tree: ITreeNode): INode[] {
+  let count = 0;
+  const flattenedTree: INode[] = [];
+
+  const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
+    const node: INode = {
+      id: count,
+      name: tree.name,
+      children: [],
+      parent,
+    };
+    flattenedTree[count] = node;
+    count += 1;
+    if (tree.children == null || tree.children.length === 0) return;
+    for (const child of tree.children) {
+      flattenTreeHelper(child, node.id);
+    }
+    node.children = flattenedTree
+      .filter((x) => x.parent === node.id)
+      .map((x: INode) => x.id);
+  };
+
+  flattenTreeHelper(tree, null);
+  return flattenedTree;
+};
+
+export const flattenTreeMap = function(tree: ITreeNode): TreeViewData {
   let internalCount = 0;
   const flattenedTree: TreeViewData = new Map<NodeId, INode>();
 
-  const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
+  const flattenTreeMapHelper = function(
+    tree: ITreeNode,
+    parent: NodeId | null
+  ) {
     const node: INode = {
       id: tree.id || internalCount,
       name: tree.name,
@@ -309,7 +338,7 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
     internalCount += 1;
     if (tree.children == null || tree.children.length === 0) return;
     for (const child of tree.children) {
-      flattenTreeHelper(child, node.id);
+      flattenTreeMapHelper(child, node.id);
     }
     for (const child of flattenedTree.values()) {
       if (child.parent === node.id) {
@@ -318,7 +347,7 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
     }
   };
 
-  flattenTreeHelper(tree, null);
+  flattenTreeMapHelper(tree, null);
   return flattenedTree;
 };
 

@@ -1608,7 +1608,7 @@ TreeView.propTypes = {
     if (Array.isArray(props[propName]) || props[propName] instanceof Map) {
       return null;
     }
-    return new Error("TreeView data type must me eigther Array or Map.");
+    return new Error("TreeView data type have to be eigther Array or Map.");
   },
 
   /** Function called when a node changes its selected state */

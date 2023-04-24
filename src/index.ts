@@ -4,6 +4,7 @@ import TreeView, {
   IBranchProps,
   LeafProps,
   INode,
+  TreeViewData,
   INodeRendererProps,
   ITreeViewOnExpandProps,
   ITreeViewOnSelectProps,
@@ -12,12 +13,14 @@ import TreeView, {
   TreeViewAction,
   ITreeViewOnLoadDataProps,
 } from "./TreeView";
-import { EventCallback, flattenTree } from "./TreeView/utils";
+import { EventCallback, flattenTree, flattenTreeMap } from "./TreeView/utils";
 
 export {
   flattenTree,
+  flattenTreeMap,
   ITreeViewProps,
   INode,
+  TreeViewData,
   ITreeViewOnSelectProps,
   CLICK_ACTIONS,
   ITreeViewOnExpandProps,
