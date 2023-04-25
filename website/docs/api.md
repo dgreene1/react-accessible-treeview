@@ -4,26 +4,26 @@ title: API Reference
 
 ## Prop Types
 
-| Prop name                | Type                                           | Default value | Description                                                                                                                                                               |
-| ------------------------ | ---------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`                   | `array[node]` or `Map<(string\|number), node>` | `required`    | Tree data                                                                                                                                                                 |
-| `nodeRenderer`           | `func`                                         | `required`    | Render prop for the node (see below for more details)                                                                                                                     |
-| `onSelect`               | `func`                                         | `noop`        | Function called when a node changes its selected state                                                                                                                    |
-| `onExpand`               | `func`                                         | `noop`        | Function called when a node changes its expanded state                                                                                                                    |
-| `className`              | `string`                                       | `""`          | className to add to the outermost dom element, al `ul` with `role = "tree"`                                                                                               |
-| `multiSelect`            | `bool`                                         | `false`       | Allows multiple nodes to be selected                                                                                                                                      |
-| `propagateSelect`        | `bool`                                         | `false`       | If set to true, selecting a node will also select its descendants                                                                                                         |
-| `propagateSelectUpwards` | `bool`                                         | `false`       | If set to true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected |
-| `propagateCollapse`      | `bool`                                         | `false`       | If set to true, collapsing a node will also collapse its descendants                                                                                                      |
-| `expandOnKeyboardSelect` | `bool`                                         | `false`       | Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state                                                                               |
-| `togglableSelect`        | `bool`                                         | `false`       | Whether the selected state is togglable                                                                                                                                   |
-| `defaultSelectedIds`     | `array`                                        | `[]`          | Array with the ids of the default selected nodes                                                                                                                          |
-| `defaultExpandedIds`     | `array`                                        | `[]`          | Array with the ids of the default expanded nodes                                                                                                                          |
-| `defaultDisabledIds`     | `array`                                        | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
-| `selectedIds`            | `array`                                        | `[]`          | (Controlled) Array with the ids that should be selected                                                                                                                   |
-| `expandedIds`            | `array`                                        | `[]`          | (Controlled) Array with the ids of branch node that should be                                                                                                             |
-| `clickAction`            | `enum`                                         | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
-| `onBlur`                 | `func`                                         | `noop`        | Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it).                                    |
+| Prop name                | Type                          | Default value | Description                                                                                                                                                               |
+| ------------------------ | ----------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`                   | `Map<(string\|number), node>` | `required`    | Tree data                                                                                                                                                                 |
+| `nodeRenderer`           | `func`                        | `required`    | Render prop for the node (see below for more details)                                                                                                                     |
+| `onSelect`               | `func`                        | `noop`        | Function called when a node changes its selected state                                                                                                                    |
+| `onExpand`               | `func`                        | `noop`        | Function called when a node changes its expanded state                                                                                                                    |
+| `className`              | `string`                      | `""`          | className to add to the outermost dom element, al `ul` with `role = "tree"`                                                                                               |
+| `multiSelect`            | `bool`                        | `false`       | Allows multiple nodes to be selected                                                                                                                                      |
+| `propagateSelect`        | `bool`                        | `false`       | If set to true, selecting a node will also select its descendants                                                                                                         |
+| `propagateSelectUpwards` | `bool`                        | `false`       | If set to true, selecting a node will update the state of its parent (e.g. a parent node in a checkbox will be automatically selected if all of its children are selected |
+| `propagateCollapse`      | `bool`                        | `false`       | If set to true, collapsing a node will also collapse its descendants                                                                                                      |
+| `expandOnKeyboardSelect` | `bool`                        | `false`       | Selecting a node with a keyboard (using Space or Enter) will also toggle its expanded state                                                                               |
+| `togglableSelect`        | `bool`                        | `false`       | Whether the selected state is togglable                                                                                                                                   |
+| `defaultSelectedIds`     | `array`                       | `[]`          | Array with the ids of the default selected nodes                                                                                                                          |
+| `defaultExpandedIds`     | `array`                       | `[]`          | Array with the ids of the default expanded nodes                                                                                                                          |
+| `defaultDisabledIds`     | `array`                       | `[]`          | Array with the ids of the default disabled nodes                                                                                                                          |
+| `selectedIds`            | `array`                       | `[]`          | (Controlled) Array with the ids that should be selected                                                                                                                   |
+| `expandedIds`            | `array`                       | `[]`          | (Controlled) Array with the ids of branch node that should be                                                                                                             |
+| `clickAction`            | `enum`                        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
+| `onBlur`                 | `func`                        | `noop`        | Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it).                                    |
 
 <br/> <br/>
 
@@ -41,31 +41,30 @@ Nodes are objects with the following structure:
 | `parent`   | `id`                 | required | The parent of the node. `null` for the root node                                                 |
 | `isBranch` | `boolean`            | optional | Used to indicated whether a node is branch to be able load async data onExpand, default is false |
 
-The first item of the array represents the root node and won't be displayed.
+Data is a Map. The root item in the Map has node parent `parent: null` and won't be displayed.
 
 Example:
 
 ```js static
-const data = [
-  { name: "", children: [1, 4, 9, 10, 11], id: 0, parent: null },
-  { name: "src", children: [2, 3], id: 1, parent: 0 },
-  { name: "index.js", id: 2, parent: 1 },
-  { name: "styles.css", id: 3, parent: 1 },
-  { name: "node_modules", children: [5, 7], id: 4, parent: 0 },
-  { name: "react-accessible-treeview", children: [6], id: 5, parent: 4 },
-  { name: "bundle.js", id: 6, parent: 5 },
-  { name: "react", children: [8], id: 7, parent: 4 },
-  { name: "bundle.js", id: 8, parent: 7 },
-  { name: ".npmignore", id: 9, parent: 0 },
-  { name: "package.json", id: 10, parent: 0 },
-  { name: "webpack.config.js", id: 11, parent: 0 },
-];
+const data = new Map(
+  [
+    { name: "", children: [1, 4, 9, 10, 11], id: 0, parent: null },
+    { name: "src", children: [2, 3], id: 1, parent: 0 },
+    { name: "index.js", id: 2, parent: 1 },
+    { name: "styles.css", id: 3, parent: 1 },
+    { name: "node_modules", children: [5, 7], id: 4, parent: 0 },
+    { name: "react-accessible-treeview", children: [6], id: 5, parent: 4 },
+    { name: "bundle.js", id: 6, parent: 5 },
+    { name: "react", children: [8], id: 7, parent: 4 },
+    { name: "bundle.js", id: 8, parent: 7 },
+    { name: ".npmignore", id: 9, parent: 0 },
+    { name: "package.json", id: 10, parent: 0 },
+    { name: "webpack.config.js", id: 11, parent: 0 },
+  ].map((node) => [node.id, node])
+);
 ```
 
-The array can also be generated from a nested object using the `flattenTree` helper (see the examples below).
-
-Data as a Map. When you need to use own unique non-sequential ids you should generate data as Map structure.
-The Map can be generated from a nested object using the `flattenTreeMap` helper (see the `DataTypes` example).
+The Map can also be generated from a nested object using the `flattenTree` helper (see the `DataTypes` example).
 
 <br/> <br/>
 

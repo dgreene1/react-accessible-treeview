@@ -1,14 +1,11 @@
 import React from "react";
 import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
-import TreeView, {
-  flattenTree,
-  flattenTreeMap,
-} from "react-accessible-treeview";
+import TreeView, { flattenTree } from "react-accessible-treeview";
 import cx from "classnames";
 import "./styles.css";
 
-const folder = {
+const dataWithPredefinedIds = flattenTree({
   name: "",
   id: 890,
   children: [
@@ -54,10 +51,50 @@ const folder = {
       ],
     },
   ],
-};
+});
 
-const dataTypeINode = flattenTree(folder);
-const dataTypeMap = flattenTreeMap(folder);
+const dataWithGeneratedIds = flattenTree({
+  name: "",
+  children: [
+    {
+      name: "Fruits",
+      children: [
+        { name: "Avocados" },
+        { name: "Bananas" },
+        { name: "Berries" },
+        { name: "Oranges" },
+        { name: "Pears" },
+      ],
+    },
+    {
+      name: "Drinks",
+      children: [
+        { name: "Apple Juice" },
+        { name: "Chocolate" },
+        { name: "Coffee" },
+        {
+          name: "Tea",
+          children: [
+            { name: "Black Tea" },
+            { name: "Green Tea" },
+            { name: "Red Tea" },
+            { name: "Matcha" },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Vegetables",
+      children: [
+        { name: "Beets" },
+        { name: "Carrots" },
+        { name: "Celery" },
+        { name: "Lettuce" },
+        { name: "Onions" },
+      ],
+    },
+  ],
+});
 
 function DataTypes() {
   return (
@@ -68,10 +105,10 @@ function DataTypes() {
             "Map<(number|string), INode> data type was introduced to add an ability to use own non sequential unique node ids."
           }
         </span>
-        <h4>{"Type of data prop is INode[]"}</h4>
-        <TreeViewComponent data={dataTypeINode} />
-        <h4>{"Type of data prop is Map<(number|string), INode>"}</h4>
-        <TreeViewComponent data={dataTypeMap} />
+        <h4>{"Ids are set by customer"}</h4>
+        <TreeViewComponent data={dataWithPredefinedIds} />
+        <h4>{"Ids are set by helper function"}</h4>
+        <TreeViewComponent data={dataWithGeneratedIds} />
       </div>
     </div>
   );

@@ -25,7 +25,6 @@ import {
   isBranchSelectedAndHasSelectedDescendants,
   getTreeParent,
   getTreeNode,
-  mapTreeViewData,
 } from "./utils";
 
 export type NodeId = number | string;
@@ -490,7 +489,7 @@ const useTree = ({
     state,
   ]);
 
-  const prevData = usePreviousData(data) || new Set<INode[]>();
+  const prevData = usePreviousData(data) || new Map<NodeId, INode>();
   useEffect(() => {
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onLoadData) {
@@ -817,7 +816,7 @@ export type TreeViewData = Map<NodeId, INode>;
 
 export interface ITreeViewProps {
   /** Tree data*/
-  data: TreeViewData | INode[];
+  data: TreeViewData;
   /** Function called when a node changes its selected state */
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   /** Function called when a node changes its expanded state */
@@ -891,13 +890,10 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     },
     ref
   ) {
-    const treeViewData: TreeViewData = Array.isArray(data)
-      ? mapTreeViewData(data)
-      : data;
     const nodeRefs = useRef({});
     const leafRefs = useRef({});
     const [state, dispatch] = useTree({
-      data: treeViewData,
+      data,
       controlledIds: selectedIds,
       controlledExpandedIds: expandedIds,
       defaultExpandedIds,
@@ -937,7 +933,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           });
         }}
         onKeyDown={handleKeyDown({
-          data: treeViewData,
+          data,
           tabbableId: state.tabbableId,
           expandedIds: state.expandedIds,
           selectedIds: state.selectedIds,
@@ -953,12 +949,12 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
         })}
         {...other}
       >
-        {getTreeParent(treeViewData).children.map((x, index) => (
+        {getTreeParent(data).children.map((x, index) => (
           <Node
             key={x}
-            data={treeViewData}
-            element={getTreeNode(treeViewData, x)}
-            setsize={getTreeParent(treeViewData).children.length}
+            data={data}
+            element={getTreeNode(data, x)}
+            setsize={getTreeParent(data).children.length}
             posinset={index + 1}
             level={1}
             {...state}
@@ -1604,12 +1600,7 @@ const handleKeyDown = ({
 
 TreeView.propTypes = {
   /** Tree data*/
-  data: (props, propName) => {
-    if (Array.isArray(props[propName]) || props[propName] instanceof Map) {
-      return null;
-    }
-    return new Error("TreeView data type have to be eigther Array or Map.");
-  },
+  data: PropTypes.instanceOf(Map<NodeId, INode>).isRequired,
 
   /** Function called when a node changes its selected state */
   onSelect: PropTypes.func,

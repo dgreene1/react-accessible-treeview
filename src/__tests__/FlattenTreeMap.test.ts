@@ -1,4 +1,4 @@
-import { flattenTreeMap } from "..";
+import { flattenTree } from "..";
 
 describe("FlattenTree helper", () => {
   test("should add sequential number ids when id is not provided", () => {
@@ -52,7 +52,7 @@ describe("FlattenTree helper", () => {
       expectedTreeList.map((node) => [node.id, node])
     );
 
-    const expected = flattenTreeMap(initialTreeNode);
+    const expected = flattenTree(initialTreeNode);
     expect(expected).toEqual(expectedTree);
   });
   test("should use number ids", () => {
@@ -115,7 +115,7 @@ describe("FlattenTree helper", () => {
       expectedTreeList.map((node) => [node.id, node])
     );
 
-    const expected = flattenTreeMap(initialTreeNode);
+    const expected = flattenTree(initialTreeNode);
     expect(expected).toEqual(expectedTree);
   });
   test("should use string ids", () => {
@@ -178,7 +178,7 @@ describe("FlattenTree helper", () => {
       expectedTreeList.map((node) => [node.id, node])
     );
 
-    const expected = flattenTreeMap(initialTreeNode);
+    const expected = flattenTree(initialTreeNode);
     expect(expected).toEqual(expectedTree);
   });
   test("should error if ids are not unique", () => {
@@ -201,7 +201,7 @@ describe("FlattenTree helper", () => {
       ],
     };
 
-    const expected = () => flattenTreeMap(initialTreeNode);
+    const expected = () => flattenTree(initialTreeNode);
     expect(expected).toThrow("TreeView node must has unique ids");
   });
 });
