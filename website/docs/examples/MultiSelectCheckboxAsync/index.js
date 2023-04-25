@@ -118,8 +118,6 @@ function MultiSelectCheckboxAsync() {
     }
   };
 
-  console.log(data);
-
   return (
     <>
       <div>
