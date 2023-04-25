@@ -202,6 +202,8 @@ describe("FlattenTree helper", () => {
     };
 
     const expected = () => flattenTree(initialTreeNode);
-    expect(expected).toThrow("TreeView node must has unique ids");
+    expect(expected).toThrow(
+      "Multiple TreeView nodes have the same ID (54). IDs must be unique."
+    );
   });
 });

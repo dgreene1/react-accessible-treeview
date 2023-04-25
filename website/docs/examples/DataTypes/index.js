@@ -101,13 +101,17 @@ function DataTypes() {
     <div>
       <div className="checkbox">
         <span>
-          {
-            "Map<(number|string), INode> data type was introduced to add an ability to use own non sequential unique node ids."
-          }
+          You can define IDs for your tree nodes yourself (they have to be of
+          type <code>number</code> or <code>string</code>). Alternatively, if
+          IDs are not defined, <code>flattenTree()</code> will create
+          sequential, unique node IDs. If you are loading TreeView data
+          asynchronously, it is recommended to define IDs yourself.
         </span>
-        <h4>{"Ids are set by customer"}</h4>
+        <h4>IDs defined by consumer (you)</h4>
         <TreeViewComponent data={dataWithPredefinedIds} />
-        <h4>{"Ids are set by helper function"}</h4>
+        <h4>
+          IDs set by <code>flattenTree()</code>
+        </h4>
         <TreeViewComponent data={dataWithGeneratedIds} />
       </div>
     </div>
@@ -149,7 +153,7 @@ function TreeViewComponent({ data }) {
               variant={isHalfSelected ? "some" : isSelected ? "all" : "none"}
             />
             <span className="name">
-              {element.name} - id: {element.id}
+              {element.name}-{element.id}
             </span>
           </div>
         );

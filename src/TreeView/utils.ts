@@ -289,10 +289,7 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
   let internalCount = 0;
   const flattenedTree: TreeViewData = new Map<NodeId, INode>();
 
-  const flattenTreeHelper = function(
-    tree: ITreeNode,
-    parent: NodeId | null
-  ) {
+  const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
     const node: INode = {
       id: tree.id || internalCount,
       name: tree.name,
@@ -301,7 +298,9 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
     };
 
     if (flattenedTree.has(node.id)) {
-      throw Error("TreeView node must has unique ids");
+      throw Error(
+        `Multiple TreeView nodes have the same ID (${node.id}). IDs must be unique.`
+      );
     }
 
     flattenedTree.set(node.id, node);
