@@ -121,7 +121,6 @@ export const getSibling = (data: TreeViewData, id: NodeId, diff: number) => {
   return null;
 };
 
-// @ToDo: refactor
 export const getLastAccessible = (
   data: TreeViewData,
   id: NodeId,
@@ -130,13 +129,10 @@ export const getLastAccessible = (
   let node = getTreeNode(data, id);
   const isRoot = getTreeParent(data).id === id;
   if (isRoot) {
-    // node = data[data[id].children[data[id].children.length - 1]];
     node = getTreeNode(
       data,
       getTreeNode(data, id).children[getTreeNode(data, id).children.length - 1]
     );
-    // What is the diff with
-    // node = getTreeNode(data, node.children[node.children.length - 1]);
   }
   while (expandedIds.has(node.id) && isBranchNode(data, node.id)) {
     node = getTreeNode(data, node.children[node.children.length - 1]);
