@@ -951,7 +951,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       >
         {getTreeParent(data).children.map((x, index) => (
           <Node
-            key={x}
+            key={`${x}-${typeof x}`}
             data={data}
             element={getTreeNode(data, x)}
             setsize={getTreeParent(data).children.length}
@@ -1284,7 +1284,7 @@ const NodeGroup = ({
           data={data}
           expandedIds={expandedIds}
           baseClassNames={baseClassNames}
-          key={x}
+          key={`${x}-${typeof x}`}
           element={getTreeNode(data, x)}
           setsize={element.children.length}
           posinset={index + 1}
