@@ -64,8 +64,9 @@ function MultiSelectCheckboxAsync() {
       }
       return node;
     });
-    const newMapData = new Map();
-    data.concat(children).forEach((node) => newMapData.set(node.id, node));
+    const concattedData = data.concat(children);
+    const newMapData = new Map(concattedData.map((node) => [node.id, node]));
+    console.log(concattedData, newMapData)
     return newMapData;
   };
 
@@ -82,7 +83,7 @@ function MultiSelectCheckboxAsync() {
               name: `Child Node ${value.size}`,
               children: [],
               id: value.size,
-              parent: element.id,
+              parent: null,
               isBranch: true,
             },
             {
@@ -182,7 +183,9 @@ function MultiSelectCheckboxAsync() {
                       isHalfSelected ? "some" : isSelected ? "all" : "none"
                     }
                   />
-                  <span className="name">{element.name}</span>
+                  <span className="name">
+                    {element.name}-{element.id}
+                  </span>
                 </div>
               );
             }}

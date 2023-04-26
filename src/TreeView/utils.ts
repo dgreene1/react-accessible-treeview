@@ -1,9 +1,5 @@
 import { useEffect, useRef } from "react";
-import { INode, INodeRef, NodeId, TreeViewData } from ".";
-
-export type EventCallback = <T, E>(
-  event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
-) => void;
+import { EventCallback, INode, INodeRef, NodeId, TreeViewData } from "./types";
 
 export const composeHandlers = (
   ...handlers: EventCallback[]
@@ -30,16 +26,16 @@ export const symmetricDifference = (a: Set<NodeId>, b: Set<NodeId>) => {
   return new Set<NodeId>([...difference(a, b), ...difference(b, a)]);
 };
 
-export const usePrevious = (x: Set<NodeId>): Set<NodeId> | undefined => {
-  const ref = useRef<Set<NodeId> | undefined>();
+export const usePrevious = (x: Set<NodeId>) => {
+  const ref = useRef<Set<NodeId>>();
   useEffect(() => {
     ref.current = x;
   }, [x]);
   return ref.current;
 };
 
-export const usePreviousData = (value: TreeViewData | undefined) => {
-  const ref = useRef<TreeViewData | undefined>();
+export const usePreviousData = (value: TreeViewData) => {
+  const ref = useRef<TreeViewData>();
   useEffect(() => {
     ref.current = value;
   });
@@ -48,7 +44,7 @@ export const usePreviousData = (value: TreeViewData | undefined) => {
 
 export const isBranchNode = (data: TreeViewData, i: NodeId) => {
   const node = getTreeNode(data, i);
-  return node.children != null && node.children.length > 0;
+  return !!node.children?.length;
 };
 
 export const scrollToRef = (ref: INodeRef) => {
@@ -305,7 +301,7 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
 
     flattenedTree.set(node.id, node);
     internalCount += 1;
-    if (tree.children == null || tree.children.length === 0) return;
+    if (!tree.children?.length) return;
     for (const child of tree.children) {
       flattenTreeHelper(child, node.id);
     }
@@ -422,4 +418,22 @@ export const getTreeNode = (data: TreeViewData, id: NodeId): INode => {
   }
 
   return treeNode;
+};
+
+export const validateTreeViewData = (data: TreeViewData): void => {
+  /** Map structure by default can't contain same keys<NodeId>. When you attempt to
+   *  set value for already existing key, Map will just override the value of existing record.
+   *  This is why in validation helper we don't check on unique key<NodeId> */
+
+  data.forEach((node, id) => {
+    if (id === node.parent) {
+      throw Error(`Node with id=${id} has parent reference to itself.`);
+    }
+  });
+
+  if (Array.from(data).filter(([, node]) => node.parent === null).length !== 1) {
+    throw Error(`TreeView can have only one root node.`);
+  }
+
+  return;
 };

@@ -1,8 +1,9 @@
 import "@testing-library/jest-dom/extend-expect";
 import React from "react";
-import TreeView, { TreeViewData } from "../TreeView";
+import TreeView from "../TreeView";
 import { render } from "@testing-library/react";
 import { flattenTree } from "../TreeView/utils";
+import { TreeViewData } from "../TreeView/types";
 
 const initialTreeNode = {
   name: "",

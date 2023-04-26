@@ -88,7 +88,7 @@ function MultiSelectCheckbox() {
                     isHalfSelected ? "some" : isSelected ? "all" : "none"
                   }
                 />
-                <span className="name">{element.name}</span>
+                <span className="name">{element.name}-{element.id}</span>
               </div>
             );
           }}

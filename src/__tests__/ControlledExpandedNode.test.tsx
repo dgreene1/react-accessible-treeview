@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
 import TreeView, { flattenTree, TreeViewData } from "..";
-import { NodeId } from "../TreeView";
+import { NodeId } from "../TreeView/types";
 
 const folder = {
   name: "",
