@@ -29,7 +29,7 @@ title: API Reference
 
 ## data
 
-Data can be either array of nodes or Map of nodes with unique and non-sequential ids.
+Data is a Map of nodes with unique ids and support of non-sequential ids.
 
 Nodes are objects with the following structure:
 
