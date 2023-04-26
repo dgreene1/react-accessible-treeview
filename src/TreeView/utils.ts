@@ -420,6 +420,11 @@ export const getTreeNode = (data: TreeViewData, id: NodeId): INode => {
   return treeNode;
 };
 
+const hasDuplicates = (ids: NodeId[]): boolean => {
+  const uniqueIds = Array.from(new Set(ids));
+  return ids.length !== uniqueIds.length;
+};
+
 export const validateTreeViewData = (data: TreeViewData): void => {
   /** Map structure by default can't contain same keys<NodeId>. When you attempt to
    *  set value for already existing key, Map will just override the value of existing record.
@@ -429,9 +434,14 @@ export const validateTreeViewData = (data: TreeViewData): void => {
     if (id === node.parent) {
       throw Error(`Node with id=${id} has parent reference to itself.`);
     }
+    if (hasDuplicates(node.children)) {
+      throw Error(`Node with id=${id} contains duplicate ids in its children.`);
+    }
   });
 
-  if (Array.from(data).filter(([, node]) => node.parent === null).length !== 1) {
+  if (
+    Array.from(data).filter(([, node]) => node.parent === null).length !== 1
+  ) {
     throw Error(`TreeView can have only one root node.`);
   }
 
