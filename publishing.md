@@ -8,7 +8,7 @@ After you have an authenticated session, it is recommended that you install np b
 
 After you have completed these two preliminary tasks and you are ready to publish a new package, you should executing the following steps:
 
-1. When on the master branch, run `npm i` and `npm build` to ensure the code is ready to be publish.
+1. When on the master branch, run `npm i` and `npm run build` to ensure the code is ready to be publish.
 2. Make sure your local working tree is clean.
 3. Run `np`. This will list any new file(s) it would not publish and ask if you are OK with that. Review and accept or reject.
 4. Next, it will ask what semver increase you would like to do (major, minor, patch). Choose accordingly.
