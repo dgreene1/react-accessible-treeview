@@ -17,8 +17,8 @@ export type INodeRefs = null | React.RefObject<{
   [key: NodeId]: INodeRef;
 }>;
 
-export type TreeViewData = Map<NodeId, INode>;
+export type TreeViewData = INode[];
 
 export type EventCallback = <T, E>(
-    event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
-  ) => void;
+  event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
+) => void;

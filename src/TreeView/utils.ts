@@ -252,7 +252,7 @@ export const getAccessibleRange = ({
   to: NodeId;
 }) => {
   const range: NodeId[] = [];
-  const max_loop = data.size;
+  const max_loop = data.length;
   let count = 0;
   let currentId: NodeId | null = from;
   range.push(from);
@@ -283,7 +283,7 @@ interface ITreeNode {
 
 export const flattenTree = function(tree: ITreeNode): TreeViewData {
   let internalCount = 0;
-  const flattenedTree: TreeViewData = new Map<NodeId, INode>();
+  const flattenedTree: TreeViewData = [];
 
   const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
     const node: INode = {
@@ -293,13 +293,13 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
       parent,
     };
 
-    if (flattenedTree.has(node.id)) {
+    if (flattenedTree.find((x) => x.id === node.id)) {
       throw Error(
         `Multiple TreeView nodes have the same ID (${node.id}). IDs must be unique.`
       );
     }
 
-    flattenedTree.set(node.id, node);
+    flattenedTree.push(node);
     internalCount += 1;
     if (!tree.children?.length) return;
     for (const child of tree.children) {
@@ -394,14 +394,9 @@ export const isBranchSelectedAndHasSelectedDescendants = (
 };
 
 export const getTreeParent = (data: TreeViewData): INode => {
-  let parentNode: INode | null = null;
-
-  for (const node of data.values()) {
-    if (node.parent === null) {
-      parentNode = node;
-      break;
-    }
-  }
+  const parentNode: INode | undefined = data.find(
+    (node) => node.parent === null
+  );
 
   if (!parentNode) {
     throw Error("TreeView data must contain parent node.");
@@ -411,7 +406,7 @@ export const getTreeParent = (data: TreeViewData): INode => {
 };
 
 export const getTreeNode = (data: TreeViewData, id: NodeId): INode => {
-  const treeNode = data.get(id);
+  const treeNode = data.find((node) => node.id === id);
 
   if (treeNode == null) {
     throw Error(`Node with id=${id} doesn't exist in the tree.`);
@@ -426,22 +421,22 @@ const hasDuplicates = (ids: NodeId[]): boolean => {
 };
 
 export const validateTreeViewData = (data: TreeViewData): void => {
-  /** Map structure by default can't contain same keys<NodeId>. When you attempt to
-   *  set value for already existing key, Map will just override the value of existing record.
-   *  This is why in validation helper we don't check on unique key<NodeId> */
+  if (hasDuplicates(data.map((node) => node.id))) {
+    throw Error(
+      `Multiple TreeView nodes have the same ID. IDs must be unique.`
+    );
+  }
 
-  data.forEach((node, id) => {
-    if (id === node.parent) {
-      throw Error(`Node with id=${id} has parent reference to itself.`);
+  data.forEach((node) => {
+    if (node.id === node.parent) {
+      throw Error(`Node with id=${node.id} has parent reference to itself.`);
     }
     if (hasDuplicates(node.children)) {
-      throw Error(`Node with id=${id} contains duplicate ids in its children.`);
+      throw Error(`Node with id=${node.id} contains duplicate ids in its children.`);
     }
   });
 
-  if (
-    Array.from(data).filter(([, node]) => node.parent === null).length !== 1
-  ) {
+  if (data.filter((node) => node.parent === null).length !== 1) {
     throw Error(`TreeView can have only one root node.`);
   }
 

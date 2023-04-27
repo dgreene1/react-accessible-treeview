@@ -50,13 +50,11 @@ const initialData = [
 
 function MultiSelectCheckboxAsync() {
   const loadedAlertElement = useRef(null);
-  const [data, setData] = useState(
-    new Map(initialData.map((node) => [node.id, node]))
-  );
+  const [data, setData] = useState(initialData);
   const [nodesAlreadyLoaded, setNodesAlreadyLoaded] = useState([]);
 
   const updateTreeData = (list, id, children) => {
-    const data = Array.from(list).map(([, node]) => {
+    const data = list.map((node) => {
       if (node.id === id) {
         node.children = children.map((el) => {
           return el.id;
@@ -64,9 +62,7 @@ function MultiSelectCheckboxAsync() {
       }
       return node;
     });
-    const concattedData = data.concat(children);
-    const newMapData = new Map(concattedData.map((node) => [node.id, node]));
-    return newMapData;
+    return data.concat(children);
   };
 
   const onLoadData = ({ element }) => {
@@ -79,16 +75,16 @@ function MultiSelectCheckboxAsync() {
         setData((value) =>
           updateTreeData(value, element.id, [
             {
-              name: `Child Node ${value.size}`,
+              name: `Child Node ${value.length}`,
               children: [],
-              id: value.size,
+              id: value.length,
               parent: element.id,
               isBranch: true,
             },
             {
               name: "Another child Node",
               children: [],
-              id: value.size + 1,
+              id: value.length + 1,
               parent: element.id,
             },
           ])

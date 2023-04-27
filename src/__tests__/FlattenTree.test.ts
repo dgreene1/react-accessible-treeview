@@ -33,7 +33,7 @@ describe("FlattenTree helper", () => {
       ],
     };
 
-    const expectedTreeList = [
+    const expectedTree = [
       { id: 0, name: "", parent: null, children: [1, 4, 12] },
       { id: 1, name: "Fruits", children: [2, 3], parent: 0 },
       { id: 2, name: "Avocados", children: [], parent: 1 },
@@ -48,9 +48,6 @@ describe("FlattenTree helper", () => {
       { id: 11, name: "Matcha 1", children: [], parent: 10 },
       { id: 12, name: "Vegetables", children: [], parent: 0 },
     ];
-    const expectedTree = new Map(
-      expectedTreeList.map((node) => [node.id, node])
-    );
 
     const expected = flattenTree(initialTreeNode);
     expect(expected).toEqual(expectedTree);
@@ -96,7 +93,7 @@ describe("FlattenTree helper", () => {
       ],
     };
 
-    const expectedTreeList = [
+    const expectedTree = [
       { id: 12, name: "", parent: null, children: [54, 888, 24] },
       { id: 54, name: "Fruits", children: [98, 789], parent: 12 },
       { id: 98, name: "Avocados", children: [], parent: 54 },
@@ -111,9 +108,6 @@ describe("FlattenTree helper", () => {
       { id: 2, name: "Matcha 1", children: [], parent: 53 },
       { id: 24, name: "Vegetables", children: [], parent: 12 },
     ];
-    const expectedTree = new Map(
-      expectedTreeList.map((node) => [node.id, node])
-    );
 
     const expected = flattenTree(initialTreeNode);
     expect(expected).toEqual(expectedTree);
@@ -159,7 +153,7 @@ describe("FlattenTree helper", () => {
       ],
     };
 
-    const expectedTreeList = [
+    const expectedTree = [
       { id: "12", name: "", parent: null, children: ["54", "888", "24"] },
       { id: "54", name: "Fruits", children: ["98", "789"], parent: "12" },
       { id: "98", name: "Avocados", children: [], parent: "54" },
@@ -174,9 +168,6 @@ describe("FlattenTree helper", () => {
       { id: "2", name: "Matcha 1", children: [], parent: "53" },
       { id: "24", name: "Vegetables", children: [], parent: "12" },
     ];
-    const expectedTree = new Map(
-      expectedTreeList.map((node) => [node.id, node])
-    );
 
     const expected = flattenTree(initialTreeNode);
     expect(expected).toEqual(expectedTree);

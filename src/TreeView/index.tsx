@@ -1,8 +1,20 @@
 import cx from "classnames";
 import PropTypes from "prop-types";
 import React, { useEffect, useReducer, useRef } from "react";
-import { ITreeViewState, treeReducer, treeTypes, TreeViewAction } from "./reducer";
-import { EventCallback, INode, INodeRef, INodeRefs, NodeId, TreeViewData } from "./types";
+import {
+  ITreeViewState,
+  treeReducer,
+  treeTypes,
+  TreeViewAction,
+} from "./reducer";
+import {
+  EventCallback,
+  INode,
+  INodeRef,
+  INodeRefs,
+  NodeId,
+  TreeViewData,
+} from "./types";
 import {
   composeHandlers,
   difference,
@@ -103,7 +115,8 @@ const useTree = ({
     if (onSelect != null && onSelect !== noop) {
       for (const toggledId of toggledIds) {
         const isBranch =
-          isBranchNode(data, toggledId) || !!data.get(tabbableId)?.isBranch;
+          isBranchNode(data, toggledId) ||
+          !!getTreeNode(data, tabbableId)?.isBranch;
         onSelect({
           element: getTreeNode(data, toggledId),
           isBranch: isBranch,
@@ -990,10 +1003,8 @@ const handleKeyDown = ({
   if (event.ctrlKey) {
     if (event.key === "a") {
       event.preventDefault();
-      const dataWithoutRoot = Array.from(data)
-        .map(([, x]) => x)
-        .filter((x) => x.id !== 0);
-      const ids = Object.values(dataWithoutRoot)
+      const dataWithoutRoot = data.filter((x) => x.parent !== null);
+      const ids = dataWithoutRoot
         .map((x) => x.id)
         .filter((id) => !disabledIds.has(id));
       dispatch({
@@ -1262,7 +1273,7 @@ const handleKeyDown = ({
 
 TreeView.propTypes = {
   /** Tree data*/
-  data: PropTypes.instanceOf(Map<NodeId, INode>).isRequired,
+  data: PropTypes.array.isRequired,
 
   /** Function called when a node changes its selected state */
   onSelect: PropTypes.func,

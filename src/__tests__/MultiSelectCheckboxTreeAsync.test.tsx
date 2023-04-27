@@ -5,10 +5,9 @@ import TreeView, { INode, ITreeViewProps } from "..";
 import { NodeId, TreeViewData } from "../TreeView/types";
 
 describe("Async MultiSelectCheckboxTree", () => {
-  let treeData: INode[] = [];
   let initialData: TreeViewData;
   beforeEach(() => {
-    treeData = [
+    initialData = [
       {
         name: "",
         id: 0,
@@ -48,7 +47,6 @@ describe("Async MultiSelectCheckboxTree", () => {
         parent: 2,
       },
     ];
-    initialData = new Map(treeData.map((node, index) => [index, node]));
   });
 
   function AsyncMultiSelectCheckbox() {
@@ -59,16 +57,14 @@ describe("Async MultiSelectCheckboxTree", () => {
       id: NodeId,
       children: INode[]
     ) => {
-      const data = Array.from(list).map(([, node]) => {
+      const data = list.map((node) => {
         if (node.id === id) {
           node.children = children.map((el) => el.id);
         }
         return node;
       });
-      const newMapData = new Map();
-      data.concat(children).forEach((node) => newMapData.set(node.id, node));
 
-      return newMapData;
+      return data.concat(children);
     };
 
     const onLoadData: ITreeViewProps["onLoadData"] = ({ element }) => {
@@ -83,14 +79,14 @@ describe("Async MultiSelectCheckboxTree", () => {
               {
                 name: "Child Node",
                 children: [],
-                id: value.size,
+                id: value.length,
                 parent: element.id,
                 isBranch: true,
               },
               {
                 name: "Another Child Node",
                 children: [],
-                id: value.size + 1,
+                id: value.length + 1,
                 parent: element.id,
               },
             ])
