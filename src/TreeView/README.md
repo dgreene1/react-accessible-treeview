@@ -36,15 +36,15 @@ A react component that implements the treeview pattern as described by the [WAI-
 
 An array of nodes. Nodes are objects with the following structure:
 
-| Property   | Type        | Default  | Description                                                                                      |
-| ---------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `id`       | `number`    | required | A nonnegative interger that uniquely identifies the node                                         |
-| `name`     | `string`    | required | Used to match on key press                                                                       |
-| `children` | `array[id]` | required | An array with the ids of the children nodes.                                                     |
-| `parent`   | `id`        | required | The parent of the node. `null` for the root node                                                 |
-| `isBranch` | `boolean`   | optional | Used to indicated whether a node is branch to be able load async data onExpand, default is false |
+| Property   | Type                 | Default  | Description                                                                                      |
+| ---------- | -------------------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `id`       | `number` or `string` | required | A nonnegative integer or string that uniquely identifies the node                                |
+| `name`     | `string`             | required | Used to match on key press                                                                       |
+| `children` | `array[id]`          | required | An array with the ids of the children nodes.                                                     |
+| `parent`   | `id`                 | required | The parent of the node. `null` for the root node                                                 |
+| `isBranch` | `boolean`            | optional | Used to indicated whether a node is branch to be able load async data onExpand, default is false |
 
-The first item of the array represents the root node and won't be displayed.
+The item with `parent:null` of the array represents the root node and won't be displayed.
 
 Example:
 
@@ -65,7 +65,9 @@ const data = [
 ];
 ```
 
-The array can also be generated from a nested object using the <code>flattenTree</code> helper (see the examples below).
+The array can also be generated from a nested object using the <code>flattenTree</code> helper (see the examples below). 
+
+Data supports non-sequential ids provided by user.
 
 <br/> <br/>
 

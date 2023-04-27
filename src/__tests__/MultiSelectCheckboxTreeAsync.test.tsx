@@ -2,9 +2,10 @@ import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React, { useState } from "react";
 import TreeView, { INode, ITreeViewProps } from "..";
+import { NodeId, TreeViewData } from "../TreeView/types";
 
 describe("Async MultiSelectCheckboxTree", () => {
-  let initialData: INode[] = [];
+  let initialData: TreeViewData;
   beforeEach(() => {
     initialData = [
       {
@@ -47,18 +48,22 @@ describe("Async MultiSelectCheckboxTree", () => {
       },
     ];
   });
-  function AsyncMultiSelectCheckbox() {
-    const [data, setData] = useState<INode[]>(initialData);
 
-    const updateTreeData = (list: INode[], id: number, children: INode[]) => {
+  function AsyncMultiSelectCheckbox() {
+    const [data, setData] = useState<TreeViewData>(initialData);
+
+    const updateTreeData = (
+      list: TreeViewData,
+      id: NodeId,
+      children: INode[]
+    ) => {
       const data = list.map((node) => {
         if (node.id === id) {
-          node.children = children.map((el) => {
-            return el.id;
-          });
+          node.children = children.map((el) => el.id);
         }
         return node;
       });
+
       return data.concat(children);
     };
 

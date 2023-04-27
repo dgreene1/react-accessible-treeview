@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { DiCss3, DiJavascript, DiNpm } from "react-icons/di";
 import { FaList, FaRegFolder, FaRegFolderOpen } from "react-icons/fa";
 import TreeView, { flattenTree } from "react-accessible-treeview";
