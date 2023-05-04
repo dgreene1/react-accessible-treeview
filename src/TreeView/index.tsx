@@ -8,20 +8,18 @@ import {
   TreeViewAction,
 } from "./reducer";
 import {
-  EventCallback,
+  ClickActions,
   INode,
-  INodeRef,
   INodeRefs,
+  INodeRendererProps,
+  NodeAction,
   NodeId,
   TreeViewData,
 } from "./types";
 import {
-  composeHandlers,
   difference,
   focusRef,
   getAccessibleRange,
-  getAriaChecked,
-  getAriaSelected,
   getDescendants,
   getLastAccessible,
   getNextAccessible,
@@ -39,17 +37,15 @@ import {
   getTreeParent,
   getTreeNode,
   validateTreeViewData,
+  noop,
 } from "./utils";
-
-const baseClassNames = {
-  root: "tree",
-  node: "tree-node",
-  branch: "tree-node__branch",
-  branchWrapper: "tree-branch-wrapper",
-  leafListItem: "tree-leaf-list-item",
-  leaf: "tree-node__leaf",
-  nodeGroup: "tree-node-group",
-} as const;
+import { Node } from "./node";
+import {
+  baseClassNames,
+  clickActions,
+  CLICK_ACTIONS,
+  NODE_ACTIONS,
+} from "./constants";
 
 interface IUseTreeProps {
   data: TreeViewData;
@@ -380,77 +376,6 @@ const useTree = ({
   return [state, dispatch] as const;
 };
 
-const clickActions = {
-  select: "SELECT",
-  focus: "FOCUS",
-  exclusiveSelect: "EXCLUSIVE_SELECT",
-} as const;
-
-export const CLICK_ACTIONS = Object.freeze(Object.values(clickActions));
-
-type ValueOf<T> = T[keyof T];
-export type ClickActions = ValueOf<typeof clickActions>;
-
-type ActionableNode =
-  | {
-      "aria-selected": boolean | undefined;
-    }
-  | {
-      "aria-checked": boolean | undefined | "mixed";
-    };
-
-export type LeafProps = ActionableNode & {
-  role: string;
-  tabIndex: number;
-  onClick: EventCallback;
-  ref: <T extends INodeRef>(x: T | null) => void;
-  className: string;
-  "aria-setsize": number;
-  "aria-posinset": number;
-  "aria-level": number;
-  "aria-selected": boolean;
-  disabled: boolean;
-  "aria-disabled": boolean;
-};
-
-export interface IBranchProps {
-  onClick: EventCallback;
-  className: string;
-}
-
-export interface INodeRendererProps {
-  /** The object that represents the rendered node */
-  element: INode;
-  /** A function which gives back the props to pass to the node */
-  getNodeProps: (args?: {
-    onClick?: EventCallback;
-  }) => IBranchProps | LeafProps;
-  /** Whether the rendered node is a branch node */
-  isBranch: boolean;
-  /** Whether the rendered node is selected */
-  isSelected: boolean;
-  /** If the node is a branch node, whether it is half-selected, else undefined */
-  isHalfSelected: boolean;
-  /** If the node is a branch node, whether it is expanded, else undefined */
-  isExpanded: boolean;
-  /** Whether the rendered node is disabled */
-  isDisabled: boolean;
-  /** A positive integer that corresponds to the aria-level attribute */
-  level: number;
-  /** A positive integer that corresponds to the aria-setsize attribute */
-  setsize: number;
-  /** A positive integer that corresponds to the aria-posinset attribute */
-  posinset: number;
-  /** Function to assign to the onClick event handler of the element(s) that will toggle the selected state */
-  handleSelect: EventCallback;
-  /** Function to assign to the onClick event handler of the element(s) that will toggle the expanded state */
-  handleExpand: EventCallback;
-  /** Function to dispatch actions */
-  dispatch: React.Dispatch<TreeViewAction>;
-  /** state of the treeview */
-  treeState: ITreeViewState;
-}
-
 export interface ITreeViewOnSelectProps {
   element: INode;
   isBranch: boolean;
@@ -478,15 +403,6 @@ export interface ITreeViewOnLoadDataProps {
   isDisabled: boolean;
   treeState: ITreeViewState;
 }
-
-const nodeActions = {
-  check: "check",
-  select: "select",
-} as const;
-
-export const NODE_ACTIONS = Object.freeze(Object.values(nodeActions));
-
-export type NodeAction = ValueOf<typeof nodeActions>;
 
 export interface ITreeViewProps {
   /** Tree data*/
@@ -535,8 +451,6 @@ export interface ITreeViewProps {
   }) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {};
 const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   function TreeView(
     {
@@ -651,323 +565,6 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       </ul>
     );
   }
-);
-
-interface INodeProps {
-  element: INode;
-  dispatch: React.Dispatch<TreeViewAction>;
-  data: TreeViewData;
-  nodeAction: NodeAction;
-  selectedIds: Set<NodeId>;
-  tabbableId: NodeId;
-  isFocused: boolean;
-  expandedIds: Set<NodeId>;
-  disabledIds: Set<NodeId>;
-  halfSelectedIds: Set<NodeId>;
-  lastUserSelect: NodeId;
-  nodeRefs: INodeRefs;
-  leafRefs: INodeRefs;
-  baseClassNames: typeof baseClassNames;
-  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
-  setsize: number;
-  posinset: number;
-  level: number;
-  propagateCollapse: boolean;
-  propagateSelect: boolean;
-  multiSelect: boolean;
-  togglableSelect: boolean;
-  clickAction?: ClickActions;
-  state: ITreeViewState;
-  propagateSelectUpwards: boolean;
-}
-
-const Node = (props: INodeProps) => {
-  const {
-    element,
-    dispatch,
-    data,
-    selectedIds,
-    tabbableId,
-    isFocused,
-    expandedIds,
-    disabledIds,
-    halfSelectedIds,
-    lastUserSelect,
-    nodeRefs,
-    leafRefs,
-    baseClassNames,
-    nodeRenderer,
-    nodeAction,
-    setsize,
-    posinset,
-    level,
-    propagateCollapse,
-    propagateSelect,
-    multiSelect,
-    togglableSelect,
-    clickAction,
-    state,
-  } = props;
-
-  const handleExpand: EventCallback = (event) => {
-    if (event.ctrlKey || event.altKey || event.shiftKey) return;
-    if (expandedIds.has(element.id) && propagateCollapse) {
-      const ids: NodeId[] = [
-        element.id,
-        ...getDescendants(data, element.id, new Set<NodeId>()),
-      ];
-      dispatch({
-        type: treeTypes.collapseMany,
-        ids,
-        lastInteractedWith: element.id,
-      });
-    } else {
-      dispatch({
-        type: treeTypes.toggle,
-        id: element.id,
-        lastInteractedWith: element.id,
-      });
-    }
-  };
-
-  const handleFocus = (): void =>
-    dispatch({
-      type: treeTypes.focus,
-      id: element.id,
-      lastInteractedWith: element.id,
-    });
-
-  const handleSelect: EventCallback = (event) => {
-    if (event.shiftKey) {
-      let ids = getAccessibleRange({
-        data,
-        expandedIds,
-        from: lastUserSelect,
-        to: element.id,
-      }).filter((id) => !disabledIds.has(id));
-      ids = propagateSelect ? propagatedIds(data, ids, disabledIds) : ids;
-      dispatch({
-        type: treeTypes.exclusiveChangeSelectMany,
-        select: true,
-        multiSelect,
-        ids,
-        lastInteractedWith: element.id,
-      });
-    } else if (event.ctrlKey || clickAction === clickActions.select) {
-      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
-        data,
-        element.id,
-        selectedIds
-      );
-
-      //Select
-      dispatch({
-        type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants
-            ? treeTypes.halfSelect
-            : treeTypes.toggleSelect
-          : treeTypes.select,
-        id: element.id,
-        multiSelect,
-        lastInteractedWith: element.id,
-      });
-      propagateSelect &&
-        !disabledIds.has(element.id) &&
-        dispatch({
-          type: treeTypes.changeSelectMany,
-          ids: propagatedIds(data, [element.id], disabledIds),
-          select: togglableSelect ? !selectedIds.has(element.id) : true,
-          multiSelect,
-          lastInteractedWith: element.id,
-        });
-    } else if (clickAction === clickActions.exclusiveSelect) {
-      dispatch({
-        type: togglableSelect ? treeTypes.toggleSelect : treeTypes.select,
-        id: element.id,
-        multiSelect: false,
-        lastInteractedWith: element.id,
-      });
-    } else if (clickAction === clickActions.focus) {
-      dispatch({
-        type: treeTypes.focus,
-        id: element.id,
-        lastInteractedWith: element.id,
-      });
-    }
-  };
-
-  const getClasses = (className: string) => {
-    return cx(className, {
-      [`${className}--expanded`]: expandedIds.has(element.id),
-      [`${className}--selected`]: selectedIds.has(element.id),
-      [`${className}--focused`]: tabbableId === element.id && isFocused,
-    });
-  };
-  const ariaActionProp =
-    nodeAction === "select"
-      ? {
-          "aria-selected": getAriaSelected({
-            isSelected: selectedIds.has(element.id),
-            isDisabled: disabledIds.has(element.id),
-            multiSelect,
-          }),
-        }
-      : {
-          "aria-checked": getAriaChecked({
-            isSelected: selectedIds.has(element.id),
-            isDisabled: disabledIds.has(element.id),
-            isHalfSelected: halfSelectedIds.has(element.id),
-            multiSelect,
-          }),
-        };
-  const getLeafProps = (args: { onClick?: EventCallback } = {}) => {
-    const { onClick } = args;
-    return {
-      role: "treeitem",
-      tabIndex: tabbableId === element.id ? 0 : -1,
-      onClick:
-        onClick == null
-          ? composeHandlers(handleSelect, handleFocus)
-          : composeHandlers(onClick, handleFocus),
-      ref: (x: INodeRef) => {
-        if (nodeRefs?.current != null && leafRefs?.current != null) {
-          nodeRefs.current[element.id] = x;
-          leafRefs.current[element.id] = x;
-        }
-      },
-      className: cx(getClasses(baseClassNames.node), baseClassNames.leaf),
-      "aria-setsize": setsize,
-      "aria-posinset": posinset,
-      "aria-level": level,
-      disabled: disabledIds.has(element.id),
-      "aria-disabled": disabledIds.has(element.id),
-      ...ariaActionProp,
-    };
-  };
-
-  const getBranchLeafProps = (args: { onClick?: EventCallback } = {}) => {
-    const { onClick } = args;
-    return {
-      onClick:
-        onClick == null
-          ? composeHandlers(handleSelect, handleExpand, handleFocus)
-          : composeHandlers(onClick, handleFocus),
-      className: cx(getClasses(baseClassNames.node), baseClassNames.branch),
-      ref: (x: INodeRef) => {
-        if (leafRefs?.current != null) {
-          leafRefs.current[element.id] = x;
-        }
-      },
-    };
-  };
-
-  return isBranchNode(data, element.id) || element.isBranch ? (
-    <li
-      role="treeitem"
-      aria-expanded={expandedIds.has(element.id)}
-      aria-setsize={setsize}
-      aria-posinset={posinset}
-      aria-level={level}
-      aria-disabled={disabledIds.has(element.id)}
-      tabIndex={tabbableId === element.id ? 0 : -1}
-      ref={(x) => {
-        if (nodeRefs?.current != null && x != null) {
-          nodeRefs.current[element.id] = x;
-        }
-      }}
-      className={baseClassNames.branchWrapper}
-      {...ariaActionProp}
-    >
-      <>
-        {nodeRenderer({
-          element,
-          isBranch: true,
-          isSelected: selectedIds.has(element.id),
-          isHalfSelected: halfSelectedIds.has(element.id),
-          isExpanded: expandedIds.has(element.id),
-          isDisabled: disabledIds.has(element.id),
-          dispatch,
-          getNodeProps: getBranchLeafProps,
-          setsize,
-          posinset,
-          level,
-          handleSelect,
-          handleExpand,
-          treeState: state,
-        })}
-        <NodeGroup
-          getClasses={getClasses}
-          {...removeIrrelevantGroupProps(props)}
-        />
-      </>
-    </li>
-  ) : (
-    <li role="none" className={getClasses(baseClassNames.leafListItem)}>
-      {nodeRenderer({
-        element,
-        isBranch: false,
-        isSelected: selectedIds.has(element.id),
-        isHalfSelected: false,
-        isExpanded: false,
-        isDisabled: disabledIds.has(element.id),
-        dispatch,
-        getNodeProps: getLeafProps,
-        setsize,
-        posinset,
-        level,
-        handleSelect,
-        handleExpand: noop,
-        treeState: state,
-      })}
-    </li>
-  );
-};
-
-interface INodeGroupProps extends Omit<INodeProps, "setsize" | "posinset"> {
-  getClasses: (className: string) => string;
-  /** don't send this. The NodeGroup render function, determines it for you */
-  setsize?: undefined;
-  /** don't send this. The NodeGroup render function, determines it for you */
-  posinset?: undefined;
-}
-
-/**
- * It's convenient to pass props down to the child, but we don't want to pass everything since it would create incorrect values for setsize and posinset
- */
-const removeIrrelevantGroupProps = (
-  nodeProps: INodeProps
-): Omit<INodeGroupProps, "getClasses"> => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { setsize, posinset, ...rest } = nodeProps;
-  return rest;
-};
-
-const NodeGroup = ({
-  data,
-  element,
-  expandedIds,
-  getClasses,
-  baseClassNames,
-  level,
-  ...rest
-}: INodeGroupProps) => (
-  <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
-    {expandedIds.has(element.id) &&
-      element.children.length > 0 &&
-      element.children.map((x, index) => (
-        <Node
-          data={data}
-          expandedIds={expandedIds}
-          baseClassNames={baseClassNames}
-          key={`${x}-${typeof x}`}
-          element={getTreeNode(data, x)}
-          setsize={element.children.length}
-          posinset={index + 1}
-          level={level + 1}
-          {...rest}
-        />
-      ))}
-  </ul>
 );
 
 const handleKeyDown = ({
