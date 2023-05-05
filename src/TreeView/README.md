@@ -15,6 +15,7 @@ A react component that implements the treeview pattern as described by the [WAI-
 | `data`                   | `array[node]` | `required`    | Tree data                                                                                                                                                                 |
 | `nodeRenderer`           | `func`        | `required`    | Render prop for the node (see below for more details)                                                                                                                     |
 | `onSelect`               | `func`        | `noop`        | Function called when a node changes its selected state                                                                                                                    |
+| `onNodeSelect`           | `func`        | `noop`        | Function called when a node was manually selected/deselected                                                                                                              |
 | `onExpand`               | `func`        | `noop`        | Function called when a node changes its expanded state                                                                                                                    |
 | `className`              | `string`      | `""`          | className to add to the outermost dom element, al `ul` with `role = "tree"`                                                                                               |
 | `multiSelect`            | `bool`        | `false`       | Allows multiple nodes to be selected                                                                                                                                      |
@@ -65,7 +66,7 @@ const data = [
 ];
 ```
 
-The array can also be generated from a nested object using the <code>flattenTree</code> helper (see the examples below). 
+The array can also be generated from a nested object using the <code>flattenTree</code> helper (see the examples below).
 
 Data supports non-sequential ids provided by user.
 
@@ -97,6 +98,11 @@ Data supports non-sequential ids provided by user.
 ### onSelect
 
 - _Arguments_: `onSelect({element, isBranch, isExpanded, isSelected, isHalfSelected, isDisabled, treeState })`
+  Note: the function uses the state _after_ the selection.
+
+## onNodeSelect
+
+- _Arguments_: `onNodeSelect({element, isBranch, isSelected, treeState })`
   Note: the function uses the state _after_ the selection.
 
 ### onExpand
