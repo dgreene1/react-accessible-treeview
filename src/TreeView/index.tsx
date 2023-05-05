@@ -57,6 +57,7 @@ interface IUseTreeProps {
   nodeRefs: INodeRefs;
   leafRefs: INodeRefs;
   onSelect?: (props: ITreeViewOnSelectProps) => void;
+  onNodeSelect?: (props: ITreeViewOnNodeSelectProps) => void;
   onExpand?: (props: ITreeViewOnExpandProps) => void;
   multiSelect?: boolean;
   propagateSelectUpwards?: boolean;
@@ -76,6 +77,7 @@ const useTree = ({
   nodeRefs,
   leafRefs,
   onSelect,
+  onNodeSelect,
   onExpand,
   onLoadData,
   togglableSelect,
@@ -92,6 +94,7 @@ const useTree = ({
     halfSelectedIds: new Set<NodeId>(),
     lastUserSelect: treeParentNode.children[0],
     lastInteractedWith: null,
+    lastManuallyToggled: null,
     disabledIds: new Set<NodeId>(defaultDisabledIds),
   });
 
@@ -103,6 +106,7 @@ const useTree = ({
     halfSelectedIds,
     lastAction,
     lastInteractedWith,
+    lastManuallyToggled,
   } = state;
   const prevSelectedIds = usePrevious(selectedIds) || new Set<number>();
   const toggledIds = symmetricDifference(selectedIds, prevSelectedIds);
@@ -134,6 +138,25 @@ const useTree = ({
     onSelect,
     state,
   ]);
+
+  useEffect(() => {
+    if (onNodeSelect != null && onNodeSelect !== noop) {
+      const diffDeselectedIds = difference(prevSelectedIds, selectedIds);
+      const diffSelectedIds = difference(selectedIds, prevSelectedIds);
+
+      if (
+        lastManuallyToggled != null &&
+        (diffSelectedIds.size || diffDeselectedIds.size)
+      ) {
+        onNodeSelect({
+          element: getTreeNode(data, lastManuallyToggled),
+          isSelected: selectedIds.has(lastManuallyToggled),
+          isBranch: isBranchNode(data, lastManuallyToggled),
+          treeState: state,
+        });
+      }
+    }
+  }, [lastManuallyToggled, selectedIds]);
 
   const prevExpandedIds = usePrevious(expandedIds) || new Set<number>();
   useEffect(() => {
@@ -340,6 +363,7 @@ const useTree = ({
             keepFocus: true,
             NotUserAction: true,
             lastInteractedWith,
+            lastManuallyToggled,
           });
       }
     }
@@ -386,6 +410,13 @@ export interface ITreeViewOnSelectProps {
   treeState: ITreeViewState;
 }
 
+export interface ITreeViewOnNodeSelectProps {
+  element: INode;
+  isSelected: boolean;
+  isBranch: boolean;
+  treeState?: ITreeViewState;
+}
+
 export interface ITreeViewOnExpandProps {
   element: INode;
   isExpanded: boolean;
@@ -409,6 +440,8 @@ export interface ITreeViewProps {
   data: TreeViewData;
   /** Function called when a node changes its selected state */
   onSelect?: (props: ITreeViewOnSelectProps) => void;
+  /** Function called when a single node is manually selected/unselected. */
+  onNodeSelect?: (props: ITreeViewOnNodeSelectProps) => void;
   /** Function called when a node changes its expanded state */
   onExpand?: (props: ITreeViewOnExpandProps) => void;
   /** Function called to load data asynchronously on expand */
@@ -458,6 +491,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       selectedIds,
       nodeRenderer,
       onSelect = noop,
+      onNodeSelect = noop,
       onExpand = noop,
       onLoadData,
       className = "",
@@ -491,6 +525,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       nodeRefs,
       leafRefs,
       onSelect,
+      onNodeSelect,
       onExpand,
       onLoadData,
       togglableSelect,
@@ -656,6 +691,7 @@ const handleKeyDown = ({
             select: true,
             multiSelect,
             lastInteractedWith: previous,
+            lastManuallyToggled: previous,
           });
           dispatch({
             type: treeTypes.focus,
@@ -677,6 +713,7 @@ const handleKeyDown = ({
             multiSelect,
             select: true,
             lastInteractedWith: next,
+            lastManuallyToggled: next,
           });
           dispatch({
             type: treeTypes.focus,
@@ -829,6 +866,7 @@ const handleKeyDown = ({
         id: id,
         multiSelect,
         lastInteractedWith: id,
+        lastManuallyToggled: id,
       });
       propagateSelect &&
         !disabledIds.has(element.id) &&
@@ -838,6 +876,7 @@ const handleKeyDown = ({
           select: togglableSelect ? !selectedIds.has(id) : true,
           multiSelect,
           lastInteractedWith: id,
+          lastManuallyToggled: id,
         });
       expandOnKeyboardSelect &&
         dispatch({ type: treeTypes.toggle, id, lastInteractedWith: id });
@@ -874,6 +913,9 @@ TreeView.propTypes = {
 
   /** Function called when a node changes its selected state */
   onSelect: PropTypes.func,
+
+  /** Function called when a single node is manually selected/unselected. */
+  onNodeSelect: PropTypes.func,
 
   /** Function called when a node changes its expanded state */
   onExpand: PropTypes.func,

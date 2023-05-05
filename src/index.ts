@@ -1,6 +1,7 @@
 import TreeView, {
   ITreeViewOnExpandProps,
   ITreeViewOnSelectProps,
+  ITreeViewOnNodeSelectProps,
   ITreeViewProps,
   ITreeViewOnLoadDataProps,
 } from "./TreeView";
@@ -23,6 +24,7 @@ export {
   INode,
   TreeViewData,
   ITreeViewOnSelectProps,
+  ITreeViewOnNodeSelectProps,
   CLICK_ACTIONS,
   ITreeViewOnExpandProps,
   ITreeViewOnLoadDataProps,

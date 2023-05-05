@@ -145,6 +145,7 @@ export const Node = (props: INodeProps) => {
         multiSelect,
         ids,
         lastInteractedWith: element.id,
+        lastManuallyToggled: element.id,
       });
     } else if (event.ctrlKey || clickAction === clickActions.select) {
       const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
@@ -163,6 +164,7 @@ export const Node = (props: INodeProps) => {
         id: element.id,
         multiSelect,
         lastInteractedWith: element.id,
+        lastManuallyToggled: element.id,
       });
       propagateSelect &&
         !disabledIds.has(element.id) &&
@@ -172,6 +174,7 @@ export const Node = (props: INodeProps) => {
           select: togglableSelect ? !selectedIds.has(element.id) : true,
           multiSelect,
           lastInteractedWith: element.id,
+          lastManuallyToggled: element.id,
         });
     } else if (clickAction === clickActions.exclusiveSelect) {
       dispatch({
@@ -179,6 +182,7 @@ export const Node = (props: INodeProps) => {
         id: element.id,
         multiSelect: false,
         lastInteractedWith: element.id,
+        lastManuallyToggled: element.id,
       });
     } else if (clickAction === clickActions.focus) {
       dispatch({

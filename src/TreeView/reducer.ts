@@ -37,6 +37,7 @@ export type TreeViewAction =
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
     }
   | {
       type: "DESELECT";
@@ -46,6 +47,7 @@ export type TreeViewAction =
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
     }
   | { type: "TOGGLE"; id: NodeId; lastInteractedWith?: NodeId | null }
   | {
@@ -54,6 +56,7 @@ export type TreeViewAction =
       multiSelect?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
     }
   | {
       type: "SELECT_MANY";
@@ -61,6 +64,7 @@ export type TreeViewAction =
       select?: boolean;
       multiSelect?: boolean;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
     }
   | { type: "EXCLUSIVE_SELECT_MANY" }
   | {
@@ -69,6 +73,7 @@ export type TreeViewAction =
       select?: boolean;
       multiSelect?: boolean;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
     }
   | { type: "FOCUS"; id: NodeId; lastInteractedWith?: NodeId | null }
   | { type: "BLUR" }
@@ -92,6 +97,8 @@ export interface ITreeViewState {
   lastUserSelect: NodeId;
   /** Last node interacted with */
   lastInteractedWith?: NodeId | null;
+  /** Last node manually selected/deselected */
+  lastManuallyToggled?: NodeId | null;
   lastAction?: TreeViewAction["type"];
 }
 
@@ -197,6 +204,7 @@ export const treeReducer = (
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
+        lastManuallyToggled: action.lastManuallyToggled,
       };
     }
     case treeTypes.deselect: {
@@ -220,6 +228,7 @@ export const treeReducer = (
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
+        lastManuallyToggled: action.lastManuallyToggled,
       };
     }
     case treeTypes.toggleSelect: {
@@ -246,6 +255,7 @@ export const treeReducer = (
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
+        lastManuallyToggled: action.lastManuallyToggled,
       };
     }
     case treeTypes.changeSelectMany: {
@@ -264,6 +274,7 @@ export const treeReducer = (
           halfSelectedIds,
           lastAction: action.type,
           lastInteractedWith: action.lastInteractedWith,
+          lastManuallyToggled: action.lastManuallyToggled,
         };
       }
       return state;
@@ -284,6 +295,7 @@ export const treeReducer = (
           halfSelectedIds,
           lastAction: action.type,
           lastInteractedWith: action.lastInteractedWith,
+          lastManuallyToggled: action.lastManuallyToggled,
         };
       }
       return state;
