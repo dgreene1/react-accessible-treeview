@@ -287,6 +287,7 @@ export const flattenTree = function(tree: ITreeNode): TreeViewData {
 
   const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
     const node: INode = {
+      ...tree,
       id: tree.id || internalCount,
       name: tree.name,
       children: [],
