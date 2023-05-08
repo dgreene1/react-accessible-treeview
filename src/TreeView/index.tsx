@@ -38,6 +38,7 @@ import {
   getTreeNode,
   validateTreeViewData,
   noop,
+  getAncestors,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -139,24 +140,53 @@ const useTree = ({
     state,
   ]);
 
+  const prevHalfSelected = usePrevious(halfSelectedIds) || new Set<number>();
   useEffect(() => {
     if (onNodeSelect != null && onNodeSelect !== noop) {
-      const diffDeselectedIds = difference(prevSelectedIds, selectedIds);
-      const diffSelectedIds = difference(selectedIds, prevSelectedIds);
+      const isSelectedIdsChanged =
+        difference(prevSelectedIds, selectedIds).size ||
+        difference(selectedIds, prevSelectedIds).size;
+      const isHalfSelectedIdsChanged =
+        difference(prevHalfSelected, halfSelectedIds).size ||
+        difference(halfSelectedIds, prevHalfSelected).size;
 
-      if (
-        lastManuallyToggled != null &&
-        (diffSelectedIds.size || diffDeselectedIds.size)
-      ) {
-        onNodeSelect({
+      if (lastManuallyToggled != null) {
+        const onNodeSelectProps = {
           element: getTreeNode(data, lastManuallyToggled),
           isSelected: selectedIds.has(lastManuallyToggled),
           isBranch: isBranchNode(data, lastManuallyToggled),
           treeState: state,
-        });
+        };
+        if (
+          propagateSelectUpwards &&
+          getAncestors(data, lastManuallyToggled, disabledIds).length
+        ) {
+          const { some } = propagateSelectChange(
+            data,
+            new Set([lastManuallyToggled]),
+            selectedIds,
+            disabledIds,
+            halfSelectedIds,
+            multiSelect
+          );
+          if (isHalfSelectedIdsChanged) {
+            //when node click triggers propagation and both halfSelectedIds and selectedIds changed
+            onNodeSelect(onNodeSelectProps);
+          } else if (
+            some.size &&
+            !Array.from(some).find((i) => !halfSelectedIds.has(i)) &&
+            isSelectedIdsChanged
+          ) {
+            //when node click doesn't trigger propagation, but selectedIds changed
+            onNodeSelect(onNodeSelectProps);
+          }
+        } else if (isSelectedIdsChanged) {
+          //when node click doesn't trigger propagation
+          onNodeSelect(onNodeSelectProps);
+        }
       }
     }
-  }, [lastManuallyToggled, selectedIds]);
+  }, [lastManuallyToggled, selectedIds, halfSelectedIds]);
 
   const prevExpandedIds = usePrevious(expandedIds) || new Set<number>();
   useEffect(() => {
