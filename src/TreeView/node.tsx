@@ -10,7 +10,6 @@ import {
   INodeRendererProps,
   NodeAction,
   NodeId,
-  TreeViewData,
 } from "./types";
 import {
   composeHandlers,
@@ -29,7 +28,7 @@ import { baseClassNames, clickActions } from "./constants";
 export interface INodeProps {
   element: INode;
   dispatch: React.Dispatch<TreeViewAction>;
-  data: TreeViewData;
+  data: INode[];
   nodeAction: NodeAction;
   selectedIds: Set<NodeId>;
   tabbableId: NodeId;

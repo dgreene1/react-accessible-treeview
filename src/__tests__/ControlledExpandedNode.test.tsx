@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
-import TreeView, { flattenTree, TreeViewData } from "..";
-import { NodeId } from "../TreeView/types";
+import TreeView, { flattenTree } from "..";
+import { INode, NodeId } from "../TreeView/types";
 
 const folder = {
   name: "",
@@ -99,7 +99,7 @@ const dataWithIds = flattenTree(folderWithIds);
 
 interface ControlledExpandedProps {
   expandedIds?: NodeId[];
-  data: TreeViewData;
+  data: INode[];
 }
 
 function ControlledExpanded(props: ControlledExpandedProps) {
