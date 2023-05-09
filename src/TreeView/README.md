@@ -103,7 +103,7 @@ Data supports non-sequential ids provided by user.
 ## onNodeSelect
 
 - _Arguments_: `onNodeSelect({element, isBranch, isSelected, treeState })`
-  Note: the function uses the state _after_ the selection.
+  Note: the function uses the state right _after_ the selection before propagation.
 
 ### onExpand
 

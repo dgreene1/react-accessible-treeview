@@ -110,8 +110,7 @@ Data supports non-sequential ids provided by user.
 ## onNodeSelect
 
 - _Arguments_: `onNodeSelect({element, isBranch, isSelected, treeState })`
-  Note: the function uses the state _after_ the selection.
-
+  Note: the function uses the state right _after_ the selection before propagation.
 ## onExpand
 
 - _Arguments_: `onExpand({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
@@ -120,7 +119,7 @@ Data supports non-sequential ids provided by user.
 ## onLoadData
 
 - _Arguments_: `onLoadData({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
-  Note: the function uses the state _after_ inital data is loaded and on expansion .
+  Note: the function uses the state _after_ inital data is loaded and on expansion.
   <br/> <br/>
 
 ## Keyboard Navigation

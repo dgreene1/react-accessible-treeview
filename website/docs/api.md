@@ -104,7 +104,7 @@ the handleSelect and handleExpand for just a part of the component, as demonstra
 ## onNodeSelect
 
 - _Arguments_: `onNodeSelect({element, isBranch, isSelected, treeState })`
-  Note: the function uses the state _after_ the selection.
+  Note: the function uses the state right _after_ the selection before propagation.
 
 ## onExpand
 

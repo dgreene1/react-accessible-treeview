@@ -101,20 +101,37 @@ test("onNodeSelect should be called when node manually seelcted/deselected", () 
   const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
   const nodes = queryAllByRole("treeitem");
 
-  const expected = {
+  const expectedSelected = {
     element: { children: [], id: 5, name: "Oranges", parent: 1 },
     isBranch: false,
     isSelected: true,
     treeState: {
       disabledIds: new Set(),
       expandedIds: new Set([1, 7, 11, 16]),
-      halfSelectedIds: new Set([1]), // this not present currently
+      halfSelectedIds: new Set(),
       isFocused: true,
-      lastAction: "HALF_SELECT",
+      lastAction: "SELECT_MANY",
       lastInteractedWith: 5,
       lastManuallyToggled: 5,
       lastUserSelect: 5,
       selectedIds: new Set([5]),
+      tabbableId: 5,
+    },
+  };
+  const expectedDeselected = {
+    element: { children: [], id: 5, name: "Oranges", parent: 1 },
+    isBranch: false,
+    isSelected: false,
+    treeState: {
+      disabledIds: new Set(),
+      expandedIds: new Set([1, 7, 11, 16]),
+      halfSelectedIds: new Set([1]),
+      isFocused: true,
+      lastAction: "SELECT_MANY",
+      lastInteractedWith: 5,
+      lastManuallyToggled: 5,
+      lastUserSelect: 5,
+      selectedIds: new Set(),
       tabbableId: 5,
     },
   };
@@ -126,8 +143,13 @@ test("onNodeSelect should be called when node manually seelcted/deselected", () 
 
   fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
 
-  expect(console.log).toBeCalledWith(expected);
+  expect(console.log).toBeCalledWith(expectedSelected);
   expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+
+  fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+
+  expect(console.log).toBeCalledWith(expectedDeselected);
+  expect(nodes[4]).toHaveAttribute("aria-checked", "false");
 });
 
 test("onNodeSelect should be called only for interacted node", () => {
@@ -182,9 +204,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       treeState: {
         disabledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
-        halfSelectedIds: new Set([1]), // this not present currently
+        halfSelectedIds: new Set(),
         isFocused: true,
-        lastAction: "HALF_SELECT",
+        lastAction: "SELECT_MANY",
         lastInteractedWith: 2,
         lastManuallyToggled: 2,
         lastUserSelect: 2,
@@ -215,9 +237,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       treeState: {
         disabledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
-        halfSelectedIds: new Set([1]), // this not present currently
+        halfSelectedIds: new Set(),
         isFocused: true,
-        lastAction: "HALF_SELECT",
+        lastAction: "SELECT_MANY",
         lastInteractedWith: 2,
         lastManuallyToggled: 2,
         lastUserSelect: 2,
@@ -284,9 +306,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       treeState: {
         disabledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
-        halfSelectedIds: new Set([1]), // this not present currently
+        halfSelectedIds: new Set(),
         isFocused: true,
-        lastAction: "HALF_SELECT",
+        lastAction: "FOCUS",
         lastInteractedWith: 2,
         lastManuallyToggled: 2,
         lastUserSelect: 1,

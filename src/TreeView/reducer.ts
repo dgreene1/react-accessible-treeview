@@ -17,6 +17,7 @@ export const treeTypes = {
   blur: "BLUR",
   disable: "DISABLE",
   enable: "ENABLE",
+  clearLastManuallyToggled: "CLEAR_MANUALLY_TOGGLED",
 } as const;
 
 export type TreeViewAction =
@@ -78,7 +79,8 @@ export type TreeViewAction =
   | { type: "FOCUS"; id: NodeId; lastInteractedWith?: NodeId | null }
   | { type: "BLUR" }
   | { type: "DISABLE"; id: NodeId }
-  | { type: "ENABLE"; id: NodeId };
+  | { type: "ENABLE"; id: NodeId }
+  | { type: "CLEAR_MANUALLY_TOGGLED" };
 
 export interface ITreeViewState {
   /** Set of the ids of the expanded nodes */
@@ -327,6 +329,12 @@ export const treeReducer = (
       return {
         ...state,
         disabledIds,
+      };
+    }
+    case treeTypes.clearLastManuallyToggled: {
+      return {
+        ...state,
+        lastManuallyToggled: null,
       };
     }
     default:
