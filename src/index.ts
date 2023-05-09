@@ -1,16 +1,21 @@
 import TreeView, {
-  ClickActions,
-  CLICK_ACTIONS,
-  IBranchProps,
-  LeafProps,
-  INodeRendererProps,
   ITreeViewOnExpandProps,
   ITreeViewOnSelectProps,
+  ITreeViewOnNodeSelectProps,
   ITreeViewProps,
   ITreeViewOnLoadDataProps,
 } from "./TreeView";
+import { CLICK_ACTIONS } from "./TreeView/constants";
 import { ITreeViewState, TreeViewAction } from "./TreeView/reducer";
-import { INode, TreeViewData, EventCallback } from "./TreeView/types";
+import {
+  INode,
+  TreeViewData,
+  EventCallback,
+  ClickActions,
+  INodeRendererProps,
+  IBranchProps,
+  LeafProps,
+} from "./TreeView/types";
 import { flattenTree } from "./TreeView/utils";
 
 export {
@@ -19,6 +24,7 @@ export {
   INode,
   TreeViewData,
   ITreeViewOnSelectProps,
+  ITreeViewOnNodeSelectProps,
   CLICK_ACTIONS,
   ITreeViewOnExpandProps,
   ITreeViewOnLoadDataProps,

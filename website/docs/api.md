@@ -9,6 +9,7 @@ title: API Reference
 | `data`                   | `array[node]` | `required`    | Tree data                                                                                                                                                                 |
 | `nodeRenderer`           | `func`        | `required`    | Render prop for the node (see below for more details)                                                                                                                     |
 | `onSelect`               | `func`        | `noop`        | Function called when a node changes its selected state                                                                                                                    |
+| `onNodeSelect`           | `func`        | `noop`        | Function called when a node was manually selected/deselected                                                                                                              |
 | `onExpand`               | `func`        | `noop`        | Function called when a node changes its expanded state                                                                                                                    |
 | `className`              | `string`      | `""`          | className to add to the outermost dom element, al `ul` with `role = "tree"`                                                                                               |
 | `multiSelect`            | `bool`        | `false`       | Allows multiple nodes to be selected                                                                                                                                      |
@@ -60,7 +61,7 @@ const data = [
 ];
 ```
 
-The array can also be generated from a nested object using the `flattenTree` helper (see the examples below). 
+The array can also be generated from a nested object using the `flattenTree` helper (see the examples below).
 
 Data supports non-sequential ids provided by user.
 
@@ -99,6 +100,11 @@ the handleSelect and handleExpand for just a part of the component, as demonstra
 
 - _Arguments_: `onSelect({element, isBranch, isExpanded, isSelected, isHalfSelected, isDisabled, treeState })`
   Note: the function uses the state _after_ the selection.
+
+## onNodeSelect
+
+- _Arguments_: `onNodeSelect({element, isBranch, isSelected, treeState })`
+  Note: the function uses the state right _after_ the selection before propagation.
 
 ## onExpand
 
@@ -156,13 +162,14 @@ Follows the same conventions described in https://www.w3.org/TR/wai-aria-practic
 
 The internal state of the component.
 
-| Property           | Type             | Default                       | Description                              |
-| ------------------ | ---------------- | ----------------------------- | ---------------------------------------- |
-| selectedIds        | `Set`            | `new Set(defaultSelectedIds)` | Set of the ids of the selected nodes     |
-| tabbableId         | `number`         | `data[0].children[0]`         | Id of the node with tabindex = 0         |
-| isFocused          | `bool`           | `false`                       | Whether the tree has focus               |
-| expandedIds        | `Set`            | `new Set(defaultExpandedIds)` | Set of the ids of the expanded nodes     |
-| halfSelectedIds    | `Set`            | `new Set()`                   | Set of the ids of the selected nodes     |
-| lastUserSelect     | `number`         | `data[0].children[0]`         | Last selection made directly by the user |
-| lastInteractedWith | `number or null` | `null`                        | Last node interacted with                |
-| disabledIds        | `Set`            | `new Set(defaultDisabledIds)` | Set of the ids of the selected nodes     |
+| Property            | Type             | Default                       | Description                                     |
+| ------------------- | ---------------- | ----------------------------- | ----------------------------------------------- |
+| selectedIds         | `Set`            | `new Set(defaultSelectedIds)` | Set of the ids of the selected nodes            |
+| tabbableId          | `number`         | `data[0].children[0]`         | Id of the node with tabindex = 0                |
+| isFocused           | `bool`           | `false`                       | Whether the tree has focus                      |
+| expandedIds         | `Set`            | `new Set(defaultExpandedIds)` | Set of the ids of the expanded nodes            |
+| halfSelectedIds     | `Set`            | `new Set()`                   | Set of the ids of the selected nodes            |
+| lastUserSelect      | `number`         | `data[0].children[0]`         | Last selection made directly by the user        |
+| lastInteractedWith  | `number or null` | `null`                        | Last node interacted with                       |
+| lastManuallyToggled | `number or null` | `null`                        | Last node that was manually selected/deselected |
+| disabledIds         | `Set`            | `new Set(defaultDisabledIds)` | Set of the ids of the selected nodes            |

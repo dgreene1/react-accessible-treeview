@@ -95,6 +95,8 @@ function MultiSelectCheckboxControlled() {
           propagateSelect
           propagateSelectUpwards
           togglableSelect
+          onSelect={(props) => console.log('onSelect callback: ', props)}
+          onNodeSelect={(props) => console.log('onNodeSelect callback: ', props)}
           nodeRenderer={({
             element,
             isBranch,

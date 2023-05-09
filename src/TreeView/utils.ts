@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
 import { EventCallback, INode, INodeRef, NodeId, TreeViewData } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const noop = () => {};
+
 export const composeHandlers = (
   ...handlers: EventCallback[]
 ): EventCallback => (event): void => {
