@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render, waitFor, act } from "@testing-library/react";
 import React, { useState } from "react";
-import TreeView, { INode, ITreeViewProps } from "..";
-import { NodeId, TreeViewData } from "../TreeView/types";
+import TreeView, { ITreeViewProps } from "..";
+import { NodeId, INode } from "../TreeView/types";
 
 describe("Async MultiSelectCheckboxTree with controlled selection", () => {
   interface AsyncMultiSelectControlledProps {
@@ -20,7 +20,7 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       selectedIdsAfterLoad,
       expandedNodes,
     } = props;
-    const [data, setData] = useState<TreeViewData>(initialData);
+    const [data, setData] = useState<INode[]>(initialData);
     const [ids, setIds] = useState<NodeId[]>(selectedIds);
 
     const onLoadData: ITreeViewProps["onLoadData"] = () => {
