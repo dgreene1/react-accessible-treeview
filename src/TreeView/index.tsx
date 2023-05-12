@@ -220,11 +220,14 @@ const useTree = ({
   ]);
 
   useEffect(() => {
-    const constrolledSelectedIds = new Set<NodeId>(controlledIds);
+    const controlledSelectedIds = new Set<NodeId>(controlledIds);
     //nodes need to be selected
-    const diffSelectedIds = difference(constrolledSelectedIds, selectedIds);
+    const diffSelectedIds = difference(controlledSelectedIds, selectedIds);
     //nodes to be deselected
-    const diffDeselectedIds = difference(selectedIds, constrolledSelectedIds);
+    const diffDeselectedIds = difference(selectedIds, controlledSelectedIds);
+
+    console.log('selectedIds', selectedIds, 'prev', prevSelectedIds);
+    console.log('diffSelect', diffSelectedIds, 'diffDeselect', diffDeselectedIds)
 
     //controlled deselection
     if (diffDeselectedIds.size) {
@@ -249,6 +252,22 @@ const useTree = ({
           controlled: true,
           lastInteractedWith: toggleSelectedId,
         });
+        propagateSelect &&
+          !disabledIds.has(toggleSelectedId) &&
+          dispatch({
+            type: treeTypes.changeSelectMany,
+            ids: propagatedIds(data, [toggleSelectedId], disabledIds),
+            select: true,
+            multiSelect,
+            lastInteractedWith: toggleSelectedId,
+          });
+      }
+    }
+
+    //case when controlled ids only contains ids that are selected already
+    //that is needed to trigger propagation
+    if (!diffSelectedIds.size && controlledSelectedIds.size) {
+      for (const toggleSelectedId of controlledSelectedIds) {
         propagateSelect &&
           !disabledIds.has(toggleSelectedId) &&
           dispatch({
