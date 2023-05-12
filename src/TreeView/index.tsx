@@ -48,7 +48,7 @@ import {
 
 interface IUseTreeProps {
   data: INode[];
-  controlledIds?: NodeId[];
+  controlledSelectedIds?: NodeId[];
   controlledExpandedIds?: NodeId[];
   defaultExpandedIds?: NodeId[];
   defaultSelectedIds?: NodeId[];
