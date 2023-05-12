@@ -226,7 +226,7 @@ const useTree = ({
     controlledIds
   );
   useEffect(() => {
-    if (controlledSelectedIds?.length) {
+    if (!!controlledSelectedIds) {
       toggledControlledIds.size &&
         dispatch({
           type: treeTypes.controlledSelectMany,

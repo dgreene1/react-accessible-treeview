@@ -35,7 +35,6 @@ export type TreeViewAction =
       type: "SELECT";
       id: NodeId;
       multiSelect?: boolean;
-      // controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
@@ -45,7 +44,6 @@ export type TreeViewAction =
       type: "DESELECT";
       id: NodeId;
       multiSelect?: boolean;
-      // controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
