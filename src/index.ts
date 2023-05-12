@@ -9,7 +9,7 @@ import { CLICK_ACTIONS } from "./TreeView/constants";
 import { ITreeViewState, TreeViewAction } from "./TreeView/reducer";
 import {
   INode,
-  TreeViewData,
+  NodeId,
   EventCallback,
   ClickActions,
   INodeRendererProps,
@@ -22,7 +22,7 @@ export {
   flattenTree,
   ITreeViewProps,
   INode,
-  TreeViewData,
+  NodeId,
   ITreeViewOnSelectProps,
   ITreeViewOnNodeSelectProps,
   CLICK_ACTIONS,

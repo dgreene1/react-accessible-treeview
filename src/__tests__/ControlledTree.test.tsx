@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { render, fireEvent } from "@testing-library/react";
 import React from "react";
 import TreeView, { flattenTree } from "..";
-import { NodeId, TreeViewData } from "../TreeView/types";
+import { NodeId, INode } from "../TreeView/types";
 
 const folder = {
   name: "",
@@ -102,7 +102,7 @@ interface MultiSelectCheckboxControlledProps {
   selectedIds: NodeId[];
   defaultDisabledIds?: NodeId[];
   defaultExpandedIds?: NodeId[];
-  data: TreeViewData;
+  data: INode[];
 }
 
 function MultiSelectCheckboxControlled(

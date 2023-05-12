@@ -14,7 +14,6 @@ import {
   INodeRendererProps,
   NodeAction,
   NodeId,
-  TreeViewData,
 } from "./types";
 import {
   difference,
@@ -48,7 +47,7 @@ import {
 } from "./constants";
 
 interface IUseTreeProps {
-  data: TreeViewData;
+  data: INode[];
   controlledIds?: NodeId[];
   controlledExpandedIds?: NodeId[];
   defaultExpandedIds?: NodeId[];
@@ -434,7 +433,7 @@ export interface ITreeViewOnLoadDataProps {
 
 export interface ITreeViewProps {
   /** Tree data*/
-  data: TreeViewData;
+  data: INode[];
   /** Function called when a node changes its selected state */
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   /** Function called when a single node is manually selected/unselected. */
@@ -613,7 +612,7 @@ const handleKeyDown = ({
   togglableSelect,
   clickAction,
 }: {
-  data: TreeViewData;
+  data: INode[];
   tabbableId: NodeId;
   expandedIds: Set<NodeId>;
   selectedIds: Set<NodeId>;

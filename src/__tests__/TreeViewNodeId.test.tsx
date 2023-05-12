@@ -3,7 +3,7 @@ import React from "react";
 import TreeView from "../TreeView";
 import { render } from "@testing-library/react";
 import { flattenTree } from "../TreeView/utils";
-import { TreeViewData } from "../TreeView/types";
+import { INode } from "../TreeView/types";
 
 const initialTreeNode = {
   name: "",
@@ -48,7 +48,7 @@ const initialTreeNode = {
 const mapDataType = flattenTree(initialTreeNode);
 
 interface TreeViewDataTypeProps {
-  data: TreeViewData;
+  data: INode[];
 }
 
 function TreeViewDataType(props: TreeViewDataTypeProps) {

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { EventCallback, INode, INodeRef, NodeId, TreeViewData } from "./types";
+import { EventCallback, INode, INodeRef, NodeId } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};
@@ -37,15 +37,15 @@ export const usePrevious = (x: Set<NodeId>) => {
   return ref.current;
 };
 
-export const usePreviousData = (value: TreeViewData) => {
-  const ref = useRef<TreeViewData>();
+export const usePreviousData = (value: INode[]) => {
+  const ref = useRef<INode[]>();
   useEffect(() => {
     ref.current = value;
   });
   return ref.current;
 };
 
-export const isBranchNode = (data: TreeViewData, i: NodeId) => {
+export const isBranchNode = (data: INode[], i: NodeId) => {
   const node = getTreeNode(data, i);
   return !!node.children?.length;
 };
@@ -62,12 +62,12 @@ export const focusRef = (ref: INodeRef) => {
   }
 };
 
-export const getParent = (data: TreeViewData, id: NodeId) => {
+export const getParent = (data: INode[], id: NodeId) => {
   return getTreeNode(data, id).parent;
 };
 
 export const getAncestors = (
-  data: TreeViewData,
+  data: INode[],
   childId: NodeId,
   disabledIds: Set<NodeId>
 ) => {
@@ -90,12 +90,12 @@ export const getAncestors = (
 };
 
 export const getDescendants = (
-  data: TreeViewData,
+  data: INode[],
   id: NodeId,
   disabledIds: Set<NodeId>
 ) => {
   const descendants: NodeId[] = [];
-  const getDescendantsHelper = (data: TreeViewData, id: NodeId) => {
+  const getDescendantsHelper = (data: INode[], id: NodeId) => {
     const node = getTreeNode(data, id);
     if (node.children == null) return;
     for (const childId of node.children.filter((x) => !disabledIds.has(x))) {
@@ -107,7 +107,7 @@ export const getDescendants = (
   return descendants;
 };
 
-export const getSibling = (data: TreeViewData, id: NodeId, diff: number) => {
+export const getSibling = (data: INode[], id: NodeId, diff: number) => {
   const parentId = getParent(data, id);
   if (parentId != null) {
     const parent = getTreeNode(data, parentId);
@@ -121,7 +121,7 @@ export const getSibling = (data: TreeViewData, id: NodeId, diff: number) => {
 };
 
 export const getLastAccessible = (
-  data: TreeViewData,
+  data: INode[],
   id: NodeId,
   expandedIds: Set<NodeId>
 ) => {
@@ -140,7 +140,7 @@ export const getLastAccessible = (
 };
 
 export const getPreviousAccessible = (
-  data: TreeViewData,
+  data: INode[],
   id: NodeId,
   expandedIds: Set<NodeId>
 ) => {
@@ -155,7 +155,7 @@ export const getPreviousAccessible = (
 };
 
 export const getNextAccessible = (
-  data: TreeViewData,
+  data: INode[],
   id: NodeId,
   expandedIds: Set<NodeId>
 ) => {
@@ -178,7 +178,7 @@ export const getNextAccessible = (
 };
 
 export const propagateSelectChange = (
-  data: TreeViewData,
+  data: INode[],
   ids: Set<NodeId>,
   selectedIds: Set<NodeId>,
   disabledIds: Set<NodeId>,
@@ -249,7 +249,7 @@ export const getAccessibleRange = ({
   from,
   to,
 }: {
-  data: TreeViewData;
+  data: INode[];
   expandedIds: Set<NodeId>;
   from: NodeId;
   to: NodeId;
@@ -284,9 +284,9 @@ interface ITreeNode {
   children?: ITreeNode[];
 }
 
-export const flattenTree = function(tree: ITreeNode): TreeViewData {
+export const flattenTree = function(tree: ITreeNode): INode[] {
   let internalCount = 0;
-  const flattenedTree: TreeViewData = [];
+  const flattenedTree: INode[] = [];
 
   const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
     const node: INode = {
@@ -351,7 +351,7 @@ export const getAriaChecked = ({
 };
 
 export const propagatedIds = (
-  data: TreeViewData,
+  data: INode[],
   ids: NodeId[],
   disabledIds: Set<NodeId>
 ) =>
@@ -383,7 +383,7 @@ export const onComponentBlur = (
 };
 
 export const isBranchSelectedAndHasSelectedDescendants = (
-  data: TreeViewData,
+  data: INode[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
 ) => {
@@ -396,7 +396,7 @@ export const isBranchSelectedAndHasSelectedDescendants = (
   );
 };
 
-export const getTreeParent = (data: TreeViewData): INode => {
+export const getTreeParent = (data: INode[]): INode => {
   const parentNode: INode | undefined = data.find(
     (node) => node.parent === null
   );
@@ -408,7 +408,7 @@ export const getTreeParent = (data: TreeViewData): INode => {
   return parentNode;
 };
 
-export const getTreeNode = (data: TreeViewData, id: NodeId): INode => {
+export const getTreeNode = (data: INode[], id: NodeId): INode => {
   const treeNode = data.find((node) => node.id === id);
 
   if (treeNode == null) {
@@ -423,7 +423,7 @@ const hasDuplicates = (ids: NodeId[]): boolean => {
   return ids.length !== uniqueIds.length;
 };
 
-export const validateTreeViewData = (data: TreeViewData): void => {
+export const validateTreeViewData = (data: INode[]): void => {
   if (hasDuplicates(data.map((node) => node.id))) {
     throw Error(
       `Multiple TreeView nodes have the same ID. IDs must be unique.`
