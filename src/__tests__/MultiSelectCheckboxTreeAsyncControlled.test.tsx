@@ -1,9 +1,8 @@
 import "@testing-library/jest-dom/extend-expect";
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor, act } from "@testing-library/react";
 import React, { useState } from "react";
 import TreeView, { INode, ITreeViewProps } from "..";
 import { NodeId, TreeViewData } from "../TreeView/types";
-
 
 describe("Async MultiSelectCheckboxTree with controlled selection", () => {
   interface AsyncMultiSelectControlledProps {
@@ -168,7 +167,9 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       "loading"
     );
 
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
 
     //after data is loaded
     await waitFor(() => {
@@ -299,7 +300,9 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       "loading"
     );
 
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
 
     //after data is loaded
     await waitFor(() => {
@@ -401,7 +404,9 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       "loading"
     );
 
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
 
     //after data is loaded
     await waitFor(() => {
