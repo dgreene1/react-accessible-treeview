@@ -18,6 +18,7 @@ export const treeTypes = {
   disable: "DISABLE",
   enable: "ENABLE",
   clearLastManuallyToggled: "CLEAR_MANUALLY_TOGGLED",
+  controlledSelectMany: "CONTROLLED_SELECT_MANY",
 } as const;
 
 export type TreeViewAction =
@@ -34,7 +35,7 @@ export type TreeViewAction =
       type: "SELECT";
       id: NodeId;
       multiSelect?: boolean;
-      controlled?: boolean;
+      // controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
@@ -44,7 +45,7 @@ export type TreeViewAction =
       type: "DESELECT";
       id: NodeId;
       multiSelect?: boolean;
-      controlled?: boolean;
+      // controlled?: boolean;
       keepFocus?: boolean;
       NotUserAction?: boolean;
       lastInteractedWith?: NodeId | null;
@@ -80,7 +81,12 @@ export type TreeViewAction =
   | { type: "BLUR" }
   | { type: "DISABLE"; id: NodeId }
   | { type: "ENABLE"; id: NodeId }
-  | { type: "CLEAR_MANUALLY_TOGGLED" };
+  | { type: "CLEAR_MANUALLY_TOGGLED" }
+  | {
+      type: "CONTROLLED_SELECT_MANY";
+      ids: NodeId[];
+      multiSelect?: boolean;
+    };
 
 export interface ITreeViewState {
   /** Set of the ids of the expanded nodes */
@@ -91,6 +97,8 @@ export interface ITreeViewState {
   halfSelectedIds: Set<NodeId>;
   /** Set of the ids of the selected nodes */
   selectedIds: Set<NodeId>;
+  /** Set of the ids of the controlled selected nodes */
+  controlledIds: Set<NodeId>;
   /** Id of the node with tabindex = 0 */
   tabbableId: NodeId;
   /** Whether the tree has focus */
@@ -185,7 +193,7 @@ export const treeReducer = (
       };
     }
     case treeTypes.select: {
-      if (!action.controlled && state.disabledIds.has(action.id)) return state;
+      if (!action.NotUserAction && state.disabledIds.has(action.id)) return state;
       let selectedIds;
       if (action.multiSelect) {
         selectedIds = new Set<NodeId>(state.selectedIds);
@@ -210,7 +218,7 @@ export const treeReducer = (
       };
     }
     case treeTypes.deselect: {
-      if (!action.controlled && state.disabledIds.has(action.id)) return state;
+      if (!action.NotUserAction && state.disabledIds.has(action.id)) return state;
       const selectedIds = new Set<NodeId>(state.selectedIds);
       selectedIds.delete(action.id);
       let halfSelectedIds;
@@ -301,6 +309,28 @@ export const treeReducer = (
         };
       }
       return state;
+    }
+    case treeTypes.controlledSelectMany: {
+      let selectedIds;
+      if (action.multiSelect) {
+        selectedIds = new Set<NodeId>(action.ids);
+      } else {
+        selectedIds = new Set<NodeId>();
+        selectedIds.add(action.ids[action.ids.length - 1]);
+      }
+
+      const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
+      action.ids.every((id) => halfSelectedIds.delete(id));
+      const controlledIds = new Set<NodeId>(action.ids);
+
+      return {
+        ...state,
+        selectedIds,
+        halfSelectedIds,
+        controlledIds,
+        isFocused: true,
+        lastAction: action.type,
+      };
     }
     case treeTypes.focus:
       return {

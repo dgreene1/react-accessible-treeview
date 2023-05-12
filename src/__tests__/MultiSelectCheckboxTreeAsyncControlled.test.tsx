@@ -28,7 +28,7 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       return new Promise<void>((resolve) => {
         setTimeout(() => {
           setData(dataAfterLoad);
-          setTimeout(() => setIds(selectedIdsAfterLoad), 100);
+          setIds(selectedIdsAfterLoad);
           resolve();
         }, 1000);
       });
@@ -84,16 +84,7 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
     );
   }
 
-  beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
-  });
-
-  test.skip("Should clear manual selection and apply controlled selection after data is loaded", async () => {
+  test("Should clear manual selection and apply controlled selection after data is loaded", async () => {
     const initialData = [
       {
         name: "",
@@ -151,7 +142,7 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       },
     ];
 
-    // jest.useFakeTimers();
+    jest.useFakeTimers();
 
     const { getAllByRole } = render(
       <AsyncMultiSelectControlled
@@ -273,7 +264,7 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       },
     ];
 
-    // jest.useFakeTimers();
+    jest.useFakeTimers();
 
     const { getAllByRole } = render(
       <AsyncMultiSelectControlled
@@ -381,7 +372,7 @@ describe("Async MultiSelectCheckboxTree with controlled selection", () => {
       },
     ];
 
-    // jest.useFakeTimers();
+    jest.useFakeTimers();
 
     const { getAllByRole } = render(
       <AsyncMultiSelectControlled

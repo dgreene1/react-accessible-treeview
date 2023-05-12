@@ -107,6 +107,7 @@ test("onNodeSelect should be called when node manually seelcted/deselected", () 
     isSelected: true,
     treeState: {
       disabledIds: new Set(),
+      controlledIds: new Set(),
       expandedIds: new Set([1, 7, 11, 16]),
       halfSelectedIds: new Set(),
       isFocused: true,
@@ -124,6 +125,7 @@ test("onNodeSelect should be called when node manually seelcted/deselected", () 
     isSelected: false,
     treeState: {
       disabledIds: new Set(),
+      controlledIds: new Set(),
       expandedIds: new Set([1, 7, 11, 16]),
       halfSelectedIds: new Set([1]),
       isFocused: true,
@@ -162,6 +164,7 @@ test("onNodeSelect should be called only for interacted node", () => {
     isBranch: true,
     treeState: {
       disabledIds: new Set(),
+      controlledIds: new Set(),
       expandedIds: new Set([1, 7, 11, 16]),
       halfSelectedIds: new Set(),
       isFocused: true,
@@ -203,6 +206,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       isSelected: true,
       treeState: {
         disabledIds: new Set(),
+        controlledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
         halfSelectedIds: new Set(),
         isFocused: true,
@@ -236,6 +240,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       isSelected: true,
       treeState: {
         disabledIds: new Set(),
+        controlledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
         halfSelectedIds: new Set(),
         isFocused: true,
@@ -269,6 +274,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       isBranch: true,
       treeState: {
         disabledIds: new Set(),
+        controlledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
         halfSelectedIds: new Set(),
         isFocused: true,
@@ -305,6 +311,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       isSelected: true,
       treeState: {
         disabledIds: new Set(),
+        controlledIds: new Set(),
         expandedIds: new Set([1, 7, 11, 16]),
         halfSelectedIds: new Set(),
         isFocused: true,

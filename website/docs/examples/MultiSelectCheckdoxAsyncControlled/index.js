@@ -256,15 +256,15 @@ function MultiSelectCheckboxAsyncControlled() {
         if (loadNumber === 1) {
           console.log('case 1');
           setData(initialData2);
-          // setSelectedIds([8]);
-          setTimeout(() => setSelectedIds([8]), 0);
+          setSelectedIds([8]);
+          // setTimeout(() => setSelectedIds([8]), 0);
           setLoadNumber(2);
         }
         if (loadNumber === 2) {
           console.log('case 2');
           setData(initialData3);
-          // setSelectedIds([8,9])
-          setTimeout(() => setSelectedIds([8,9]), 0);
+          setSelectedIds([8,9])
+          // setTimeout(() => setSelectedIds([8,9]), 0);
           setLoadNumber(3);
         }
         resolve();
