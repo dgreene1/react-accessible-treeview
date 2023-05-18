@@ -111,6 +111,7 @@ Data supports non-sequential ids provided by user.
 
 - _Arguments_: `onNodeSelect({element, isBranch, isSelected, treeState })`
   Note: the function uses the state right _after_ the selection before propagation.
+
 ## onExpand
 
 - _Arguments_: `onExpand({element, isExpanded, isSelected, isHalfSelected, isDisabled, treeState})`
@@ -167,14 +168,15 @@ Follows the same conventions described in https://www.w3.org/TR/wai-aria-practic
 
 The internal state of the component.
 
-| Property            | Type             | Default                       | Description                                     |
-| ------------------- | ---------------- | ----------------------------- | ----------------------------------------------- |
-| selectedIds         | `Set`            | `new Set(defaultSelectedIds)` | Set of the ids of the selected nodes            |
-| tabbableId          | `number`         | `data[0].children[0]`         | Id of the node with tabindex = 0                |
-| isFocused           | `bool`           | `false`                       | Whether the tree has focus                      |
-| expandedIds         | `Set`            | `new Set(defaultExpandedIds)` | Set of the ids of the expanded nodes            |
-| halfSelectedIds     | `Set`            | `new Set()`                   | Set of the ids of the selected nodes            |
-| lastUserSelect      | `number`         | `data[0].children[0]`         | Last selection made directly by the user        |
-| lastInteractedWith  | `number or null` | `null`                        | Last node interacted with                       |
-| lastManuallyToggled | `number or null` | `null`                        | Last node that was manually selected/deselected |
-| disabledIds         | `Set`            | `new Set(defaultDisabledIds)` | Set of the ids of the selected nodes            |
+| Property            | Type             | Default                          | Description                                           |
+| ------------------- | ---------------- | -------------------------------- | ----------------------------------------------------- |
+| selectedIds         | `Set`            | `new Set(defaultSelectedIds)`    | Set of the ids of the selected nodes                  |
+| controlledIds       | `Set`            | `new Set(controlledSelectedIds)` | Set of the ids of the nodes selected programmatically |
+| tabbableId          | `number`         | `data[0].children[0]`            | Id of the node with tabindex = 0                      |
+| isFocused           | `bool`           | `false`                          | Whether the tree has focus                            |
+| expandedIds         | `Set`            | `new Set(defaultExpandedIds)`    | Set of the ids of the expanded nodes                  |
+| halfSelectedIds     | `Set`            | `new Set()`                      | Set of the ids of the selected nodes                  |
+| lastUserSelect      | `number`         | `data[0].children[0]`            | Last selection made directly by the user              |
+| lastInteractedWith  | `number or null` | `null`                           | Last node interacted with                             |
+| lastManuallyToggled | `number or null` | `null`                           | Last node that was manually selected/deselected       |
+| disabledIds         | `Set`            | `new Set(defaultDisabledIds)`    | Set of the ids of the selected nodes                  |

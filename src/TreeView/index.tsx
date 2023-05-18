@@ -48,7 +48,7 @@ import {
 
 interface IUseTreeProps {
   data: INode[];
-  controlledIds?: NodeId[];
+  controlledSelectedIds?: NodeId[];
   controlledExpandedIds?: NodeId[];
   defaultExpandedIds?: NodeId[];
   defaultSelectedIds?: NodeId[];
@@ -68,7 +68,7 @@ interface IUseTreeProps {
 
 const useTree = ({
   data,
-  controlledIds,
+  controlledSelectedIds,
   controlledExpandedIds,
   defaultExpandedIds,
   defaultSelectedIds,
@@ -86,7 +86,8 @@ const useTree = ({
 }: IUseTreeProps) => {
   const treeParentNode = getTreeParent(data);
   const [state, dispatch] = useReducer(treeReducer, {
-    selectedIds: new Set<NodeId>(controlledIds || defaultSelectedIds),
+    selectedIds: new Set<NodeId>(controlledSelectedIds || defaultSelectedIds),
+    controlledIds: new Set<NodeId>(controlledSelectedIds),
     tabbableId: treeParentNode.children[0],
     isFocused: false,
     expandedIds: new Set<NodeId>(controlledExpandedIds || defaultExpandedIds),
@@ -99,6 +100,7 @@ const useTree = ({
 
   const {
     selectedIds,
+    controlledIds,
     expandedIds,
     disabledIds,
     tabbableId,
@@ -218,48 +220,30 @@ const useTree = ({
     state,
   ]);
 
+  const toggledControlledIds = symmetricDifference(
+    new Set(controlledSelectedIds),
+    controlledIds
+  );
   useEffect(() => {
-    const toggleControlledIds = new Set<NodeId>(controlledIds);
-    //nodes need to be selected
-    const diffSelectedIds = difference(toggleControlledIds, prevSelectedIds);
-    //nodes to be deselected
-    const diffDeselectedIds = difference(prevSelectedIds, toggleControlledIds);
-
-    //controlled deselection
-    if (diffDeselectedIds.size) {
-      for (const toggleDeselectedId of diffDeselectedIds) {
+    if (!!controlledSelectedIds) {
+      toggledControlledIds.size &&
         dispatch({
-          type: treeTypes.deselect,
-          id: toggleDeselectedId,
+          type: treeTypes.controlledSelectMany,
+          ids: controlledSelectedIds,
           multiSelect,
-          controlled: true,
-          lastInteractedWith: toggleDeselectedId,
         });
-      }
-    }
-
-    //controlled selection
-    if (diffSelectedIds.size) {
-      for (const toggleSelectedId of diffSelectedIds) {
-        dispatch({
-          type: treeTypes.select,
-          id: toggleSelectedId,
-          multiSelect,
-          controlled: true,
-          lastInteractedWith: toggleSelectedId,
-        });
+      for (const id of controlledSelectedIds) {
         propagateSelect &&
-          !disabledIds.has(toggleSelectedId) &&
+          !disabledIds.has(id) &&
           dispatch({
             type: treeTypes.changeSelectMany,
-            ids: propagatedIds(data, [toggleSelectedId], disabledIds),
+            ids: propagatedIds(data, [id], disabledIds),
             select: true,
             multiSelect,
-            lastInteractedWith: toggleSelectedId,
           });
       }
     }
-  }, [controlledIds]);
+  }, [controlledSelectedIds]);
 
   useEffect(() => {
     const toggleControlledExpandedIds = new Set<NodeId>(controlledExpandedIds);
@@ -312,7 +296,10 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards) {
-      const idsToUpdate = new Set<NodeId>(toggledIds);
+      const idsToUpdate = new Set<NodeId>([
+        ...toggledIds,
+        ...controlledIds,
+      ]);
       if (
         lastInteractedWith &&
         lastAction !== treeTypes.focus &&
@@ -375,6 +362,7 @@ const useTree = ({
     prevSelectedIds,
     toggledIds,
     lastInteractedWith,
+    toggledControlledIds,
   ]);
 
   //Focus
@@ -513,7 +501,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     const leafRefs = useRef({});
     const [state, dispatch] = useTree({
       data,
-      controlledIds: selectedIds,
+      controlledSelectedIds: selectedIds,
       controlledExpandedIds: expandedIds,
       defaultExpandedIds,
       defaultSelectedIds,
