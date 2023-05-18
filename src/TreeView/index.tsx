@@ -298,7 +298,7 @@ const useTree = ({
     if (propagateSelectUpwards) {
       const idsToUpdate = new Set<NodeId>([
         ...toggledIds,
-        ...toggledControlledIds,
+        ...controlledIds,
       ]);
       if (
         lastInteractedWith &&
