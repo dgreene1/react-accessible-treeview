@@ -37,6 +37,7 @@ import {
   getTreeNode,
   validateTreeViewData,
   noop,
+  isBranchNotSelectedAndHasAllSelectedDescendants,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -335,7 +336,13 @@ const useTree = ({
           dispatch({
             type: treeTypes.select,
             id,
-            multiSelect,
+            multiSelect: multiSelect
+              ? multiSelect
+              : isBranchNotSelectedAndHasAllSelectedDescendants(
+                  data,
+                  id,
+                  selectedIds
+                ),
             keepFocus: true,
             NotUserAction: true,
             lastInteractedWith,
