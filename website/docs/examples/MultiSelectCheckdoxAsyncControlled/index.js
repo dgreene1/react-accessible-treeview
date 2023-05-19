@@ -48,10 +48,14 @@ const initialData = [
   },
 ];
 
-function MultiSelectCheckboxAsync() {
+function MultiSelectCheckboxAsyncControlled() {
   const loadedAlertElement = useRef(null);
   const [data, setData] = useState(initialData);
   const [nodesAlreadyLoaded, setNodesAlreadyLoaded] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectChildren, setSelectChildren] = useState(false);
+  const [preserveSelection, setPreserveSelection] = useState(false);
+  const [manuallySelectedNodes, setManuallySelectiedNodes] = useState([]);
 
   const updateTreeData = (list, id, children) => {
     const data = list.map((node) => {
@@ -89,6 +93,15 @@ function MultiSelectCheckboxAsync() {
             },
           ])
         );
+        if (selectChildren) {
+          preserveSelection
+            ? setSelectedIds([
+                ...new Set([...manuallySelectedNodes, ...selectedIds]),
+                data.length,
+                data.length + 1,
+              ])
+            : setSelectedIds([data.length, data.length + 1]);
+        }
         resolve();
       }, 1000);
     });
@@ -114,6 +127,15 @@ function MultiSelectCheckboxAsync() {
     }
   };
 
+  const handleNodeSelect = ({ element, isSelected }) => {
+    isSelected &&
+      setManuallySelectiedNodes([...manuallySelectedNodes, element.id]);
+    !isSelected &&
+      setManuallySelectiedNodes(
+        manuallySelectedNodes.filter((id) => id === element.id)
+      );
+  };
+
   return (
     <>
       <div>
@@ -123,11 +145,22 @@ function MultiSelectCheckboxAsync() {
           role="alert"
           aria-live="polite"
         ></div>
+        <button onClick={() => setSelectChildren(!selectChildren)}>
+          Select next loaded children - [{JSON.stringify(selectChildren)}]
+        </button>
+        <button
+          onClick={() => setPreserveSelection(!preserveSelection)}
+          style={{ marginLeft: "16px" }}
+        >
+          Preserve current selection - [{JSON.stringify(preserveSelection)}]
+        </button>
         <div className="checkbox">
           <TreeView
             data={data}
             aria-label="Checkbox tree"
             onLoadData={wrappedOnLoadData}
+            onNodeSelect={handleNodeSelect}
+            selectedIds={selectedIds}
             multiSelect
             propagateSelect
             togglableSelect
@@ -171,6 +204,7 @@ function MultiSelectCheckboxAsync() {
                   <CheckBoxIcon
                     className="checkbox-icon"
                     onClick={(e) => {
+                      !isExpanded && handleExpand(e);                      
                       handleSelect(e);
                       e.stopPropagation();
                     }}
@@ -178,7 +212,9 @@ function MultiSelectCheckboxAsync() {
                       isHalfSelected ? "some" : isSelected ? "all" : "none"
                     }
                   />
-                  <span className="name">{element.name}</span>
+                  <span className="name">
+                    {element.name}-{element.id}
+                  </span>
                 </div>
               );
             }}
@@ -213,4 +249,4 @@ const CheckBoxIcon = ({ variant, ...rest }) => {
   }
 };
 
-export default MultiSelectCheckboxAsync;
+export default MultiSelectCheckboxAsyncControlled;
