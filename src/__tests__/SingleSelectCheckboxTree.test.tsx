@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
-import TreeView, { flattenTree } from "..";
+import TreeView, { NodeId, flattenTree } from "..";
 
 const folder = {
   name: "",
@@ -42,7 +42,11 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function SingleSelectCheckboxTree() {
+function SingleSelectCheckboxTree({
+  selectedIds = [],
+}: {
+  selectedIds?: NodeId[];
+}) {
   return (
     <div>
       <div className="checkbox">
@@ -50,6 +54,7 @@ function SingleSelectCheckboxTree() {
           data={data}
           aria-label="Single select"
           multiSelect={false}
+          selectedIds={selectedIds}
           propagateSelect
           propagateSelectUpwards
           togglableSelect
@@ -144,7 +149,7 @@ describe("Single select", () => {
     expect(container.querySelectorAll("[aria-checked='true']").length).toBe(2);
   });
 
-  test.only('should unselect selected with propagation parent if it has only one selected child', () => {
+  test("should unselect selected with propagation parent if it has only one selected child", () => {
     const { queryAllByRole, container } = render(<SingleSelectCheckboxTree />);
     const nodes = queryAllByRole("treeitem");
 
@@ -196,11 +201,24 @@ describe("Single select", () => {
 
     const newNodes = queryAllByRole("treeitem");
 
-    newNodes.forEach(node => console.log(node.innerHTML));
+    newNodes.forEach((node) => console.log(node.innerHTML));
 
     expect(newNodes.length).toBe(8);
     expect(newNodes[0]).toHaveAttribute("aria-checked", "mixed");
     expect(newNodes[2]).toHaveAttribute("aria-checked", "true");
     expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1);
+  });
+
+  test("should set and clear selectedIds", () => {
+    const { queryAllByRole, rerender, container } = render(
+      <SingleSelectCheckboxTree selectedIds={[1]} />
+    );
+    const nodes = queryAllByRole("treeitem");
+
+    expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+
+    rerender(<SingleSelectCheckboxTree selectedIds={[]} />);
+
+    expect(container.querySelectorAll("[aria-checked='true']").length).toBe(0);
   });
 });

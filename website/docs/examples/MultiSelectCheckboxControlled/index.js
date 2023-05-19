@@ -64,6 +64,7 @@ function MultiSelectCheckboxControlled() {
       document
         .querySelector("#txtIdsToSelect")
         .value.split(",")
+        .filter(val => !!val.trim())
         .map((x) => {
           if (isNaN(parseInt(x.trim()))) {
             return x;

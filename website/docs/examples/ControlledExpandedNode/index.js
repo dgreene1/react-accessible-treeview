@@ -62,6 +62,7 @@ function ControlledExpandedNode() {
       document
         .querySelector("#txtIdsToExpand")
         .value.split(",")
+        .filter(val => !!val.trim())
         .map((x) => {
           if (isNaN(parseInt(x.trim()))) {
             return x;
