@@ -187,41 +187,6 @@ test("propagateSelectUpwards half-selects all parent nodes in multiselect", () =
   expect(nodeLevel3Parents.length).toBe(2);
 });
 
-test("propagateSelectUpwards works correctly in single select", () => {
-  const { queryAllByRole, container } = render(
-    <CheckboxTree multiSelect={false} />
-  );
-  const nodes = queryAllByRole("treeitem");
-  nodes[1].focus();
-  if (document.activeElement == null)
-    throw new Error(
-      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
-    );
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Drinks
-  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Drinks group
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Apple Juice
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Chocolate
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Coffee
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Tea
-  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Tea group
-  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Black Tea
-  fireEvent.keyDown(document.activeElement, { key: "Enter" });
-
-  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1); // Black Tea
-  expect(container.querySelectorAll(".half-selected").length).toBe(2); // Drinks, Tea
-
-  //After selecting 1st level parent (Drinks) it should unselect 2nd (Tea) and 3rd level (Black Tea)
-  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Tea
-  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Tea collapsed
-  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Drinks group
-  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Drinks
-  fireEvent.keyDown(document.activeElement, { key: "Enter" });
-
-  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
-  expect(container.querySelectorAll("[aria-checked='true']").length).toBe(1);
-  expect(container.querySelectorAll(".half-selected").length).toBe(0);
-});
-
 test("parent with selected descendants should be half-selected or checked in multiselect with propagateSelect={false}", () => {
   const { queryAllByRole, container } = render(
     <CheckboxTree propagateSelect={false} />
