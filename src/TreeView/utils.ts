@@ -410,6 +410,20 @@ export const isBranchNotSelectedAndHasAllSelectedDescendants = (
   );
 };
 
+export const isBranchSelectedAndHasAllSelectedDescendants = (
+  data: INode[],
+  elementId: NodeId,
+  selectedIds: Set<NodeId>
+) => {
+  return (
+    isBranchNode(data, elementId) &&
+    selectedIds.has(elementId) &&
+    getDescendants(data, elementId, new Set<number>()).every((item) =>
+      selectedIds.has(item)
+    )
+  );
+};
+
 export const getTreeParent = (data: INode[]): INode => {
   const parentNode: INode | undefined = data.find(
     (node) => node.parent === null

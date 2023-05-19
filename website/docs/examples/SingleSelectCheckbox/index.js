@@ -52,11 +52,11 @@ function SingleSelectCheckbox() {
       <div className="checkbox">
         <TreeView
           data={data}
-          aria-label="Checkbox tree"
-          defaultExpandedIds={[16]}
+          aria-label="Single select"
           multiSelect={false}
           propagateSelectUpwards
           togglableSelect
+          nodeAction="check"
           nodeRenderer={({
             element,
             isBranch,
