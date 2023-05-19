@@ -37,6 +37,8 @@ import {
   getTreeNode,
   validateTreeViewData,
   noop,
+  isBranchNotSelectedAndHasAllSelectedDescendants,
+  isBranchSelectedAndHasAllSelectedDescendants,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -296,10 +298,7 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards) {
-      const idsToUpdate = new Set<NodeId>([
-        ...toggledIds,
-        ...controlledIds,
-      ]);
+      const idsToUpdate = new Set<NodeId>([...toggledIds, ...controlledIds]);
       if (
         lastInteractedWith &&
         lastAction !== treeTypes.focus &&
@@ -322,7 +321,13 @@ const useTree = ({
           dispatch({
             type: treeTypes.select,
             id,
-            multiSelect,
+            multiSelect: multiSelect
+              ? multiSelect
+              : isBranchNotSelectedAndHasAllSelectedDescendants(
+                  data,
+                  id,
+                  selectedIds
+                ),
             keepFocus: true,
             NotUserAction: true,
             lastInteractedWith,
@@ -841,9 +846,16 @@ const handleKeyDown = ({
         selectedIds
       );
 
+      const isSelectedAndHasAllSelectedDescendants = isBranchSelectedAndHasAllSelectedDescendants(
+        data,
+        element.id,
+        selectedIds
+      );
+
       dispatch({
         type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants
+          ? isSelectedAndHasSelectedDescendants &&
+            !isSelectedAndHasAllSelectedDescendants
             ? treeTypes.halfSelect
             : treeTypes.toggleSelect
           : treeTypes.select,

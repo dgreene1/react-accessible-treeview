@@ -19,6 +19,7 @@ import {
   getDescendants,
   getTreeNode,
   isBranchNode,
+  isBranchSelectedAndHasAllSelectedDescendants,
   isBranchSelectedAndHasSelectedDescendants,
   noop,
   propagatedIds,
@@ -153,10 +154,17 @@ export const Node = (props: INodeProps) => {
         selectedIds
       );
 
+      const isSelectedAndHasAllSelectedDescendants = isBranchSelectedAndHasAllSelectedDescendants(
+        data,
+        element.id,
+        selectedIds
+      );
+
       //Select
       dispatch({
         type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants
+          ? isSelectedAndHasSelectedDescendants &&
+            !isSelectedAndHasAllSelectedDescendants
             ? treeTypes.halfSelect
             : treeTypes.toggleSelect
           : treeTypes.select,
