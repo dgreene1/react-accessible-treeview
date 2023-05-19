@@ -191,7 +191,8 @@ export const treeReducer = (
       };
     }
     case treeTypes.select: {
-      if (!action.NotUserAction && state.disabledIds.has(action.id)) return state;
+      if (!action.NotUserAction && state.disabledIds.has(action.id))
+        return state;
       let selectedIds;
       if (action.multiSelect) {
         selectedIds = new Set<NodeId>(state.selectedIds);
@@ -216,7 +217,8 @@ export const treeReducer = (
       };
     }
     case treeTypes.deselect: {
-      if (!action.NotUserAction && state.disabledIds.has(action.id)) return state;
+      if (!action.NotUserAction && state.disabledIds.has(action.id))
+        return state;
       const selectedIds = new Set<NodeId>(state.selectedIds);
       selectedIds.delete(action.id);
       let halfSelectedIds;
@@ -314,7 +316,13 @@ export const treeReducer = (
         selectedIds = new Set<NodeId>(action.ids);
       } else {
         selectedIds = new Set<NodeId>();
-        selectedIds.add(action.ids[action.ids.length - 1]);
+        if (action.ids.length > 1) {
+          console.warn(
+            "Tree in singleSelect mode, only the first item from selectedIds will be selected."
+          );
+        }
+        const idToAdd = action.ids[0];
+        idToAdd && selectedIds.add(idToAdd);
       }
 
       const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);

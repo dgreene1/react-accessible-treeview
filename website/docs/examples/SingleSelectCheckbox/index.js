@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
+import { FaSquare, FaCheckSquare, FaMinusSquare } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
 import TreeView, { flattenTree } from "react-accessible-treeview";
 import cx from "classnames";
+import "./styles.css";
 
 const folder = {
   name: "",
@@ -37,10 +39,6 @@ const folder = {
       name: "Vegetables",
       children: [
         { name: "Beets" },
-        { name: "Carrots" },
-        { name: "Celery" },
-        { name: "Lettuce" },
-        { name: "Onions" },
       ],
     },
   ],
@@ -48,71 +46,45 @@ const folder = {
 
 const data = flattenTree(folder);
 
-function ControlledExpandedNode() {
-  const [expandedIds, setExpandedIds] = useState();
-
-  const onKeyDown = (e) => {
-    if (e.key === "Enter") {
-      getAndSetIds();
-    }
-  };
-
-  const getAndSetIds = () => {
-    setExpandedIds(
-      document
-        .querySelector("#txtIdsToExpand")
-        .value.split(",")
-        .filter(val => !!val.trim())
-        .map((x) => {
-          if (isNaN(parseInt(x.trim()))) {
-            return x;
-          }
-          return parseInt(x.trim());
-        })
-    );
-  };
-
+function SingleSelectCheckbox() {
   return (
     <div>
-      <div>
-        <label htmlFor="txtIdsToExpand">
-          Comma-delimited list of branch node IDs to expand:
-        </label>
-        <input id="txtIdsToExpand" type="text" onKeyDown={onKeyDown} />
-        <button onClick={() => getAndSetIds()}>Set</button>
-      </div>
-      <div>
-        <button onClick={() => setExpandedIds([])}>
-          Clear all expanded nodes
-        </button>
-      </div>
       <div className="checkbox">
         <TreeView
           data={data}
-          aria-label="Controlled expanded node tree"
-          expandedIds={expandedIds}
-          defaultExpandedIds={[1]}
+          aria-label="Single select"
+          multiSelect={false}
+          propagateSelectUpwards
+          togglableSelect
+          nodeAction="check"
           nodeRenderer={({
             element,
             isBranch,
             isExpanded,
-            isDisabled,
+            isSelected,
+            isHalfSelected,
             getNodeProps,
             level,
+            handleSelect,
             handleExpand,
           }) => {
             return (
               <div
                 {...getNodeProps({ onClick: handleExpand })}
-                style={{
-                  marginLeft: 40 * (level - 1),
-                  opacity: isDisabled ? 0.5 : 1,
-                }}
+                style={{ marginLeft: 40 * (level - 1) }}
               >
                 {isBranch && <ArrowIcon isOpen={isExpanded} />}
-                <span className="name">
-                  {element.name}-{element.id}
-                </span>
+                <CheckBoxIcon
+                  className="checkbox-icon"
+                  onClick={(e) => {
+                    handleSelect(e);
+                    e.stopPropagation();
+                  }}
+                  variant={
+                    isHalfSelected ? "some" : isSelected ? "all" : "none"
+                  }
+                />
+                <span className="name">{element.name}-{element.id}</span>
               </div>
             );
           }}
@@ -133,4 +105,17 @@ const ArrowIcon = ({ isOpen, className }) => {
   return <IoMdArrowDropright className={classes} />;
 };
 
-export default ControlledExpandedNode;
+const CheckBoxIcon = ({ variant, ...rest }) => {
+  switch (variant) {
+    case "all":
+      return <FaCheckSquare {...rest} />;
+    case "none":
+      return <FaSquare {...rest} />;
+    case "some":
+      return <FaMinusSquare {...rest} />;
+    default:
+      return null;
+  }
+};
+
+export default SingleSelectCheckbox;
