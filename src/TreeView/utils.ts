@@ -107,6 +107,12 @@ export const getDescendants = (
   return descendants;
 };
 
+export const getChildren = (data: INode[], id: NodeId) => {
+  const children: NodeId[] = [];
+  const node = getTreeNode(data, id);
+  return node.children == null ? children : node.children;
+};
+
 export const getSibling = (data: INode[], id: NodeId, diff: number) => {
   const parentId = getParent(data, id);
   if (parentId != null) {
@@ -410,17 +416,31 @@ export const isBranchNotSelectedAndHasAllSelectedDescendants = (
   );
 };
 
-export const isBranchSelectedAndHasAllSelectedDescendants = (
+export const isBranchNotSelectedAndHasOnlySelectedChild = (
   data: INode[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
 ) => {
+  const nodeChildren = getChildren(data, elementId);
+  return (
+    isBranchNode(data, elementId) &&
+    !selectedIds.has(elementId) &&
+    nodeChildren.length === 1 &&
+    nodeChildren.every((item) => selectedIds.has(item))
+  );
+};
+
+export const isBranchSelectedAndHasOnlySelectedChild = (
+  data: INode[],
+  elementId: NodeId,
+  selectedIds: Set<NodeId>
+) => {
+  const nodeChildren = getChildren(data, elementId);
   return (
     isBranchNode(data, elementId) &&
     selectedIds.has(elementId) &&
-    getDescendants(data, elementId, new Set<number>()).every((item) =>
-      selectedIds.has(item)
-    )
+    nodeChildren.length === 1 &&
+    nodeChildren.every((item) => selectedIds.has(item))
   );
 };
 
