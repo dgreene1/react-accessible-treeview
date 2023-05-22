@@ -21,25 +21,29 @@ const folder = {
     {
       name: "Drinks",
       children: [
-        { name: "Apple Juice" },
-        { name: "Chocolate" },
-        { name: "Coffee" },
         {
-          name: "Tea",
+          name: "Hot drinks",
           children: [
-            { name: "Black Tea" },
-            { name: "Green Tea" },
-            { name: "Red Tea" },
-            { name: "Matcha" },
+            {
+              name: "Non-alcohol",
+              children: [
+                {
+                  name: "Tea",
+                  children: [
+                    {
+                      name: "Black Tea",
+                    },
+                  ],
+                },
+              ],
+            },
           ],
         },
       ],
     },
     {
       name: "Vegetables",
-      children: [
-        { name: "Beets" },
-      ],
+      children: [{ name: "Beets" }],
     },
   ],
 };
@@ -84,7 +88,7 @@ function SingleSelectCheckbox() {
                     isHalfSelected ? "some" : isSelected ? "all" : "none"
                   }
                 />
-                <span className="name">{element.name}-{element.id}</span>
+                <span className="name">{element.name}</span>
               </div>
             );
           }}

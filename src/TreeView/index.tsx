@@ -37,8 +37,8 @@ import {
   getTreeNode,
   validateTreeViewData,
   noop,
-  isBranchNotSelectedAndHasAllSelectedDescendants,
-  isBranchSelectedAndHasAllSelectedDescendants,
+  isBranchNotSelectedAndHasOnlySelectedChild,
+  isBranchSelectedAndHasOnlySelectedChild,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -323,7 +323,7 @@ const useTree = ({
             id,
             multiSelect: multiSelect
               ? multiSelect
-              : isBranchNotSelectedAndHasAllSelectedDescendants(
+              : isBranchNotSelectedAndHasOnlySelectedChild(
                   data,
                   id,
                   selectedIds
@@ -846,7 +846,7 @@ const handleKeyDown = ({
         selectedIds
       );
 
-      const isSelectedAndHasAllSelectedDescendants = isBranchSelectedAndHasAllSelectedDescendants(
+      const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
         data,
         element.id,
         selectedIds
@@ -855,7 +855,7 @@ const handleKeyDown = ({
       dispatch({
         type: togglableSelect
           ? isSelectedAndHasSelectedDescendants &&
-            !isSelectedAndHasAllSelectedDescendants
+            !isSelectedAndHasOnlySelectedChild
             ? treeTypes.halfSelect
             : treeTypes.toggleSelect
           : treeTypes.select,

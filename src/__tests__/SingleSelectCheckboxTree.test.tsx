@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
-import TreeView, { NodeId, flattenTree } from "..";
+import TreeView, { INode, NodeId, flattenTree } from "..";
 
 const folder = {
   name: "",
@@ -40,12 +40,16 @@ const folder = {
   ],
 };
 
-const data = flattenTree(folder);
+const initialData = flattenTree(folder);
 
 function SingleSelectCheckboxTree({
   selectedIds = [],
+  defaultExpandedIds = [],
+  data = initialData,
 }: {
   selectedIds?: NodeId[];
+  defaultExpandedIds?: NodeId[];
+  data?: INode[];
 }) {
   return (
     <div>
@@ -54,6 +58,7 @@ function SingleSelectCheckboxTree({
           data={data}
           aria-label="Single select"
           multiSelect={false}
+          defaultExpandedIds={defaultExpandedIds}
           selectedIds={selectedIds}
           propagateSelect
           propagateSelectUpwards
@@ -220,5 +225,56 @@ describe("Single select", () => {
     rerender(<SingleSelectCheckboxTree selectedIds={[]} />);
 
     expect(container.querySelectorAll("[aria-checked='true']").length).toBe(0);
+  });
+
+  test("should select one node and all parents in the middle of nested one child branch", () => {
+    const testData = {
+      name: "",
+      children: [
+        {
+          name: "Drinks",
+          children: [
+            {
+              name: "Hot drinks",
+              children: [
+                {
+                  name: "Non-alcohol",
+                  children: [
+                    {
+                      name: "Tea",
+                      children: [
+                        {
+                          name: "Black Tea",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: "Vegetables",
+          children: [{ name: "Beets" }],
+        },
+      ],
+    };
+    const { queryAllByRole, container } = render(
+      <SingleSelectCheckboxTree data={flattenTree(testData)} defaultExpandedIds={[1,2,3,4]} />
+    );
+    const nodes = queryAllByRole("treeitem");
+
+    nodes[0].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });//Hot drinks
+    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });//Non-alcohol
+    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });//Tea
+    fireEvent.keyDown(document.activeElement, { key: "Enter" });
+
+    expect(container.querySelectorAll("[aria-checked='true']").length).toBe(4);
   });
 });
