@@ -308,6 +308,16 @@ const useTree = ({
       ) {
         idsToUpdate.add(lastInteractedWith);
       }
+      //========START FILTER OUT NOT EXISTING IDS=========
+      // This block of code filters out from propagation check ids that aren't in data anymore
+      const idsNotInData: NodeId[] = [];
+      idsToUpdate.forEach((idToUpdate) => {
+        if (!data.find((node) => node.id === idToUpdate)) {
+          idsNotInData.push(idToUpdate);
+        }
+      });
+      idsNotInData.forEach((id) => idsToUpdate.delete(id));
+      //========END FILTER OUT NOT EXISTING IDS===========
       const { every, some, none } = propagateSelectChange(
         data,
         idsToUpdate,
