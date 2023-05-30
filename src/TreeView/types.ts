@@ -28,6 +28,8 @@ export type EventCallback = <T, E>(
     parent: NodeId | null;
     /** Used to indicated whether a node is branch to be able load async data onExpand*/
     isBranch?: boolean;
+    /** User-defined metadata */
+    metadata?: any;
   }
 
   export interface INodeRendererProps {
