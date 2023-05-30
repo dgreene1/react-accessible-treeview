@@ -198,3 +198,58 @@ describe("FlattenTree helper", () => {
     );
   });
 });
+
+test("should retain metadata", () => {
+  const initialTreeNode = {
+    name: "",
+    children: [
+      {
+        name: "Fruits",
+        children: [
+          { name: "Avocados", metadata: { color: "green" } },
+          { name: "Bananas", metadata: { color: "yellow" } },
+        ],
+      },
+      {
+        name: "Drinks",
+        children: [
+          { name: "Apple Juice", metadata: { color: "yellow" } },
+          { name: "Coffee", metadata: { color: "brown" } },
+          {
+            name: "Tea",
+            children: [
+              { name: "Black Tea", metadata: { color: "brown" } },
+              { name: "Green Tea", metadata: { color: "green" } },
+              {
+                name: "Matcha",
+                children: [{ name: "Matcha 1", metadata: { color: "green" } }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        name: "Vegetables",
+      },
+    ],
+  };
+
+  const expectedTree = [
+    { id: 0, name: "", parent: null, children: [1, 4, 12] },
+    { id: 1, name: "Fruits", children: [2, 3], parent: 0 },
+    { id: 2, name: "Avocados", children: [], parent: 1, metadata: { color: "green" } },
+    { id: 3, name: "Bananas", children: [], parent: 1, metadata: { color: "yellow" } },
+    { id: 4, name: "Drinks", children: [5, 6, 7], parent: 0 },
+    { id: 5, name: "Apple Juice", children: [], parent: 4 , metadata: { color: "yellow" } },
+    { id: 6, name: "Coffee", children: [], parent: 4, metadata: { color: "brown" } },
+    { id: 7, name: "Tea", children: [8, 9, 10], parent: 4 },
+    { id: 8, name: "Black Tea", children: [], parent: 7, metadata: { color: "brown" } },
+    { id: 9, name: "Green Tea", children: [], parent: 7, metadata: { color: "green" } },
+    { id: 10, name: "Matcha", children: [11], parent: 7 },
+    { id: 11, name: "Matcha 1", children: [], parent: 10,  metadata: { color: "green" } },
+    { id: 12, name: "Vegetables", children: [], parent: 0 },
+  ];
+
+  const expected = flattenTree(initialTreeNode);
+  expect(expected).toEqual(expectedTree);
+});
