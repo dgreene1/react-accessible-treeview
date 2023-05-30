@@ -11,12 +11,14 @@ module.exports = {
     Examples: [
       "examples-Basic",
       "examples-ControlledExpandedNode",
+      "examples-DataTypes",
       "examples-DirectoryTree",
       "examples-MultiSelectDirectoryTree",
       "examples-MultiSelectCheckbox",
       "examples-MultiSelectCheckboxDisabled",
       "examples-MultiSelectCheckboxAsync",
       "examples-MultiSelectCheckboxControlled",
+      "examples-SingleSelectCheckbox",
     ],
   },
 };
