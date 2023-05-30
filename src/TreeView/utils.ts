@@ -288,6 +288,7 @@ interface ITreeNode {
   id?: NodeId;
   name: string;
   children?: ITreeNode[];
+  metadata?: any;
 }
 
 export const flattenTree = function(tree: ITreeNode): INode[] {
@@ -300,6 +301,7 @@ export const flattenTree = function(tree: ITreeNode): INode[] {
       name: tree.name,
       children: [],
       parent,
+      ...tree.metadata && { metadata: {...tree.metadata }}
     };
 
     if (flattenedTree.find((x) => x.id === node.id)) {
