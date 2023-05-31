@@ -1,9 +1,8 @@
-import "@testing-library/jest-dom/extend-expect";
 import React from "react";
-import TreeView, {ITreeViewOnNodeSelectProps, ITreeViewProps} from "../TreeView";
-import {render} from "@testing-library/react";
-import {flattenTree} from "../TreeView/utils";
-import {INodeRendererProps} from "../TreeView/types";
+import TreeView, { ITreeViewOnNodeSelectProps, ITreeViewProps } from "../TreeView";
+import { render } from "@testing-library/react";
+import { flattenTree } from "../TreeView/utils";
+import { INodeRendererProps } from "../TreeView/types";
 import userEvent from "@testing-library/user-event";
 
 const folder = {
