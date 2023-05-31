@@ -12,26 +12,26 @@ const folder = {
     {
       name: "Fruits",
       children: [
-        {name: "Avocados"},
-        {name: "Bananas"},
-        {name: "Berries"},
-        {name: "Oranges"},
-        {name: "Pears"},
+        { name: "Avocados" },
+        { name: "Bananas" },
+        { name: "Berries" },
+        { name: "Oranges" },
+        { name: "Pears" },
       ],
     },
     {
       name: "Drinks",
       children: [
-        {name: "Apple Juice"},
-        {name: "Chocolate"},
-        {name: "Coffee"},
+        { name: "Apple Juice" },
+        { name: "Chocolate" },
+        { name: "Coffee" },
         {
           name: "Tea",
           children: [
-            {name: "Black Tea"},
-            {name: "Green Tea"},
-            {name: "Red Tea"},
-            {name: "Matcha"},
+            { name: "Black Tea" },
+            { name: "Green Tea" },
+            { name: "Red Tea" },
+            { name: "Matcha" },
           ],
         },
       ],
@@ -39,17 +39,17 @@ const folder = {
     {
       name: "Vegetables",
       children: [
-        {name: "Beets"},
-        {name: "Carrots"},
-        {name: "Celery"},
-        {name: "Lettuce"},
-        {name: "Onions"},
+        { name: "Beets" },
+        { name: "Carrots" },
+        { name: "Celery" },
+        { name: "Lettuce" },
+        { name: "Onions" },
       ],
     },
   ],
 };
 
-function TreeViewOnNodeSelect({data, nodeRenderer, selectedIds, onNodeSelect}: ITreeViewProps) {
+function TreeViewOnNodeSelect({ data, nodeRenderer, selectedIds, onNodeSelect }: ITreeViewProps) {
   return (
     <div>
       <TreeView
@@ -78,7 +78,7 @@ describe("onNodeSelect", () => {
     handleExpand,
   }: INodeRendererProps) => {
     return (
-      <div {...getNodeProps({onClick: handleExpand})}>
+      <div {...getNodeProps({ onClick: handleExpand })}>
         <div
           className="checkbox-icon"
           onClick={(e) => {
@@ -96,7 +96,7 @@ describe("onNodeSelect", () => {
   beforeEach(() => {
     onNodeSelect = jest.fn();
   });
-  test("should be called when node manually selcted/deselected", async () => {
+  test("should be called when node manually selected/deselected", async () => {
     const {queryAllByRole} = render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
                                                           onNodeSelect={onNodeSelect}/>);
     const nodes = queryAllByRole("treeitem");
