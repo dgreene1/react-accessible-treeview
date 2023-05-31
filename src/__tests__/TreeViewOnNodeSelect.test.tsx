@@ -1,9 +1,12 @@
 import React from "react";
 import TreeView, { ITreeViewOnNodeSelectProps, ITreeViewProps } from "../TreeView";
-import { render } from "@testing-library/react";
+import { Matcher, render, screen } from "@testing-library/react";
 import { flattenTree } from "../TreeView/utils";
 import { INodeRendererProps } from "../TreeView/types";
 import userEvent from "@testing-library/user-event";
+
+const treeItem = (name: Matcher) => screen.getByText(name).closest('[role=treeitem]') as HTMLElement;
+const treeItemCheckbox = (name: Matcher) => treeItem(name).querySelector(".checkbox-icon") as HTMLElement;
 
 const folder = {
   name: "",
@@ -50,21 +53,19 @@ const folder = {
 
 function TreeViewOnNodeSelect({ data, nodeRenderer, selectedIds, onNodeSelect }: ITreeViewProps) {
   return (
-    <div>
-      <TreeView
-        data={data}
-        aria-label="onNodeSelect"
-        selectedIds={selectedIds}
-        onNodeSelect={onNodeSelect}
-        multiSelect
-        defaultExpandedIds={[1, 7, 11, 16]}
-        propagateSelect
-        propagateSelectUpwards
-        togglableSelect
-        nodeAction="check"
-        nodeRenderer={nodeRenderer}
-      />
-    </div>
+    <TreeView
+      data={data}
+      aria-label="onNodeSelect"
+      selectedIds={selectedIds}
+      onNodeSelect={onNodeSelect}
+      multiSelect
+      defaultExpandedIds={[1, 7, 11, 16]}
+      propagateSelect
+      propagateSelectUpwards
+      togglableSelect
+      nodeAction="check"
+      nodeRenderer={nodeRenderer}
+    />
   );
 }
 
@@ -96,9 +97,8 @@ describe("onNodeSelect", () => {
     onNodeSelect = jest.fn();
   });
   test("should be called when node manually selected/deselected", async () => {
-    const {queryAllByRole} = render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
+    render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
                                                           onNodeSelect={onNodeSelect}/>);
-    const nodes = queryAllByRole("treeitem");
 
     const expectedSelected = {
       element: {children: [], id: 5, name: "Oranges", parent: 1},
@@ -137,15 +137,15 @@ describe("onNodeSelect", () => {
       },
     };
 
-    await userEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+    await userEvent.click(treeItemCheckbox("Oranges-5"));
 
     expect(onNodeSelect).toBeCalledWith(expectedSelected);
-    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+    expect(treeItem("Oranges-5")).toHaveAttribute("aria-checked", "true");
 
-    await userEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+    await userEvent.click(treeItemCheckbox("Oranges-5"));
 
     expect(onNodeSelect).toBeCalledWith(expectedDeselected);
-    expect(nodes[4]).toHaveAttribute("aria-checked", "false");
+    expect(treeItem("Oranges-5")).toHaveAttribute("aria-checked", "false");
   });
 
   test("should be called only for interacted node", async () => {
@@ -172,7 +172,7 @@ describe("onNodeSelect", () => {
       },
     };
 
-    await userEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]);
+    await userEvent.click(treeItemCheckbox("Fruits-1"));
 
     expect(onNodeSelect).toBeCalledWith(expected);
     expect(nodes[0]).toHaveAttribute("aria-checked", "true");
@@ -187,6 +187,45 @@ describe("onNodeSelect", () => {
     render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer} selectedIds={[19]} onNodeSelect={onNodeSelect} />);
 
     expect(onNodeSelect).not.toBeCalled();
+  });
+
+  test("should be called when node is selected to a half-selected state", async () => {
+    render(<TreeView
+      data={data}
+      onNodeSelect={onNodeSelect}
+      multiSelect
+      defaultExpandedIds={[1, 7, 11, 16]}
+      togglableSelect
+      nodeAction="check"
+      nodeRenderer={nodeRenderer}
+    />);
+
+    await userEvent.click(treeItemCheckbox("Drinks-7"));
+
+    expect(onNodeSelect).toHaveBeenCalledWith(expect.objectContaining({
+      element: { id: 7, name: "Drinks", children: [8, 9, 10, 11], parent: 0 },
+      isSelected: true,
+    }));
+  });
+
+  test("should be called when node is deselected to a half-selected state", async () => {
+    render(<TreeView
+      data={data}
+      selectedIds={[7, 8, 9, 10, 11, 12, 13, 14, 15]}
+      onNodeSelect={onNodeSelect}
+      multiSelect
+      defaultExpandedIds={[1, 7, 11, 16]}
+      togglableSelect
+      nodeAction="check"
+      nodeRenderer={nodeRenderer}
+    />);
+
+    await userEvent.click(treeItemCheckbox("Drinks-7"));
+
+    expect(onNodeSelect).toHaveBeenCalledWith(expect.objectContaining({
+      element: { id: 7, name: "Drinks", children: [8, 9, 10, 11], parent: 0 },
+      isSelected: false,
+    }));
   });
 
   describe("should be called when node selected/deselected via keyboard", () => {
@@ -210,16 +249,15 @@ describe("onNodeSelect", () => {
         },
       };
 
-      const {queryAllByRole} = render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
+      render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
                                                             onNodeSelect={onNodeSelect}/>);
-      const nodes = queryAllByRole("treeitem");
 
       await userEvent.tab(); //Fruits
       await userEvent.keyboard("[ArrowDown]"); //Avocados
       await userEvent.keyboard("[Enter]");
 
       expect(onNodeSelect).toBeCalledWith(expected);
-      expect(nodes[1]).toHaveAttribute("aria-checked", "true");
+      expect(treeItem("Avocados-2")).toHaveAttribute("aria-checked", "true");
     });
     test("Space", async () => {
       const expected= {
@@ -241,16 +279,15 @@ describe("onNodeSelect", () => {
         },
       };
 
-      const {queryAllByRole} = render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
+      render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
                                                             onNodeSelect={onNodeSelect}/>);
-      const nodes = queryAllByRole("treeitem");
 
       await userEvent.tab(); //Fruits
       await userEvent.keyboard("[ArrowDown]"); //Avocados
       await userEvent.keyboard(" ");
 
       expect(onNodeSelect).toBeCalledWith(expected);
-      expect(nodes[1]).toHaveAttribute("aria-checked", "true");
+      expect(treeItem("Avocados-2")).toHaveAttribute("aria-checked", "true");
     });
     test("Shift+ArrowUp", async () => {
       const expected= {
@@ -272,16 +309,15 @@ describe("onNodeSelect", () => {
         },
       };
 
-      const {queryAllByRole} = render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
+      render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
                                                             onNodeSelect={onNodeSelect}/>);
-      const nodes = queryAllByRole("treeitem");
 
       await userEvent.tab(); //Fruits
       await userEvent.keyboard("[ArrowDown]"); //Avocados
       await userEvent.keyboard("{Shift>}[ArrowUp]{/Shift}");
 
       expect(onNodeSelect).toBeCalledWith(expected);
-      expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+      expect(treeItem("Fruits-1")).toHaveAttribute("aria-checked", "true");
     });
     test("Shift+ArrowDown", async () => {
       const expected = {
@@ -303,15 +339,14 @@ describe("onNodeSelect", () => {
         },
       };
 
-      const {queryAllByRole} = render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
+      render(<TreeViewOnNodeSelect data={data} nodeRenderer={nodeRenderer}
                                                             onNodeSelect={onNodeSelect}/>);
-      const nodes = queryAllByRole("treeitem");
 
       await userEvent.tab(); //Fruits
       await userEvent.keyboard("{Shift>}[ArrowDown]{/Shift}"); //Avocados
 
       expect(onNodeSelect).toBeCalledWith(expected);
-      expect(nodes[1]).toHaveAttribute("aria-checked", "true");
+      expect(treeItem("Avocados-2")).toHaveAttribute("aria-checked", "true");
     });
   });
 });
