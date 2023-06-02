@@ -52,25 +52,29 @@ const data = flattenTree(folder);
 
 interface TreeViewOnNodeSelectProps {
   selectedIds?: NodeId[];
+  propagateSelect?: boolean;
+  defaultSelectedIds?: NodeId[];
 }
 
 function TreeViewOnNodeSelect(props: TreeViewOnNodeSelectProps) {
-  const { selectedIds } = props;
+  const { selectedIds, propagateSelect = true, defaultSelectedIds } = props;
   return (
     <div>
       <TreeView
         data={data}
         aria-label="onNodeSelect"
         selectedIds={selectedIds}
+        defaultSelectedIds={defaultSelectedIds}
         onNodeSelect={(props) => console.log(props)}
         multiSelect
         defaultExpandedIds={[1, 7, 11, 16]}
-        propagateSelect
+        propagateSelect={propagateSelect}
         propagateSelectUpwards
         togglableSelect
         nodeAction="check"
         nodeRenderer={({
           element,
+          isHalfSelected,
           getNodeProps,
           handleSelect,
           handleExpand,
@@ -78,7 +82,9 @@ function TreeViewOnNodeSelect(props: TreeViewOnNodeSelectProps) {
           return (
             <div {...getNodeProps({ onClick: handleExpand })}>
               <div
-                className="checkbox-icon"
+                className={`checkbox-icon ${
+                  isHalfSelected ? "half-checked" : ""
+                }`}
                 onClick={(e) => {
                   handleSelect(e);
                   e.stopPropagation();
@@ -196,6 +202,89 @@ test("onNodeSelect should be called only for interacted node", () => {
 test("onNodeSelect should not be called when controlled selection", () => {
   render(<TreeViewOnNodeSelect selectedIds={[19]} />);
   expect(console.log).not.toBeCalled();
+});
+
+test(
+  "onNodeSelect should be called when manually node changes from not selected to selected", () => {
+    const { container } = render(
+      <TreeViewOnNodeSelect />
+    );
+    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+  
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+  
+    fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //select Bananas
+  
+    expect(getNodes()[2]).toHaveAttribute("aria-checked", "true");
+    expect(console.log).toBeCalled();
+  }
+);
+
+test("onNodeSelect should be called when manually node changes from selected to not selected", () => {
+  const { container } = render(
+    <TreeViewOnNodeSelect defaultSelectedIds={[3]} />
+  );
+  const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+
+  expect(getNodes()[2]).toHaveAttribute("aria-checked", "true");
+
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+
+  fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //unselect Bananas
+
+  expect(getNodes()[2]).toHaveAttribute("aria-checked", "false");
+  expect(console.log).toBeCalled();
+});
+
+test("onNodeSelect should be called when manually node changes from half-selected to selected", () => {
+  const { container } = render(
+    <TreeViewOnNodeSelect defaultSelectedIds={[3]} />
+  );
+  const getHalfSelectedNodes = () =>
+    container.querySelectorAll(".half-checked");
+  const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+
+  expect(getHalfSelectedNodes().length).toBe(1);
+
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+
+  fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
+  expect(getHalfSelectedNodes().length).toBe(0);
+  expect(getNodes()[0]).toHaveAttribute("aria-checked", "true");
+  expect(console.log).toBeCalled();
+});
+
+test("onNodeSelect should be called when manually node changes from selected to half-selected", () => {
+  const { container } = render(
+    <TreeViewOnNodeSelect defaultSelectedIds={[1, 3]} propagateSelect={false} />
+  );
+  const getHalfSelectedNodes = () =>
+    container.querySelectorAll(".half-checked");
+  const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+
+  expect(getHalfSelectedNodes().length).toBe(1);
+
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+
+  fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
+  expect(getHalfSelectedNodes().length).toBe(0);
+  expect(console.log).toBeCalled();
+
+  fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //half-select Fruits
+  expect(getHalfSelectedNodes().length).toBe(1);
+  expect(console.log).toBeCalled();
 });
 
 describe("onNodeSelect should be called when node selected/deselected via keyboard", () => {

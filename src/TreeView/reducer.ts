@@ -30,6 +30,7 @@ export type TreeViewAction =
       type: "HALF_SELECT";
       id: NodeId;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
     }
   | {
       type: "SELECT";
@@ -188,6 +189,7 @@ export const treeReducer = (
         halfSelectedIds,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
+        lastManuallyToggled: action.lastManuallyToggled,
       };
     }
     case treeTypes.select: {
