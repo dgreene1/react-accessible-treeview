@@ -312,8 +312,14 @@ export const treeReducer = (
     }
     case treeTypes.controlledSelectMany: {
       let selectedIds;
+      let lastInteractedWith = state.lastInteractedWith;
+      let tabbableId = state.tabbableId;
       if (action.multiSelect) {
         selectedIds = new Set<NodeId>(action.ids);
+        if (action.ids.length) {
+          lastInteractedWith = tabbableId =
+            action.ids[action.ids.length - 1];
+        }
       } else {
         selectedIds = new Set<NodeId>();
         if (action.ids.length > 1) {
@@ -323,6 +329,8 @@ export const treeReducer = (
         }
         const idToAdd = action.ids[0];
         idToAdd && selectedIds.add(idToAdd);
+        lastInteractedWith = tabbableId =
+          idToAdd ?? lastInteractedWith;
       }
 
       const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
@@ -336,6 +344,8 @@ export const treeReducer = (
         controlledIds,
         isFocused: true,
         lastAction: action.type,
+        tabbableId,
+        lastInteractedWith,
       };
     }
     case treeTypes.focus:
