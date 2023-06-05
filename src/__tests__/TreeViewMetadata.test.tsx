@@ -98,8 +98,11 @@ function TreeViewMetadata(props: TreeViewDataTypeProps) {
     const nodes = queryAllByRole("treeitem");
     
     mapDataType.forEach(nodeData => {
-      if (nodeData.metadata) {
-        const node = nodes.find((x) => x.innerHTML.includes(`${nodeData.metadata.color}`));
+      const thisNodesMetadata = nodeData.metadata;
+      if (thisNodesMetadata !== undefined) {
+        const node = nodes.find((x) => {
+          return x.innerHTML.includes(`${thisNodesMetadata.color}`)
+        });
         expect(node).toBeDefined;
      } else {
         const node = nodes.find((x) => x.innerHTML.includes(`${nodeData.name}-${nodeData.id}`));
