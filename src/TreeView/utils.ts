@@ -288,6 +288,7 @@ interface ITreeNode {
   id?: NodeId;
   name: string;
   children?: ITreeNode[];
+  isBranch?: boolean;
 }
 
 export const flattenTree = function(tree: ITreeNode): INode[] {
@@ -299,6 +300,7 @@ export const flattenTree = function(tree: ITreeNode): INode[] {
       id: tree.id || internalCount,
       name: tree.name,
       children: [],
+      ...(tree.isBranch && { isBranch: tree.isBranch }),
       parent,
     };
 
