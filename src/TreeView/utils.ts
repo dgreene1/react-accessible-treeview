@@ -284,22 +284,29 @@ export const getAccessibleRange = ({
   return range;
 };
 
-interface ITreeNode {
+/**
+ * This is to help consumers to understand that we do not currently support metadata that is a nested object. If this is needed, make an issue in Github
+ */
+export type IFlatMetadata = Record<string, string | number | undefined | null>;
+
+interface ITreeNode<M extends IFlatMetadata> {
   id?: NodeId;
   name: string;
-  children?: ITreeNode[];
+  children?: ITreeNode<M>[];
+  metadata?: M;
 }
 
-export const flattenTree = function(tree: ITreeNode): INode[] {
+export const flattenTree = <M extends IFlatMetadata>(tree: ITreeNode<M>): INode<M>[] => {
   let internalCount = 0;
-  const flattenedTree: INode[] = [];
+  const flattenedTree: INode<M>[] = [];
 
-  const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
-    const node: INode = {
+  const flattenTreeHelper = (tree: ITreeNode<M>, parent: NodeId | null) => {
+    const node: INode<M> = {
       id: tree.id || internalCount,
       name: tree.name,
       children: [],
       parent,
+      metadata: tree.metadata ? { ...tree.metadata} : undefined
     };
 
     if (flattenedTree.find((x) => x.id === node.id)) {

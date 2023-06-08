@@ -1,5 +1,6 @@
 import { clickActions, nodeActions } from "./constants";
 import { ITreeViewState, TreeViewAction } from "./reducer";
+import { IFlatMetadata } from "./utils";
 
 export type ValueOf<T> = T[keyof T];
 export type ClickActions = ValueOf<typeof clickActions>;
@@ -17,7 +18,7 @@ export type EventCallback = <T, E>(
   event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
   ) => void;
   
-  export interface INode {
+  export interface INode<M extends IFlatMetadata = IFlatMetadata> {
     /** A non-negative integer that uniquely identifies the node */
     id: NodeId;
     /** Used to match on key press */
@@ -28,6 +29,8 @@ export type EventCallback = <T, E>(
     parent: NodeId | null;
     /** Used to indicated whether a node is branch to be able load async data onExpand*/
     isBranch?: boolean;
+    /** User-defined metadata */
+    metadata?: M;
   }
 
   export interface INodeRendererProps {
