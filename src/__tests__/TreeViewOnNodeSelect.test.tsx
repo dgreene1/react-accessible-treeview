@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/extend-expect";
 import React from "react";
-import TreeView from "../TreeView";
+import TreeView, { ITreeViewOnNodeSelectProps } from "../TreeView";
 import { fireEvent, render } from "@testing-library/react";
 import { flattenTree } from "../TreeView/utils";
 import { NodeId } from "../TreeView/types";
@@ -54,10 +54,16 @@ interface TreeViewOnNodeSelectProps {
   selectedIds?: NodeId[];
   propagateSelect?: boolean;
   defaultSelectedIds?: NodeId[];
+  onNodeSelect: (props: ITreeViewOnNodeSelectProps) => void;
 }
 
 function TreeViewOnNodeSelect(props: TreeViewOnNodeSelectProps) {
-  const { selectedIds, propagateSelect = true, defaultSelectedIds } = props;
+  const {
+    selectedIds,
+    propagateSelect = true,
+    defaultSelectedIds,
+    onNodeSelect,
+  } = props;
   return (
     <div>
       <TreeView
@@ -65,7 +71,7 @@ function TreeViewOnNodeSelect(props: TreeViewOnNodeSelectProps) {
         aria-label="onNodeSelect"
         selectedIds={selectedIds}
         defaultSelectedIds={defaultSelectedIds}
-        onNodeSelect={(props) => console.log(props)}
+        onNodeSelect={onNodeSelect}
         multiSelect
         defaultExpandedIds={[1, 7, 11, 16]}
         propagateSelect={propagateSelect}
@@ -101,193 +107,203 @@ function TreeViewOnNodeSelect(props: TreeViewOnNodeSelectProps) {
   );
 }
 
-jest.spyOn(global.console, "log");
+let mockedOnNodeSelect: ((props: ITreeViewOnNodeSelectProps) => void);
 
-test("onNodeSelect should be called when node manually seelcted/deselected", () => {
-  const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
-  const nodes = queryAllByRole("treeitem");
+describe("onNodeSelect", () => {
+  beforeEach(() => {
+    mockedOnNodeSelect = jest.fn();
+  });
 
-  const expectedSelected = {
-    element: { children: [], id: 5, name: "Oranges", parent: 1 },
-    isBranch: false,
-    isSelected: true,
-    treeState: {
-      disabledIds: new Set(),
-      controlledIds: new Set(),
-      expandedIds: new Set([1, 7, 11, 16]),
-      halfSelectedIds: new Set(),
-      isFocused: true,
-      lastAction: "SELECT_MANY",
-      lastInteractedWith: 5,
-      lastManuallyToggled: 5,
-      lastUserSelect: 5,
-      selectedIds: new Set([5]),
-      tabbableId: 5,
-    },
-  };
-  const expectedDeselected = {
-    element: { children: [], id: 5, name: "Oranges", parent: 1 },
-    isBranch: false,
-    isSelected: false,
-    treeState: {
-      disabledIds: new Set(),
-      controlledIds: new Set(),
-      expandedIds: new Set([1, 7, 11, 16]),
-      halfSelectedIds: new Set([1]),
-      isFocused: true,
-      lastAction: "SELECT_MANY",
-      lastInteractedWith: 5,
-      lastManuallyToggled: 5,
-      lastUserSelect: 5,
-      selectedIds: new Set(),
-      tabbableId: 5,
-    },
-  };
-
-  if (document.activeElement == null)
-    throw new Error(
-      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+  test("should be called when node manually seelcted/deselected", () => {
+    const { queryAllByRole } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
     );
+    const nodes = queryAllByRole("treeitem");
 
-  fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+    const expectedSelected = {
+      element: { children: [], id: 5, name: "Oranges", parent: 1 },
+      isBranch: false,
+      isSelected: true,
+      treeState: {
+        disabledIds: new Set(),
+        controlledIds: new Set(),
+        expandedIds: new Set([1, 7, 11, 16]),
+        halfSelectedIds: new Set(),
+        isFocused: true,
+        lastAction: "SELECT_MANY",
+        lastInteractedWith: 5,
+        lastManuallyToggled: 5,
+        lastUserSelect: 5,
+        selectedIds: new Set([5]),
+        tabbableId: 5,
+      },
+    };
+    const expectedDeselected = {
+      element: { children: [], id: 5, name: "Oranges", parent: 1 },
+      isBranch: false,
+      isSelected: false,
+      treeState: {
+        disabledIds: new Set(),
+        controlledIds: new Set(),
+        expandedIds: new Set([1, 7, 11, 16]),
+        halfSelectedIds: new Set([1]),
+        isFocused: true,
+        lastAction: "SELECT_MANY",
+        lastInteractedWith: 5,
+        lastManuallyToggled: 5,
+        lastUserSelect: 5,
+        selectedIds: new Set(),
+        tabbableId: 5,
+      },
+    };
 
-  expect(console.log).toBeCalledWith(expectedSelected);
-  expect(nodes[4]).toHaveAttribute("aria-checked", "true");
-
-  fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
-
-  expect(console.log).toBeCalledWith(expectedDeselected);
-  expect(nodes[4]).toHaveAttribute("aria-checked", "false");
-});
-
-test("onNodeSelect should be called only for interacted node", () => {
-  const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
-  const nodes = queryAllByRole("treeitem");
-
-  const expected = {
-    element: { id: 1, name: "Fruits", children: [2, 3, 4, 5, 6], parent: 0 },
-    isSelected: true,
-    isBranch: true,
-    treeState: {
-      disabledIds: new Set(),
-      controlledIds: new Set(),
-      expandedIds: new Set([1, 7, 11, 16]),
-      halfSelectedIds: new Set(),
-      isFocused: true,
-      lastAction: "SELECT_MANY",
-      lastInteractedWith: 1,
-      lastManuallyToggled: 1,
-      lastUserSelect: 1,
-      selectedIds: new Set([1, 2, 3, 4, 5, 6]),
-      tabbableId: 1,
-    },
-  };
-
-  if (document.activeElement == null)
-    throw new Error(
-      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
-    );
-
-  fireEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]);
-
-  expect(console.log).toBeCalledWith(expected);
-  expect(nodes[0]).toHaveAttribute("aria-checked", "true");
-  expect(nodes[1]).toHaveAttribute("aria-checked", "true");
-  expect(nodes[2]).toHaveAttribute("aria-checked", "true");
-  expect(nodes[3]).toHaveAttribute("aria-checked", "true");
-  expect(nodes[4]).toHaveAttribute("aria-checked", "true");
-  expect(nodes[5]).toHaveAttribute("aria-checked", "true");
-});
-
-test("onNodeSelect should not be called when controlled selection", () => {
-  render(<TreeViewOnNodeSelect selectedIds={[19]} />);
-  expect(console.log).not.toBeCalled();
-});
-
-test(
-  "onNodeSelect should be called when manually node changes from not selected to selected", () => {
-    const { container } = render(
-      <TreeViewOnNodeSelect />
-    );
-    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
-  
     if (document.activeElement == null)
       throw new Error(
         `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
       );
-  
+
+    fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expectedSelected);
+    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expectedDeselected);
+    expect(nodes[4]).toHaveAttribute("aria-checked", "false");
+  });
+
+  test("should be called only for interacted node", () => {
+    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const nodes = queryAllByRole("treeitem");
+
+    const expected = {
+      element: { id: 1, name: "Fruits", children: [2, 3, 4, 5, 6], parent: 0 },
+      isSelected: true,
+      isBranch: true,
+      treeState: {
+        disabledIds: new Set(),
+        controlledIds: new Set(),
+        expandedIds: new Set([1, 7, 11, 16]),
+        halfSelectedIds: new Set(),
+        isFocused: true,
+        lastAction: "SELECT_MANY",
+        lastInteractedWith: 1,
+        lastManuallyToggled: 1,
+        lastUserSelect: 1,
+        selectedIds: new Set([1, 2, 3, 4, 5, 6]),
+        tabbableId: 1,
+      },
+    };
+
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+
+    fireEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]);
+
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expected);
+    expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[1]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[3]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[5]).toHaveAttribute("aria-checked", "true");
+  });
+
+  test("should not be called when controlled selection", () => {
+    render(<TreeViewOnNodeSelect selectedIds={[19]} onNodeSelect={mockedOnNodeSelect} />);
+    expect(mockedOnNodeSelect).not.toHaveBeenCalled();
+  });
+
+  test("should be called when manually node changes from not selected to selected", () => {
+    const { container } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+
     fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //select Bananas
-  
+
     expect(getNodes()[2]).toHaveAttribute("aria-checked", "true");
-    expect(console.log).toBeCalled();
-  }
-);
+    expect(mockedOnNodeSelect).toHaveBeenCalled();
+  });
 
-test("onNodeSelect should be called when manually node changes from selected to not selected", () => {
-  const { container } = render(
-    <TreeViewOnNodeSelect defaultSelectedIds={[3]} />
-  );
-  const getNodes = () => container.querySelectorAll('[role="treeitem"]');
-
-  expect(getNodes()[2]).toHaveAttribute("aria-checked", "true");
-
-  if (document.activeElement == null)
-    throw new Error(
-      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+  test("should be called when manually node changes from selected to not selected", () => {
+    const { container } = render(
+      <TreeViewOnNodeSelect defaultSelectedIds={[3]} onNodeSelect={mockedOnNodeSelect} />
     );
+    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
 
-  fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //unselect Bananas
+    expect(getNodes()[2]).toHaveAttribute("aria-checked", "true");
 
-  expect(getNodes()[2]).toHaveAttribute("aria-checked", "false");
-  expect(console.log).toBeCalled();
-});
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
 
-test("onNodeSelect should be called when manually node changes from half-selected to selected", () => {
-  const { container } = render(
-    <TreeViewOnNodeSelect defaultSelectedIds={[3]} />
-  );
-  const getHalfSelectedNodes = () =>
-    container.querySelectorAll(".half-checked");
-  const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+    fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //unselect Bananas
 
-  expect(getHalfSelectedNodes().length).toBe(1);
+    expect(getNodes()[2]).toHaveAttribute("aria-checked", "false");
+    expect(mockedOnNodeSelect).toHaveBeenCalled();
+  });
 
-  if (document.activeElement == null)
-    throw new Error(
-      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+  test("should be called when manually node changes from half-selected to selected", () => {
+    const { container } = render(
+      <TreeViewOnNodeSelect defaultSelectedIds={[3]} onNodeSelect={mockedOnNodeSelect} />
     );
+    const getHalfSelectedNodes = () =>
+      container.querySelectorAll(".half-checked");
+    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
 
-  fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
-  expect(getHalfSelectedNodes().length).toBe(0);
-  expect(getNodes()[0]).toHaveAttribute("aria-checked", "true");
-  expect(console.log).toBeCalled();
-});
+    expect(getHalfSelectedNodes().length).toBe(1);
 
-test("onNodeSelect should be called when manually node changes from selected to half-selected", () => {
-  const { container } = render(
-    <TreeViewOnNodeSelect defaultSelectedIds={[1, 3]} propagateSelect={false} />
-  );
-  const getHalfSelectedNodes = () =>
-    container.querySelectorAll(".half-checked");
-  const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
 
-  expect(getHalfSelectedNodes().length).toBe(1);
+    fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
+    expect(getHalfSelectedNodes().length).toBe(0);
+    expect(getNodes()[0]).toHaveAttribute("aria-checked", "true");
+    expect(mockedOnNodeSelect).toHaveBeenCalled();
+  });
 
-  if (document.activeElement == null)
-    throw new Error(
-      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+  test("should be called when manually node changes from selected to half-selected", () => {
+    const { container } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect}
+        defaultSelectedIds={[1, 3]}
+        propagateSelect={false}
+      />
     );
+    const getHalfSelectedNodes = () =>
+      container.querySelectorAll(".half-checked");
+    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
 
-  fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
-  expect(getHalfSelectedNodes().length).toBe(0);
-  expect(console.log).toBeCalled();
+    expect(getHalfSelectedNodes().length).toBe(1);
 
-  fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //half-select Fruits
-  expect(getHalfSelectedNodes().length).toBe(1);
-  expect(console.log).toBeCalled();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+
+    fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
+    expect(getHalfSelectedNodes().length).toBe(0);
+    expect(mockedOnNodeSelect).toHaveBeenCalled();
+
+    fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //half-select Fruits
+    expect(getHalfSelectedNodes().length).toBe(1);
+    expect(mockedOnNodeSelect).toHaveBeenCalled();
+  });
 });
 
 describe("onNodeSelect should be called when node selected/deselected via keyboard", () => {
+  beforeEach(() => {
+    mockedOnNodeSelect = jest.fn();
+  })
   test("Enter", () => {
     const expected = {
       element: { children: [], id: 2, name: "Avocados", parent: 1 },
@@ -308,7 +324,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
+    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -319,7 +335,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
     fireEvent.keyDown(nodes[0], { key: "ArrowDown" }); //Avocados
     fireEvent.keyDown(document.activeElement, { key: "Enter" });
 
-    expect(console.log).toBeCalledWith(expected);
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expected);
     expect(nodes[1]).toHaveAttribute("aria-checked", "true");
   });
   test("Space", () => {
@@ -342,7 +358,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
+    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -353,7 +369,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
     fireEvent.keyDown(nodes[0], { key: "ArrowDown" }); //Avocados
     fireEvent.keyDown(document.activeElement, { key: " " });
 
-    expect(console.log).toBeCalledWith(expected);
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expected);
     expect(nodes[1]).toHaveAttribute("aria-checked", "true");
   });
   test("Shift+ArrowUp", () => {
@@ -376,7 +392,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
+    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -390,7 +406,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       shiftKey: true,
     });
 
-    expect(console.log).toBeCalledWith(expected);
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expected);
     expect(nodes[0]).toHaveAttribute("aria-checked", "true");
   });
   test("Shift+ArrowDown", () => {
@@ -413,7 +429,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect />);
+    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -423,7 +439,7 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
     nodes[0].focus(); //Fruits
     fireEvent.keyDown(nodes[0], { key: "ArrowDown", shiftKey: true }); //Avocados
 
-    expect(console.log).toBeCalledWith(expected);
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(expected);
     expect(nodes[1]).toHaveAttribute("aria-checked", "true");
   });
 });
