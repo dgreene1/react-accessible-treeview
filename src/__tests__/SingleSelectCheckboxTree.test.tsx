@@ -78,6 +78,7 @@ function SingleSelectCheckboxTree({
               >
                 <div
                   className="checkbox-icon"
+                  data-testid="check-box"
                   onClick={(e) => {
                     handleSelect(e);
                     e.stopPropagation();
@@ -261,7 +262,10 @@ describe("Single select", () => {
       ],
     };
     const { queryAllByRole, container } = render(
-      <SingleSelectCheckboxTree data={flattenTree(testData)} defaultExpandedIds={[1,2,3,4]} />
+      <SingleSelectCheckboxTree
+        data={flattenTree(testData)}
+        defaultExpandedIds={[1, 2, 3, 4]}
+      />
     );
     const nodes = queryAllByRole("treeitem");
 
@@ -270,11 +274,42 @@ describe("Single select", () => {
       throw new Error(
         `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
       );
-    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });//Hot drinks
-    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });//Non-alcohol
-    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });//Tea
+    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Hot drinks
+    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Non-alcohol
+    fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //Tea
     fireEvent.keyDown(document.activeElement, { key: "Enter" });
 
     expect(container.querySelectorAll("[aria-checked='true']").length).toBe(4);
+  });
+  test("should set tabindex=0 for last interacted element", () => {
+    const { queryAllByRole, getAllByTestId } = render(
+      <SingleSelectCheckboxTree />
+    );
+    let nodes = queryAllByRole("treeitem");
+
+    nodes[0].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    const checkableNode = getAllByTestId("check-box");
+    fireEvent.click(checkableNode[0]);
+    nodes = queryAllByRole("treeitem");
+    expect(nodes[0]).toHaveAttribute("tabindex", "0");
+    expect(nodes[1]).toHaveAttribute("tabindex", "-1");
+    expect(nodes[2]).toHaveAttribute("tabindex", "-1");
+
+    fireEvent.click(checkableNode[1]);
+    nodes = queryAllByRole("treeitem");
+    expect(nodes[0]).toHaveAttribute("tabindex", "-1");
+    expect(nodes[1]).toHaveAttribute("tabindex", "0");
+    expect(nodes[2]).toHaveAttribute("tabindex", "-1");
+
+    //deselect
+    fireEvent.click(checkableNode[0]);
+    nodes = queryAllByRole("treeitem");
+    expect(nodes[0]).toHaveAttribute("tabindex", "0");
+    expect(nodes[1]).toHaveAttribute("tabindex", "-1");
+    expect(nodes[2]).toHaveAttribute("tabindex", "-1");
   });
 });
