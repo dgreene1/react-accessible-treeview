@@ -391,7 +391,7 @@ const useTree = ({
       const tabbableNode = nodeRefs.current[tabbableId];
       const leafNode = leafRefs.current[lastInteractedWith];
       scrollToRef(leafNode);
-      tabbableId === lastInteractedWith && focusRef(tabbableNode);
+      focusRef(tabbableNode);
     }
   }, [tabbableId, nodeRefs, leafRefs, lastInteractedWith]);
 
