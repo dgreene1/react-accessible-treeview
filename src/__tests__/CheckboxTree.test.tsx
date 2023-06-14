@@ -335,7 +335,7 @@ test("Should not throw error when previous selectedId is not in tree data", () =
   expect(newNodes.length).toBe(1);
 });
 
-test.only("should set tabindex=0 for last interacted element", () => {
+test("should set tabindex=0 for last interacted element", () => {
   const { queryAllByRole, getAllByTestId } = render(<CheckboxTree />);
   let nodes = queryAllByRole("treeitem");
 
