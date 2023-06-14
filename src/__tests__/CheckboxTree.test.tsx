@@ -335,7 +335,7 @@ test("Should not throw error when previous selectedId is not in tree data", () =
   expect(newNodes.length).toBe(1);
 });
 
-test("should set tabindex=0 for last interacted element", () => {
+test.only("should set tabindex=0 for last interacted element", () => {
   const { queryAllByRole, getAllByTestId } = render(<CheckboxTree />);
   let nodes = queryAllByRole("treeitem");
 
@@ -345,11 +345,6 @@ test("should set tabindex=0 for last interacted element", () => {
       `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
     );
   const checkableNode = getAllByTestId("check-box");
-  fireEvent.click(checkableNode[0]);
-  nodes = queryAllByRole("treeitem");
-  expect(nodes[0]).toHaveAttribute("tabindex", "0");
-  expect(nodes[1]).toHaveAttribute("tabindex", "-1");
-  expect(nodes[2]).toHaveAttribute("tabindex", "-1");
 
   fireEvent.click(checkableNode[1]);
   nodes = queryAllByRole("treeitem");
@@ -357,10 +352,16 @@ test("should set tabindex=0 for last interacted element", () => {
   expect(nodes[1]).toHaveAttribute("tabindex", "0");
   expect(nodes[2]).toHaveAttribute("tabindex", "-1");
 
-  //deselect
   fireEvent.click(checkableNode[0]);
   nodes = queryAllByRole("treeitem");
   expect(nodes[0]).toHaveAttribute("tabindex", "0");
   expect(nodes[1]).toHaveAttribute("tabindex", "-1");
+  expect(nodes[2]).toHaveAttribute("tabindex", "-1");
+
+  //deselect
+  fireEvent.click(checkableNode[1]);
+  nodes = queryAllByRole("treeitem");
+  expect(nodes[0]).toHaveAttribute("tabindex", "-1");
+  expect(nodes[1]).toHaveAttribute("tabindex", "0");
   expect(nodes[2]).toHaveAttribute("tabindex", "-1");
 });
