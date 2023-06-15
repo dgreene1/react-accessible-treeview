@@ -107,7 +107,7 @@ function TreeViewOnNodeSelect(props: TreeViewOnNodeSelectProps) {
   );
 }
 
-let mockedOnNodeSelect: ((props: ITreeViewOnNodeSelectProps) => void);
+let mockedOnNodeSelect: (props: ITreeViewOnNodeSelectProps) => void;
 
 describe("onNodeSelect", () => {
   beforeEach(() => {
@@ -174,7 +174,9 @@ describe("onNodeSelect", () => {
   });
 
   test("should be called only for interacted node", () => {
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const { queryAllByRole } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
+    );
     const nodes = queryAllByRole("treeitem");
 
     const expected = {
@@ -213,12 +215,19 @@ describe("onNodeSelect", () => {
   });
 
   test("should not be called when controlled selection", () => {
-    render(<TreeViewOnNodeSelect selectedIds={[19]} onNodeSelect={mockedOnNodeSelect} />);
+    render(
+      <TreeViewOnNodeSelect
+        selectedIds={[19]}
+        onNodeSelect={mockedOnNodeSelect}
+      />
+    );
     expect(mockedOnNodeSelect).not.toHaveBeenCalled();
   });
 
   test("should be called when manually node changes from not selected to selected", () => {
-    const { container } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const { container } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
+    );
     const getNodes = () => container.querySelectorAll('[role="treeitem"]');
 
     if (document.activeElement == null)
@@ -229,12 +238,20 @@ describe("onNodeSelect", () => {
     fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //select Bananas
 
     expect(getNodes()[2]).toHaveAttribute("aria-checked", "true");
-    expect(mockedOnNodeSelect).toHaveBeenCalled();
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        element: { id: 3, name: "Bananas", children: [], parent: 1 },
+        isSelected: true,
+      })
+    );
   });
 
   test("should be called when manually node changes from selected to not selected", () => {
     const { container } = render(
-      <TreeViewOnNodeSelect defaultSelectedIds={[3]} onNodeSelect={mockedOnNodeSelect} />
+      <TreeViewOnNodeSelect
+        defaultSelectedIds={[3]}
+        onNodeSelect={mockedOnNodeSelect}
+      />
     );
     const getNodes = () => container.querySelectorAll('[role="treeitem"]');
 
@@ -248,12 +265,20 @@ describe("onNodeSelect", () => {
     fireEvent.click(getNodes()[2].getElementsByClassName("checkbox-icon")[0]); //unselect Bananas
 
     expect(getNodes()[2]).toHaveAttribute("aria-checked", "false");
-    expect(mockedOnNodeSelect).toHaveBeenCalled();
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        element: { id: 3, name: "Bananas", children: [], parent: 1 },
+        isSelected: false,
+      })
+    );
   });
 
   test("should be called when manually node changes from half-selected to selected", () => {
     const { container } = render(
-      <TreeViewOnNodeSelect defaultSelectedIds={[3]} onNodeSelect={mockedOnNodeSelect} />
+      <TreeViewOnNodeSelect
+        defaultSelectedIds={[3]}
+        onNodeSelect={mockedOnNodeSelect}
+      />
     );
     const getHalfSelectedNodes = () =>
       container.querySelectorAll(".half-checked");
@@ -269,12 +294,23 @@ describe("onNodeSelect", () => {
     fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
     expect(getHalfSelectedNodes().length).toBe(0);
     expect(getNodes()[0]).toHaveAttribute("aria-checked", "true");
-    expect(mockedOnNodeSelect).toHaveBeenCalled();
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        element: {
+          id: 1,
+          name: "Fruits",
+          children: [2, 3, 4, 5, 6],
+          parent: 0,
+        },
+        isSelected: true,
+      })
+    );
   });
 
   test("should be called when manually node changes from selected to half-selected", () => {
     const { container } = render(
-      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect}
+      <TreeViewOnNodeSelect
+        onNodeSelect={mockedOnNodeSelect}
         defaultSelectedIds={[1, 3]}
         propagateSelect={false}
       />
@@ -292,18 +328,38 @@ describe("onNodeSelect", () => {
 
     fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
     expect(getHalfSelectedNodes().length).toBe(0);
-    expect(mockedOnNodeSelect).toHaveBeenCalled();
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        element: {
+          id: 1,
+          name: "Fruits",
+          children: [2, 3, 4, 5, 6],
+          parent: 0,
+        },
+        isSelected: true,
+      })
+    );
 
     fireEvent.click(getNodes()[0].getElementsByClassName("checkbox-icon")[0]); //half-select Fruits
     expect(getHalfSelectedNodes().length).toBe(1);
-    expect(mockedOnNodeSelect).toHaveBeenCalled();
+    expect(mockedOnNodeSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        element: {
+          id: 1,
+          name: "Fruits",
+          children: [2, 3, 4, 5, 6],
+          parent: 0,
+        },
+        isSelected: false,
+      })
+    );
   });
 });
 
 describe("onNodeSelect should be called when node selected/deselected via keyboard", () => {
   beforeEach(() => {
     mockedOnNodeSelect = jest.fn();
-  })
+  });
   test("Enter", () => {
     const expected = {
       element: { children: [], id: 2, name: "Avocados", parent: 1 },
@@ -324,7 +380,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const { queryAllByRole } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
+    );
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -358,7 +416,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const { queryAllByRole } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
+    );
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -392,7 +452,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const { queryAllByRole } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
+    );
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
@@ -429,7 +491,9 @@ describe("onNodeSelect should be called when node selected/deselected via keyboa
       },
     };
 
-    const { queryAllByRole } = render(<TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />);
+    const { queryAllByRole } = render(
+      <TreeViewOnNodeSelect onNodeSelect={mockedOnNodeSelect} />
+    );
     const nodes = queryAllByRole("treeitem");
 
     if (document.activeElement == null)
