@@ -31,6 +31,8 @@ export type TreeViewAction =
       id: NodeId;
       lastInteractedWith?: NodeId | null;
       lastManuallyToggled?: NodeId | null;
+      keepFocus?: boolean;
+      NotUserAction?: boolean;
     }
   | {
       type: "SELECT";
@@ -187,9 +189,11 @@ export const treeReducer = (
         ...state,
         selectedIds,
         halfSelectedIds,
+        tabbableId: action.keepFocus ? state.tabbableId : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
         lastManuallyToggled: action.lastManuallyToggled,
+        lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
       };
     }
     case treeTypes.select: {
