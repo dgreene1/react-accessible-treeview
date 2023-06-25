@@ -4,7 +4,6 @@ import { ITreeViewState, treeTypes, TreeViewAction } from "./reducer";
 import {
   ClickActions,
   EventCallback,
-  IMetadata,
   INode,
   INodeRef,
   INodeRefs,
@@ -27,7 +26,7 @@ import {
 } from "./utils";
 import { baseClassNames, clickActions } from "./constants";
 
-export interface INodeProps<M = IMetadata> {
+export interface INodeProps<M = unknown> {
   element: INode<M>;
   dispatch: React.Dispatch<TreeViewAction>;
   data: INode<M>[];
@@ -55,7 +54,7 @@ export interface INodeProps<M = IMetadata> {
   propagateSelectUpwards: boolean;
 }
 
-export interface INodeGroupProps<M = IMetadata>
+export interface INodeGroupProps<M = unknown>
   extends Omit<INodeProps<M>, "setsize" | "posinset"> {
   getClasses: (className: string) => string;
   /** don't send this. The NodeGroup render function, determines it for you */
@@ -69,7 +68,7 @@ export interface INodeGroupProps<M = IMetadata>
  */
 // TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const removeIrrelevantGroupProps = <M extends unknown = IMetadata>(
+const removeIrrelevantGroupProps = <M extends unknown = unknown>(
   nodeProps: INodeProps<M>
 ): Omit<INodeGroupProps<M>, "getClasses"> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -79,7 +78,7 @@ const removeIrrelevantGroupProps = <M extends unknown = IMetadata>(
 
 // TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-export const Node = <M extends unknown = IMetadata>(props: INodeProps<M>) => {
+export const Node = <M extends unknown = unknown>(props: INodeProps<M>) => {
   const {
     element,
     dispatch,
@@ -107,7 +106,7 @@ export const Node = <M extends unknown = IMetadata>(props: INodeProps<M>) => {
     state,
   } = props;
 
-  const handleExpand: EventCallback = (event) => {
+  const handleExpand: EventCallback = event => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids: NodeId[] = [
@@ -334,7 +333,7 @@ export const Node = <M extends unknown = IMetadata>(props: INodeProps<M>) => {
 
 // TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-export const NodeGroup = <M extends unknown = IMetadata>({
+export const NodeGroup = <M extends unknown = unknown>({
   data,
   element,
   expandedIds,

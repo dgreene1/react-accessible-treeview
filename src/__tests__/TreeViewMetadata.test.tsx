@@ -5,6 +5,10 @@ import { render } from "@testing-library/react";
 import { flattenTree } from "../TreeView/utils";
 import { INode } from "../TreeView/types";
 
+interface Metadata {
+  color: string;
+}
+
 const initialTreeNode = {
   name: "",
   id: 12,
@@ -46,10 +50,10 @@ const initialTreeNode = {
   ],
 };
 
-const mapDataType = flattenTree(initialTreeNode);
+const mapDataType = flattenTree<Metadata>(initialTreeNode);
 
 interface TreeViewDataTypeProps {
-  data: INode<{ color: string }>[];
+  data: INode<Metadata>[];
 }
 
 function TreeViewMetadata(props: TreeViewDataTypeProps) {

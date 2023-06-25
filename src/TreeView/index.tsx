@@ -17,7 +17,6 @@ import {
 } from './reducer';
 import {
   ClickActions,
-  IMetadata,
   INode,
   INodeRefs,
   INodeRendererProps,
@@ -57,7 +56,7 @@ import {
   NODE_ACTIONS,
 } from './constants';
 
-interface IUseTreeProps<M = IMetadata> {
+interface IUseTreeProps<M = unknown> {
   data: INode<M>[];
   controlledSelectedIds?: NodeId[];
   controlledExpandedIds?: NodeId[];
@@ -79,7 +78,7 @@ interface IUseTreeProps<M = IMetadata> {
 
 // TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const useTree = <M extends unknown = IMetadata>({
+const useTree = <M extends unknown = unknown>({
   data,
   controlledSelectedIds,
   controlledExpandedIds,
@@ -412,7 +411,7 @@ const useTree = <M extends unknown = IMetadata>({
   return [state, dispatch] as const;
 };
 
-export interface ITreeViewOnSelectProps<M = IMetadata> {
+export interface ITreeViewOnSelectProps<M = unknown> {
   element: INode<M>;
   isBranch: boolean;
   isExpanded: boolean;
@@ -422,14 +421,14 @@ export interface ITreeViewOnSelectProps<M = IMetadata> {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewOnNodeSelectProps<M = IMetadata> {
+export interface ITreeViewOnNodeSelectProps<M = unknown> {
   element: INode<M>;
   isSelected: boolean;
   isBranch: boolean;
   treeState?: ITreeViewState;
 }
 
-export interface ITreeViewOnExpandProps<M = IMetadata> {
+export interface ITreeViewOnExpandProps<M = unknown> {
   element: INode<M>;
   isExpanded: boolean;
   isSelected: boolean;
@@ -438,7 +437,7 @@ export interface ITreeViewOnExpandProps<M = IMetadata> {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewOnLoadDataProps<M = IMetadata> {
+export interface ITreeViewOnLoadDataProps<M = unknown> {
   element: INode<M>;
   isExpanded: boolean;
   isSelected: boolean;
@@ -447,7 +446,7 @@ export interface ITreeViewOnLoadDataProps<M = IMetadata> {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewProps<M = IMetadata> {
+export interface ITreeViewProps<M = unknown> {
   /** Tree data*/
   data: INode<M>[];
   /** Function called when a node changes its selected state */
@@ -494,6 +493,14 @@ export interface ITreeViewProps<M = IMetadata> {
     treeState: ITreeViewState;
     dispatch: React.Dispatch<TreeViewAction>;
   }) => void;
+}
+
+interface TreeViewComponent {
+  <M = unknown>(
+    props: PropsWithoutRef<ITreeViewProps<M>>,
+    ref: RefAttributes<HTMLUListElement>
+  ): ReactElement | null;
+  propTypes: WeakValidationMap<PropsWithoutRef<ITreeViewProps>>;
 }
 
 const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
@@ -612,18 +619,11 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       </ul>
     );
   }
-  // TS can't differentiate between JSX and generics in TSX unless we extend something
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-) as (<M extends unknown = IMetadata>(
-  props: PropsWithoutRef<ITreeViewProps<M>>,
-  ref: RefAttributes<HTMLUListElement>
-) => ReactElement | null) & {
-  propTypes: WeakValidationMap<PropsWithoutRef<ITreeViewProps>>;
-};
+) as TreeViewComponent;
 
 // TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const handleKeyDown = <M extends unknown = IMetadata>({
+const handleKeyDown = <M extends unknown = unknown>({
   data,
   expandedIds,
   selectedIds,

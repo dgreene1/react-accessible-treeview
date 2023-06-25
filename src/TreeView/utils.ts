@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { EventCallback, IMetadata, INode, INodeRef, NodeId } from "./types";
+import { EventCallback, INode, INodeRef, NodeId } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};
@@ -37,7 +37,7 @@ export const usePrevious = (x: Set<NodeId>) => {
   return ref.current;
 };
 
-export const usePreviousData = <M = IMetadata>(value: INode<M>[]) => {
+export const usePreviousData = <M = unknown>(value: INode<M>[]) => {
   const ref = useRef<INode<M>[]>();
   useEffect(() => {
     ref.current = value;
@@ -45,7 +45,7 @@ export const usePreviousData = <M = IMetadata>(value: INode<M>[]) => {
   return ref.current;
 };
 
-export const isBranchNode = <M = IMetadata>(data: INode<M>[], i: NodeId) => {
+export const isBranchNode = <M = unknown>(data: INode<M>[], i: NodeId) => {
   const node = getTreeNode(data, i);
   return !!node.children?.length;
 };
@@ -62,11 +62,11 @@ export const focusRef = (ref: INodeRef) => {
   }
 };
 
-export const getParent = <M = IMetadata>(data: INode<M>[], id: NodeId) => {
+export const getParent = <M = unknown>(data: INode<M>[], id: NodeId) => {
   return getTreeNode(data, id).parent;
 };
 
-export const getAncestors = <M = IMetadata>(
+export const getAncestors = <M = unknown>(
   data: INode<M>[],
   childId: NodeId,
   disabledIds: Set<NodeId>
@@ -89,7 +89,7 @@ export const getAncestors = <M = IMetadata>(
   return ancestors;
 };
 
-export const getDescendants = <M = IMetadata>(
+export const getDescendants = <M = unknown>(
   data: INode<M>[],
   id: NodeId,
   disabledIds: Set<NodeId>
@@ -107,13 +107,13 @@ export const getDescendants = <M = IMetadata>(
   return descendants;
 };
 
-export const getChildren = <M = IMetadata>(data: INode<M>[], id: NodeId) => {
+export const getChildren = <M = unknown>(data: INode<M>[], id: NodeId) => {
   const children: NodeId[] = [];
   const node = getTreeNode(data, id);
   return node.children == null ? children : node.children;
 };
 
-export const getSibling = <M = IMetadata>(
+export const getSibling = <M = unknown>(
   data: INode<M>[],
   id: NodeId,
   diff: number
@@ -130,7 +130,7 @@ export const getSibling = <M = IMetadata>(
   return null;
 };
 
-export const getLastAccessible = <M = IMetadata>(
+export const getLastAccessible = <M = unknown>(
   data: INode<M>[],
   id: NodeId,
   expandedIds: Set<NodeId>
@@ -149,7 +149,7 @@ export const getLastAccessible = <M = IMetadata>(
   return node.id;
 };
 
-export const getPreviousAccessible = <M = IMetadata>(
+export const getPreviousAccessible = <M = unknown>(
   data: INode<M>[],
   id: NodeId,
   expandedIds: Set<NodeId>
@@ -164,7 +164,7 @@ export const getPreviousAccessible = <M = IMetadata>(
   return getLastAccessible(data, previous, expandedIds);
 };
 
-export const getNextAccessible = <M = IMetadata>(
+export const getNextAccessible = <M = unknown>(
   data: INode<M>[],
   id: NodeId,
   expandedIds: Set<NodeId>
@@ -187,7 +187,7 @@ export const getNextAccessible = <M = IMetadata>(
   }
 };
 
-export const propagateSelectChange = <M = IMetadata>(
+export const propagateSelectChange = <M = unknown>(
   data: INode<M>[],
   ids: Set<NodeId>,
   selectedIds: Set<NodeId>,
@@ -253,7 +253,7 @@ export const propagateSelectChange = <M = IMetadata>(
   return changes;
 };
 
-export const getAccessibleRange = <M = IMetadata>({
+export const getAccessibleRange = <M = unknown>({
   data,
   expandedIds,
   from,
@@ -288,14 +288,14 @@ export const getAccessibleRange = <M = IMetadata>({
   return range;
 };
 
-interface ITreeNode<M = IMetadata> {
+interface ITreeNode<M = unknown> {
   id?: NodeId;
   name: string;
   children?: ITreeNode<M>[];
   metadata?: M;
 }
 
-export const flattenTree = <M = IMetadata>(tree: ITreeNode<M>): INode<M>[] => {
+export const flattenTree = <M = unknown>(tree: ITreeNode<M>): INode<M>[] => {
   let internalCount = 0;
   const flattenedTree: INode<M>[] = [];
 
@@ -362,7 +362,7 @@ export const getAriaChecked = ({
   return isSelected ? true : undefined;
 };
 
-export const propagatedIds = <M = IMetadata>(
+export const propagatedIds = <M = unknown>(
   data: INode<M>[],
   ids: NodeId[],
   disabledIds: Set<NodeId>
@@ -394,7 +394,7 @@ export const onComponentBlur = (
   }
 };
 
-export const isBranchSelectedAndHasSelectedDescendants = <M = IMetadata>(
+export const isBranchSelectedAndHasSelectedDescendants = <M = unknown>(
   data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
@@ -408,7 +408,7 @@ export const isBranchSelectedAndHasSelectedDescendants = <M = IMetadata>(
   );
 };
 
-export const isBranchNotSelectedAndHasAllSelectedDescendants = <M = IMetadata>(
+export const isBranchNotSelectedAndHasAllSelectedDescendants = <M = unknown>(
   data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
@@ -422,7 +422,7 @@ export const isBranchNotSelectedAndHasAllSelectedDescendants = <M = IMetadata>(
   );
 };
 
-export const isBranchNotSelectedAndHasOnlySelectedChild = <M = IMetadata>(
+export const isBranchNotSelectedAndHasOnlySelectedChild = <M = unknown>(
   data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
@@ -436,7 +436,7 @@ export const isBranchNotSelectedAndHasOnlySelectedChild = <M = IMetadata>(
   );
 };
 
-export const isBranchSelectedAndHasOnlySelectedChild = <M = IMetadata>(
+export const isBranchSelectedAndHasOnlySelectedChild = <M = unknown>(
   data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
@@ -450,7 +450,7 @@ export const isBranchSelectedAndHasOnlySelectedChild = <M = IMetadata>(
   );
 };
 
-export const getTreeParent = <M = IMetadata>(data: INode<M>[]): INode<M> => {
+export const getTreeParent = <M = unknown>(data: INode<M>[]): INode<M> => {
   const parentNode: INode<M> | undefined = data.find(
     (node) => node.parent === null
   );
@@ -462,7 +462,7 @@ export const getTreeParent = <M = IMetadata>(data: INode<M>[]): INode<M> => {
   return parentNode;
 };
 
-export const getTreeNode = <M = IMetadata>(
+export const getTreeNode = <M = unknown>(
   data: INode<M>[],
   id: NodeId
 ): INode<M> => {

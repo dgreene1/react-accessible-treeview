@@ -17,9 +17,7 @@ export type EventCallback = <T, E>(
   event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
   ) => void;
 
-export type IMetadata = undefined;
-
-  export interface INode<M = IMetadata> {
+  export interface INode<M = unknown> {
     /** A non-negative integer that uniquely identifies the node */
     id: NodeId;
     /** Used to match on key press */
@@ -34,7 +32,7 @@ export type IMetadata = undefined;
     metadata?: M;
   }
 
-  export interface INodeRendererProps<M = IMetadata> {
+  export interface INodeRendererProps<M = unknown> {
     /** The object that represents the rendered node */
     element: INode<M>;
     /** A function which gives back the props to pass to the node */
