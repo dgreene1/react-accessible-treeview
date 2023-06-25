@@ -1,5 +1,5 @@
-import cx from "classnames";
-import PropTypes from "prop-types";
+import cx from 'classnames';
+import PropTypes from 'prop-types';
 import React, {
   useEffect,
   useReducer,
@@ -7,13 +7,14 @@ import React, {
   PropsWithoutRef,
   RefAttributes,
   ReactElement,
-} from "react";
+  WeakValidationMap,
+} from 'react';
 import {
   ITreeViewState,
   treeReducer,
   treeTypes,
   TreeViewAction,
-} from "./reducer";
+} from './reducer';
 import {
   ClickActions,
   IMetadata,
@@ -22,7 +23,7 @@ import {
   INodeRendererProps,
   NodeAction,
   NodeId,
-} from "./types";
+} from './types';
 import {
   difference,
   focusRef,
@@ -47,14 +48,14 @@ import {
   noop,
   isBranchNotSelectedAndHasOnlySelectedChild,
   isBranchSelectedAndHasOnlySelectedChild,
-} from "./utils";
-import { Node } from "./node";
+} from './utils';
+import { Node } from './node';
 import {
   baseClassNames,
   clickActions,
   CLICK_ACTIONS,
   NODE_ACTIONS,
-} from "./constants";
+} from './constants';
 
 interface IUseTreeProps<M = IMetadata> {
   data: INode<M>[];
@@ -321,12 +322,12 @@ const useTree = <M extends unknown = IMetadata>({
       //========START FILTER OUT NOT EXISTING IDS=========
       // This block of code filters out from propagation check ids that aren't in data anymore
       const idsNotInData: NodeId[] = [];
-      idsToUpdate.forEach((idToUpdate) => {
-        if (!data.find((node) => node.id === idToUpdate)) {
+      idsToUpdate.forEach(idToUpdate => {
+        if (!data.find(node => node.id === idToUpdate)) {
           idsNotInData.push(idToUpdate);
         }
       });
-      idsNotInData.forEach((id) => idsToUpdate.delete(id));
+      idsNotInData.forEach(id => idsToUpdate.delete(id));
       //========END FILTER OUT NOT EXISTING IDS===========
       const { every, some, none } = propagateSelectChange(
         data,
@@ -505,7 +506,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       onNodeSelect = noop,
       onExpand = noop,
       onLoadData,
-      className = "",
+      className = '',
       multiSelect = false,
       propagateSelect = false,
       propagateSelectUpwards = false,
@@ -516,7 +517,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       defaultSelectedIds = [],
       defaultDisabledIds = [],
       clickAction = clickActions.select,
-      nodeAction = "select",
+      nodeAction = 'select',
       expandedIds,
       onBlur,
       ...other
@@ -555,9 +556,9 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       <ul
         className={cx(baseClassNames.root, className)}
         role="tree"
-        aria-multiselectable={nodeAction === "select" ? multiSelect : undefined}
+        aria-multiselectable={nodeAction === 'select' ? multiSelect : undefined}
         ref={innerRef}
-        onBlur={(event) => {
+        onBlur={event => {
           onComponentBlur(event, innerRef.current, () => {
             onBlur &&
               onBlur({
@@ -613,10 +614,12 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   }
   // TS can't differentiate between JSX and generics in TSX unless we extend something
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-) as <M extends unknown = IMetadata>(
+) as (<M extends unknown = IMetadata>(
   props: PropsWithoutRef<ITreeViewProps<M>>,
   ref: RefAttributes<HTMLUListElement>
-) => ReactElement | null;
+) => ReactElement | null) & {
+  propTypes: WeakValidationMap<PropsWithoutRef<ITreeViewProps>>;
+};
 
 // TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
@@ -651,27 +654,27 @@ const handleKeyDown = <M extends unknown = IMetadata>({
   const element = getTreeNode(data, tabbableId);
   const id = element.id;
   if (event.ctrlKey) {
-    if (event.key === "a") {
+    if (event.key === 'a') {
       event.preventDefault();
-      const dataWithoutRoot = data.filter((x) => x.parent !== null);
+      const dataWithoutRoot = data.filter(x => x.parent !== null);
       const ids = dataWithoutRoot
-        .map((x) => x.id)
-        .filter((id) => !disabledIds.has(id));
+        .map(x => x.id)
+        .filter(id => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
         multiSelect,
         select:
-          Array.from(selectedIds).filter((id) => !disabledIds.has(id))
-            .length !== ids.length,
+          Array.from(selectedIds).filter(id => !disabledIds.has(id)).length !==
+          ids.length,
         ids,
         lastInteractedWith: element.id,
       });
     } else if (
       event.shiftKey &&
-      (event.key === "Home" || event.key === "End")
+      (event.key === 'Home' || event.key === 'End')
     ) {
       const newId =
-        event.key === "Home"
+        event.key === 'Home'
           ? getTreeParent(data).children[0]
           : getLastAccessible(data, id, expandedIds);
       const range = getAccessibleRange({
@@ -679,7 +682,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
         expandedIds,
         from: id,
         to: newId,
-      }).filter((id) => !disabledIds.has(id));
+      }).filter(id => !disabledIds.has(id));
       dispatch({
         type: treeTypes.changeSelectMany,
         multiSelect,
@@ -697,7 +700,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
 
   if (event.shiftKey) {
     switch (event.key) {
-      case "ArrowUp": {
+      case 'ArrowUp': {
         event.preventDefault();
         const previous = getPreviousAccessible(data, id, expandedIds);
         if (previous != null && !disabledIds.has(previous)) {
@@ -719,7 +722,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
         }
         return;
       }
-      case "ArrowDown": {
+      case 'ArrowDown': {
         event.preventDefault();
         const next = getNextAccessible(data, id, expandedIds);
         if (next != null && !disabledIds.has(next)) {
@@ -746,7 +749,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
     }
   }
   switch (event.key) {
-    case "ArrowDown": {
+    case 'ArrowDown': {
       event.preventDefault();
       const next = getNextAccessible(data, id, expandedIds);
       if (next != null) {
@@ -758,7 +761,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
       }
       return;
     }
-    case "ArrowUp": {
+    case 'ArrowUp': {
       event.preventDefault();
       const previous = getPreviousAccessible(data, id, expandedIds);
       if (previous != null) {
@@ -770,7 +773,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
       }
       return;
     }
-    case "ArrowLeft": {
+    case 'ArrowLeft': {
       event.preventDefault();
       if (
         (isBranchNode(data, id) || element.isBranch) &&
@@ -795,7 +798,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
         if (!isRoot) {
           const parentId = getParent(data, id);
           if (parentId == null) {
-            throw new Error("parentId of root element is null");
+            throw new Error('parentId of root element is null');
           }
           dispatch({
             type: treeTypes.focus,
@@ -806,7 +809,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
       }
       return;
     }
-    case "ArrowRight": {
+    case 'ArrowRight': {
       event.preventDefault();
       if (isBranchNode(data, id) || element.isBranch) {
         if (expandedIds.has(tabbableId)) {
@@ -821,7 +824,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
       }
       return;
     }
-    case "Home":
+    case 'Home':
       event.preventDefault();
       dispatch({
         type: treeTypes.focus,
@@ -829,7 +832,7 @@ const handleKeyDown = <M extends unknown = IMetadata>({
         lastInteractedWith: getTreeParent(data).children[0],
       });
       break;
-    case "End": {
+    case 'End': {
       event.preventDefault();
       const lastAccessible = getLastAccessible(
         data,
@@ -843,14 +846,14 @@ const handleKeyDown = <M extends unknown = IMetadata>({
       });
       return;
     }
-    case "*": {
+    case '*': {
       event.preventDefault();
       const parentId = getParent(data, id);
       if (parentId == null) {
-        throw new Error("parentId of element is null");
+        throw new Error('parentId of element is null');
       }
       const nodes = getTreeNode(data, parentId).children.filter(
-        (x) => isBranchNode(data, x) || getTreeNode(data, x).isBranch
+        x => isBranchNode(data, x) || getTreeNode(data, x).isBranch
       );
       dispatch({
         type: treeTypes.expandMany,
@@ -860,9 +863,9 @@ const handleKeyDown = <M extends unknown = IMetadata>({
       return;
     }
     //IE11 uses "Spacebar"
-    case "Enter":
-    case " ":
-    case "Spacebar":
+    case 'Enter':
+    case ' ':
+    case 'Spacebar':
       event.preventDefault();
 
       if (clickAction === clickActions.focus) {
@@ -932,9 +935,6 @@ const handleKeyDown = <M extends unknown = IMetadata>({
   }
 };
 
-// The `TreeView` typecast that enables metadata propagation can't also have a propTypes object due to the nature of the cast
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,
