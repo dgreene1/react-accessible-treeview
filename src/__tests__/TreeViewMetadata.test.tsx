@@ -49,7 +49,7 @@ const initialTreeNode = {
 const mapDataType = flattenTree(initialTreeNode);
 
 interface TreeViewDataTypeProps {
-  data: INode[];
+  data: INode<{ color: string }>[];
 }
 
 function TreeViewMetadata(props: TreeViewDataTypeProps) {
