@@ -50,7 +50,7 @@ const initialTreeNode = {
   ],
 };
 
-const mapDataType = flattenTree<Metadata>(initialTreeNode);
+const mapDataType = flattenTree(initialTreeNode);
 
 interface TreeViewDataTypeProps {
   data: INode<Metadata>[];
