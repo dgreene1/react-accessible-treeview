@@ -76,7 +76,7 @@ interface IUseTreeProps<M = unknown> {
   togglableSelect?: boolean;
 }
 
-// TS can"t differentiate between JSX and generics in TSX unless we extend something
+// TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const useTree = <M extends unknown = unknown>({
   data,
@@ -319,7 +319,7 @@ const useTree = <M extends unknown = unknown>({
         idsToUpdate.add(lastInteractedWith);
       }
       //========START FILTER OUT NOT EXISTING IDS=========
-      // This block of code filters out from propagation check ids that aren"t in data anymore
+      // This block of code filters out from propagation check ids that aren't in data anymore
       const idsNotInData: NodeId[] = [];
       idsToUpdate.forEach((idToUpdate) => {
         if (!data.find((node) => node.id === idToUpdate)) {
@@ -488,7 +488,7 @@ export interface ITreeViewProps<M = unknown> {
   togglableSelect?: boolean;
   /** action to perform on click */
   clickAction?: ClickActions;
-  /** Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won"t trigger it) */
+  /** Custom onBlur event that is triggered when focusing out of the component as a whole (moving focus between the nodes won't trigger it) */
   onBlur?: (event: {
     treeState: ITreeViewState;
     dispatch: React.Dispatch<TreeViewAction>;
@@ -621,7 +621,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   }
 ) as TreeViewComponent;
 
-// TS can"t differentiate between JSX and generics in TSX unless we extend something
+// TS can't differentiate between JSX and generics in TSX unless we extend something
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const handleKeyDown = <M extends unknown = unknown>({
   data,
@@ -664,8 +664,8 @@ const handleKeyDown = <M extends unknown = unknown>({
         type: treeTypes.changeSelectMany,
         multiSelect,
         select:
-          Array.from(selectedIds).filter((id) => !disabledIds.has(id)).length !==
-          ids.length,
+          Array.from(selectedIds).filter((id) => !disabledIds.has(id))
+            .length !== ids.length,
         ids,
         lastInteractedWith: element.id,
       });
@@ -996,7 +996,7 @@ TreeView.propTypes = {
   clickAction: PropTypes.oneOf(CLICK_ACTIONS),
 
   /** Custom onBlur event that is triggered when focusing out of the component
-   * as a whole (moving focus between the nodes won"t trigger it) */
+   * as a whole (moving focus between the nodes won't trigger it) */
   onBlur: PropTypes.func,
 
   /** Function called to load data asynchronously on expand */
