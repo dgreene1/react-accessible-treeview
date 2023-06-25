@@ -15,7 +15,7 @@ export type INodeRefs = null | React.RefObject<{
 
 export type EventCallback = <T, E>(
   event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
-) => void;
+  ) => void;
 
 export type IMetadata = undefined;
 

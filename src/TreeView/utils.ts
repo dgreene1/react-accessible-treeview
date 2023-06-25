@@ -241,7 +241,7 @@ export const propagateSelectChange = <M = IMetadata>(
           changes.none.add(parent);
         }
       } else {
-        if (enabledChildren.every(x => selectedIds.has(x))) {
+        if (enabledChildren.every((x) => selectedIds.has(x))) {
           changes.every.add(parent);
         } else {
           changes.some.add(parent);
@@ -308,7 +308,7 @@ export const flattenTree = <M = IMetadata>(tree: ITreeNode<M>): INode<M>[] => {
       metadata: tree.metadata,
     };
 
-    if (flattenedTree.find(x => x.id === node.id)) {
+    if (flattenedTree.find((x) => x.id === node.id)) {
       throw Error(
         `Multiple TreeView nodes have the same ID (${node.id}). IDs must be unique.`
       );
@@ -466,7 +466,7 @@ export const getTreeNode = <M = IMetadata>(
   data: INode<M>[],
   id: NodeId
 ): INode<M> => {
-  const treeNode = data.find(node => node.id === id);
+  const treeNode = data.find((node) => node.id === id);
 
   if (treeNode == null) {
     throw Error(`Node with id=${id} doesn't exist in the tree.`);
