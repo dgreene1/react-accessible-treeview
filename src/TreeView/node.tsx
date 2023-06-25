@@ -106,7 +106,7 @@ export const Node = <M extends unknown = unknown>(props: INodeProps<M>) => {
     state,
   } = props;
 
-  const handleExpand: EventCallback = event => {
+  const handleExpand: EventCallback = (event) => {
     if (event.ctrlKey || event.altKey || event.shiftKey) return;
     if (expandedIds.has(element.id) && propagateCollapse) {
       const ids: NodeId[] = [
