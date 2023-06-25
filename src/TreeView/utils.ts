@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { EventCallback, INode, INodeRef, NodeId } from "./types";
+import { EventCallback, IMetadata, INode, INodeRef, NodeId } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};
@@ -37,15 +37,15 @@ export const usePrevious = (x: Set<NodeId>) => {
   return ref.current;
 };
 
-export const usePreviousData = (value: INode[]) => {
-  const ref = useRef<INode[]>();
+export const usePreviousData = <M = IMetadata>(value: INode<M>[]) => {
+  const ref = useRef<INode<M>[]>();
   useEffect(() => {
     ref.current = value;
   });
   return ref.current;
 };
 
-export const isBranchNode = (data: INode[], i: NodeId) => {
+export const isBranchNode = <M = IMetadata>(data: INode<M>[], i: NodeId) => {
   const node = getTreeNode(data, i);
   return !!node.children?.length;
 };
@@ -62,12 +62,12 @@ export const focusRef = (ref: INodeRef) => {
   }
 };
 
-export const getParent = (data: INode[], id: NodeId) => {
+export const getParent = <M = IMetadata>(data: INode<M>[], id: NodeId) => {
   return getTreeNode(data, id).parent;
 };
 
-export const getAncestors = (
-  data: INode[],
+export const getAncestors = <M = IMetadata>(
+  data: INode<M>[],
   childId: NodeId,
   disabledIds: Set<NodeId>
 ) => {
@@ -89,13 +89,13 @@ export const getAncestors = (
   return ancestors;
 };
 
-export const getDescendants = (
-  data: INode[],
+export const getDescendants = <M = IMetadata>(
+  data: INode<M>[],
   id: NodeId,
   disabledIds: Set<NodeId>
 ) => {
   const descendants: NodeId[] = [];
-  const getDescendantsHelper = (data: INode[], id: NodeId) => {
+  const getDescendantsHelper = (data: INode<M>[], id: NodeId) => {
     const node = getTreeNode(data, id);
     if (node.children == null) return;
     for (const childId of node.children.filter((x) => !disabledIds.has(x))) {
@@ -107,14 +107,18 @@ export const getDescendants = (
   return descendants;
 };
 
-export const getChildren = (data: INode[], id: NodeId) => {
+export const getChildren = <M = IMetadata>(data: INode<M>[], id: NodeId) => {
   const children: NodeId[] = [];
   const node = getTreeNode(data, id);
   return node.children == null ? children : node.children;
 };
 
-export const getSibling = (data: INode[], id: NodeId, diff: number) => {
-  const parentId = getParent(data, id);
+export const getSibling = <M = IMetadata>(
+  data: INode<M>[],
+  id: NodeId,
+  diff: number
+) => {
+  const parentId = getParent<M>(data, id);
   if (parentId != null) {
     const parent = getTreeNode(data, parentId);
     const index = parent.children.indexOf(id);
@@ -126,8 +130,8 @@ export const getSibling = (data: INode[], id: NodeId, diff: number) => {
   return null;
 };
 
-export const getLastAccessible = (
-  data: INode[],
+export const getLastAccessible = <M = IMetadata>(
+  data: INode<M>[],
   id: NodeId,
   expandedIds: Set<NodeId>
 ) => {
@@ -145,8 +149,8 @@ export const getLastAccessible = (
   return node.id;
 };
 
-export const getPreviousAccessible = (
-  data: INode[],
+export const getPreviousAccessible = <M = IMetadata>(
+  data: INode<M>[],
   id: NodeId,
   expandedIds: Set<NodeId>
 ) => {
@@ -160,8 +164,8 @@ export const getPreviousAccessible = (
   return getLastAccessible(data, previous, expandedIds);
 };
 
-export const getNextAccessible = (
-  data: INode[],
+export const getNextAccessible = <M = IMetadata>(
+  data: INode<M>[],
   id: NodeId,
   expandedIds: Set<NodeId>
 ) => {
@@ -183,8 +187,8 @@ export const getNextAccessible = (
   }
 };
 
-export const propagateSelectChange = (
-  data: INode[],
+export const propagateSelectChange = <M = IMetadata>(
+  data: INode<M>[],
   ids: Set<NodeId>,
   selectedIds: Set<NodeId>,
   disabledIds: Set<NodeId>,
@@ -237,7 +241,7 @@ export const propagateSelectChange = (
           changes.none.add(parent);
         }
       } else {
-        if (enabledChildren.every((x) => selectedIds.has(x))) {
+        if (enabledChildren.every(x => selectedIds.has(x))) {
           changes.every.add(parent);
         } else {
           changes.some.add(parent);
@@ -249,13 +253,13 @@ export const propagateSelectChange = (
   return changes;
 };
 
-export const getAccessibleRange = ({
+export const getAccessibleRange = <M = IMetadata>({
   data,
   expandedIds,
   from,
   to,
 }: {
-  data: INode[];
+  data: INode<M>[];
   expandedIds: Set<NodeId>;
   from: NodeId;
   to: NodeId;
@@ -284,19 +288,14 @@ export const getAccessibleRange = ({
   return range;
 };
 
-/**
- * This is to help consumers to understand that we do not currently support metadata that is a nested object. If this is needed, make an issue in Github
- */
-export type IFlatMetadata = Record<string, string | number | undefined | null>;
-
-interface ITreeNode<M extends IFlatMetadata> {
+interface ITreeNode<M = IMetadata> {
   id?: NodeId;
   name: string;
   children?: ITreeNode<M>[];
   metadata?: M;
 }
 
-export const flattenTree = <M extends IFlatMetadata>(tree: ITreeNode<M>): INode<M>[] => {
+export const flattenTree = <M = IMetadata>(tree: ITreeNode<M>): INode<M>[] => {
   let internalCount = 0;
   const flattenedTree: INode<M>[] = [];
 
@@ -306,10 +305,10 @@ export const flattenTree = <M extends IFlatMetadata>(tree: ITreeNode<M>): INode<
       name: tree.name,
       children: [],
       parent,
-      metadata: tree.metadata ? { ...tree.metadata} : undefined
+      metadata: tree.metadata,
     };
 
-    if (flattenedTree.find((x) => x.id === node.id)) {
+    if (flattenedTree.find(x => x.id === node.id)) {
       throw Error(
         `Multiple TreeView nodes have the same ID (${node.id}). IDs must be unique.`
       );
@@ -363,8 +362,8 @@ export const getAriaChecked = ({
   return isSelected ? true : undefined;
 };
 
-export const propagatedIds = (
-  data: INode[],
+export const propagatedIds = <M = IMetadata>(
+  data: INode<M>[],
   ids: NodeId[],
   disabledIds: Set<NodeId>
 ) =>
@@ -395,8 +394,8 @@ export const onComponentBlur = (
   }
 };
 
-export const isBranchSelectedAndHasSelectedDescendants = (
-  data: INode[],
+export const isBranchSelectedAndHasSelectedDescendants = <M = IMetadata>(
+  data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
 ) => {
@@ -409,8 +408,8 @@ export const isBranchSelectedAndHasSelectedDescendants = (
   );
 };
 
-export const isBranchNotSelectedAndHasAllSelectedDescendants = (
-  data: INode[],
+export const isBranchNotSelectedAndHasAllSelectedDescendants = <M = IMetadata>(
+  data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
 ) => {
@@ -423,8 +422,8 @@ export const isBranchNotSelectedAndHasAllSelectedDescendants = (
   );
 };
 
-export const isBranchNotSelectedAndHasOnlySelectedChild = (
-  data: INode[],
+export const isBranchNotSelectedAndHasOnlySelectedChild = <M = IMetadata>(
+  data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
 ) => {
@@ -437,8 +436,8 @@ export const isBranchNotSelectedAndHasOnlySelectedChild = (
   );
 };
 
-export const isBranchSelectedAndHasOnlySelectedChild = (
-  data: INode[],
+export const isBranchSelectedAndHasOnlySelectedChild = <M = IMetadata>(
+  data: INode<M>[],
   elementId: NodeId,
   selectedIds: Set<NodeId>
 ) => {
@@ -451,8 +450,8 @@ export const isBranchSelectedAndHasOnlySelectedChild = (
   );
 };
 
-export const getTreeParent = (data: INode[]): INode => {
-  const parentNode: INode | undefined = data.find(
+export const getTreeParent = <M = IMetadata>(data: INode<M>[]): INode<M> => {
+  const parentNode: INode<M> | undefined = data.find(
     (node) => node.parent === null
   );
 
@@ -463,8 +462,11 @@ export const getTreeParent = (data: INode[]): INode => {
   return parentNode;
 };
 
-export const getTreeNode = (data: INode[], id: NodeId): INode => {
-  const treeNode = data.find((node) => node.id === id);
+export const getTreeNode = <M = IMetadata>(
+  data: INode<M>[],
+  id: NodeId
+): INode<M> => {
+  const treeNode = data.find(node => node.id === id);
 
   if (treeNode == null) {
     throw Error(`Node with id=${id} doesn't exist in the tree.`);

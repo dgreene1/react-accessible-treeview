@@ -1,6 +1,13 @@
 import cx from "classnames";
 import PropTypes from "prop-types";
-import React, { useEffect, useReducer, useRef } from "react";
+import React, {
+  useEffect,
+  useReducer,
+  useRef,
+  PropsWithoutRef,
+  RefAttributes,
+  ReactElement,
+} from "react";
 import {
   ITreeViewState,
   treeReducer,
@@ -9,6 +16,7 @@ import {
 } from "./reducer";
 import {
   ClickActions,
+  IMetadata,
   INode,
   INodeRefs,
   INodeRendererProps,
@@ -48,8 +56,8 @@ import {
   NODE_ACTIONS,
 } from "./constants";
 
-interface IUseTreeProps {
-  data: INode[];
+interface IUseTreeProps<M = IMetadata> {
+  data: INode<M>[];
   controlledSelectedIds?: NodeId[];
   controlledExpandedIds?: NodeId[];
   defaultExpandedIds?: NodeId[];
@@ -57,18 +65,20 @@ interface IUseTreeProps {
   defaultDisabledIds?: NodeId[];
   nodeRefs: INodeRefs;
   leafRefs: INodeRefs;
-  onSelect?: (props: ITreeViewOnSelectProps) => void;
-  onNodeSelect?: (props: ITreeViewOnNodeSelectProps) => void;
-  onExpand?: (props: ITreeViewOnExpandProps) => void;
+  onSelect?: (props: ITreeViewOnSelectProps<M>) => void;
+  onNodeSelect?: (props: ITreeViewOnNodeSelectProps<M>) => void;
+  onExpand?: (props: ITreeViewOnExpandProps<M>) => void;
   multiSelect?: boolean;
   propagateSelectUpwards?: boolean;
   propagateSelect?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLoadData?: (props: ITreeViewOnLoadDataProps) => Promise<any>;
+  onLoadData?: (props: ITreeViewOnLoadDataProps<M>) => Promise<any>;
   togglableSelect?: boolean;
 }
 
-const useTree = ({
+// TS can't differentiate between JSX and generics in TSX unless we extend something
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
+const useTree = <M extends unknown = IMetadata>({
   data,
   controlledSelectedIds,
   controlledExpandedIds,
@@ -85,7 +95,7 @@ const useTree = ({
   multiSelect,
   propagateSelect,
   propagateSelectUpwards,
-}: IUseTreeProps) => {
+}: IUseTreeProps<M>) => {
   const treeParentNode = getTreeParent(data);
   const [state, dispatch] = useReducer(treeReducer, {
     selectedIds: new Set<NodeId>(controlledSelectedIds || defaultSelectedIds),
@@ -401,8 +411,8 @@ const useTree = ({
   return [state, dispatch] as const;
 };
 
-export interface ITreeViewOnSelectProps {
-  element: INode;
+export interface ITreeViewOnSelectProps<M = IMetadata> {
+  element: INode<M>;
   isBranch: boolean;
   isExpanded: boolean;
   isSelected: boolean;
@@ -411,15 +421,15 @@ export interface ITreeViewOnSelectProps {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewOnNodeSelectProps {
-  element: INode;
+export interface ITreeViewOnNodeSelectProps<M = IMetadata> {
+  element: INode<M>;
   isSelected: boolean;
   isBranch: boolean;
   treeState?: ITreeViewState;
 }
 
-export interface ITreeViewOnExpandProps {
-  element: INode;
+export interface ITreeViewOnExpandProps<M = IMetadata> {
+  element: INode<M>;
   isExpanded: boolean;
   isSelected: boolean;
   isHalfSelected: boolean;
@@ -427,8 +437,8 @@ export interface ITreeViewOnExpandProps {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewOnLoadDataProps {
-  element: INode;
+export interface ITreeViewOnLoadDataProps<M = IMetadata> {
+  element: INode<M>;
   isExpanded: boolean;
   isSelected: boolean;
   isHalfSelected: boolean;
@@ -436,22 +446,22 @@ export interface ITreeViewOnLoadDataProps {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewProps {
+export interface ITreeViewProps<M = IMetadata> {
   /** Tree data*/
-  data: INode[];
+  data: INode<M>[];
   /** Function called when a node changes its selected state */
-  onSelect?: (props: ITreeViewOnSelectProps) => void;
+  onSelect?: (props: ITreeViewOnSelectProps<M>) => void;
   /** Function called when a single node is manually selected/unselected. */
-  onNodeSelect?: (props: ITreeViewOnNodeSelectProps) => void;
+  onNodeSelect?: (props: ITreeViewOnNodeSelectProps<M>) => void;
   /** Function called when a node changes its expanded state */
-  onExpand?: (props: ITreeViewOnExpandProps) => void;
+  onExpand?: (props: ITreeViewOnExpandProps<M>) => void;
   /** Function called to load data asynchronously on expand */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLoadData?: (props: ITreeViewOnLoadDataProps) => Promise<any>;
+  onLoadData?: (props: ITreeViewOnLoadDataProps<M>) => Promise<any>;
   /** className to add to the outermost ul */
   className?: string;
   /** Render prop for the node */
-  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  nodeRenderer: (props: INodeRendererProps<M>) => React.ReactNode;
   /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
   nodeAction?: NodeAction;
   /** Array with the ids of the default expanded nodes */
@@ -601,9 +611,16 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       </ul>
     );
   }
-);
+  // TS can't differentiate between JSX and generics in TSX unless we extend something
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
+) as <M extends unknown = IMetadata>(
+  props: PropsWithoutRef<ITreeViewProps<M>>,
+  ref: RefAttributes<HTMLUListElement>
+) => ReactElement | null;
 
-const handleKeyDown = ({
+// TS can't differentiate between JSX and generics in TSX unless we extend something
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
+const handleKeyDown = <M extends unknown = IMetadata>({
   data,
   expandedIds,
   selectedIds,
@@ -617,7 +634,7 @@ const handleKeyDown = ({
   togglableSelect,
   clickAction,
 }: {
-  data: INode[];
+  data: INode<M>[];
   tabbableId: NodeId;
   expandedIds: Set<NodeId>;
   selectedIds: Set<NodeId>;
@@ -915,6 +932,9 @@ const handleKeyDown = ({
   }
 };
 
+// The `TreeView` typecast that enables metadata propagation can't also have a propTypes object due to the nature of the cast
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,

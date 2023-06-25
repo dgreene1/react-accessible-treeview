@@ -1,6 +1,5 @@
 import { clickActions, nodeActions } from "./constants";
 import { ITreeViewState, TreeViewAction } from "./reducer";
-import { IFlatMetadata } from "./utils";
 
 export type ValueOf<T> = T[keyof T];
 export type ClickActions = ValueOf<typeof clickActions>;
@@ -16,9 +15,11 @@ export type INodeRefs = null | React.RefObject<{
 
 export type EventCallback = <T, E>(
   event: React.MouseEvent<T, E> | React.KeyboardEvent<T>
-  ) => void;
-  
-  export interface INode<M extends IFlatMetadata = IFlatMetadata> {
+) => void;
+
+export type IMetadata = undefined;
+
+  export interface INode<M = IMetadata> {
     /** A non-negative integer that uniquely identifies the node */
     id: NodeId;
     /** Used to match on key press */
@@ -33,9 +34,9 @@ export type EventCallback = <T, E>(
     metadata?: M;
   }
 
-  export interface INodeRendererProps {
+  export interface INodeRendererProps<M = IMetadata> {
     /** The object that represents the rendered node */
-    element: INode;
+    element: INode<M>;
     /** A function which gives back the props to pass to the node */
     getNodeProps: (args?: {
       onClick?: EventCallback;
