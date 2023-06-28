@@ -255,12 +255,12 @@ const useTree = ({
       prevExpandedIds
     );
     //nodes to be collapsed
-    const diffCollapseIds = difference(
+    /*const diffCollapseIds = difference(
       prevExpandedIds,
       toggleControlledExpandedIds
     );
     //controlled collapsing
-    /*if (diffCollapseIds.size) {
+    if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
         if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
           const ids = [id, ...getDescendants(data, id, new Set<number>())];
