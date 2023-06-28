@@ -260,7 +260,7 @@ const useTree = ({
       toggleControlledExpandedIds
     );
     //controlled collapsing
-    if (diffCollapseIds.size) {
+    /*if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
         if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
           const ids = [id, ...getDescendants(data, id, new Set<number>())];
@@ -271,7 +271,7 @@ const useTree = ({
           });
         }
       }
-    }
+    }*/
     //controlled expanding
     if (diffExpandedIds.size) {
       for (const id of diffExpandedIds) {
