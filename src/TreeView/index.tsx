@@ -255,23 +255,26 @@ const useTree = ({
       prevExpandedIds
     );
     //nodes to be collapsed
-    /*const diffCollapseIds = difference(
+    const diffCollapseIds = difference(
       prevExpandedIds,
       toggleControlledExpandedIds
     );
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
-        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
-          const ids = [id, ...getDescendants(data, id, new Set<number>())];
-          dispatch({
-            type: treeTypes.collapseMany,
-            ids: ids,
-            lastInteractedWith: id,
-          });
+        const index = data.findIndex(x => x.id === id);
+        if(index !== -1){
+          if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
+            const ids = [id, ...getDescendants(data, id, new Set<number>())];
+            dispatch({
+              type: treeTypes.collapseMany,
+              ids: ids,
+              lastInteractedWith: id,
+            });
+          }
         }
       }
-    }*/
+    }
     //controlled expanding
     if (diffExpandedIds.size) {
       for (const id of diffExpandedIds) {
