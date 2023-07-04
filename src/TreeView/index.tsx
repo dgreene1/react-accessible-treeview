@@ -351,6 +351,8 @@ const useTree = ({
             type: treeTypes.halfSelect,
             id,
             lastInteractedWith,
+            keepFocus: true,
+            NotUserAction: true,
           });
       }
       for (const id of none) {
