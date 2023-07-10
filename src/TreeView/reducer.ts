@@ -323,8 +323,8 @@ export const treeReducer = (
       if (action.multiSelect) {
         selectedIds = new Set<NodeId>(action.ids);
         if (action.ids.length) {
-          lastInteractedWith = tabbableId =
-            action.ids[action.ids.length - 1];
+          lastInteractedWith = action.ids[action.ids.length - 1];
+          tabbableId = action.ids[action.ids.length - 1];
         }
       } else {
         selectedIds = new Set<NodeId>();
@@ -335,8 +335,8 @@ export const treeReducer = (
         }
         const idToAdd = action.ids[0];
         idToAdd && selectedIds.add(idToAdd);
-        lastInteractedWith = tabbableId =
-          idToAdd ?? lastInteractedWith;
+        lastInteractedWith = idToAdd ?? lastInteractedWith;
+        tabbableId = idToAdd ?? lastInteractedWith;
       }
 
       const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
