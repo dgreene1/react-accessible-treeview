@@ -301,6 +301,49 @@ describe("Data without ids", () => {
     expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[5]).toHaveAttribute("aria-checked", "false");
   });
+
+  test("SelectedIds should propagate upward when deselection happens via selectedIds", () => {
+    const data = flattenTree({
+      name: "",
+      children: [
+        {
+          name: "Drinks",
+          children: [
+            {
+              name: "Coffee",
+              children: [
+                {
+                  name: "Arabica",
+                  children: [
+                    { name: "Black", children: [{ name: "Espresso" }] },
+                  ],
+                },
+                { name: "Robusta" },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const getNodes = () => container.querySelectorAll('[role="treeitem"]');
+
+    const { rerender, container } = render(
+      <MultiSelectCheckboxControlled selectedIds={[1]} data={data} defaultExpandedIds={[1,2,3]} />
+    );
+
+    getNodes().forEach(node => {
+      expect(node).toHaveAttribute("aria-checked", "true");
+    });
+
+    rerender(<MultiSelectCheckboxControlled selectedIds={[6]} data={data} defaultExpandedIds={[1,2,3]} />);
+    expect(getNodes()[0]).toHaveAttribute("aria-checked", "mixed");
+    expect(getNodes()[1]).toHaveAttribute("aria-checked", "mixed");
+    expect(getNodes()[4]).toHaveAttribute("aria-checked", "true");
+
+    rerender(<MultiSelectCheckboxControlled selectedIds={[]} data={data} defaultExpandedIds={[1,2,3]} />);
+    expect(getNodes()[0]).toHaveAttribute("aria-checked", "false");
+    expect(getNodes()[1]).toHaveAttribute("aria-checked", "false");
+  });
 });
 
 describe("Data with ids", () => {

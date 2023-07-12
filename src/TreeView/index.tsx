@@ -242,6 +242,7 @@ const useTree = ({
             ids: propagatedIds(data, [id], disabledIds),
             select: true,
             multiSelect,
+            lastInteractedWith: id
           });
       }
     }
