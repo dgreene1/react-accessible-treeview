@@ -215,7 +215,7 @@ export const treeReducer = (
         selectedIds,
         halfSelectedIds,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
-        isFocused: true,
+        isFocused: action.NotUserAction !== true,
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
