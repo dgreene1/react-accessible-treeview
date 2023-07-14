@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import TreeView from "../TreeView";
-import { INode } from "../TreeView/types";
+import { INode, NodeId } from "../TreeView/types";
 import { flattenTree } from "../TreeView/utils";
 
 const folder = {
@@ -54,7 +54,13 @@ function CheckboxTree({
   propagateSelect = true,
   multiSelect = true,
   data = initialData,
+  defaultSelectedIds = [],
+  defaultExpandedIds = [],
+  defaultDisabledIds = [],
 }: {
+  defaultSelectedIds?: NodeId[];
+  defaultExpandedIds?: NodeId[];
+  defaultDisabledIds?: NodeId[];
   propagateSelect?: boolean;
   multiSelect?: boolean;
   data?: INode[];
@@ -67,6 +73,9 @@ function CheckboxTree({
           aria-label="Checkbox tree"
           multiSelect={multiSelect}
           propagateSelect={propagateSelect}
+          defaultSelectedIds={defaultSelectedIds}
+          defaultExpandedIds={defaultExpandedIds}
+          defaultDisabledIds={defaultDisabledIds}
           propagateSelectUpwards
           togglableSelect
           nodeAction="check"
@@ -78,19 +87,18 @@ function CheckboxTree({
             isHalfSelected,
           }) => {
             return (
-              <div
-                {...getNodeProps({ onClick: handleExpand })}
-                className={`${isHalfSelected ? "half-selected" : ""}`}
-              >
-                <div
-                  className="checkbox-icon"
-                  data-testid="check-box"
-                  onClick={(e) => {
-                    handleSelect(e);
-                    e.stopPropagation();
-                  }}
-                />
-                <span className="name">{element.name}</span>
+              <div {...getNodeProps({ onClick: handleExpand })}>
+                <div className={`${isHalfSelected ? "half-selected" : ""}`}>
+                  <div
+                    className="checkbox-icon"
+                    data-testid="check-box"
+                    onClick={(e) => {
+                      handleSelect(e);
+                      e.stopPropagation();
+                    }}
+                  />
+                  <span className="name">{element.name}</span>
+                </div>
               </div>
             );
           }}
@@ -364,4 +372,20 @@ test("should set tabindex=0 for last interacted element", () => {
   expect(nodes[0]).toHaveAttribute("tabindex", "-1");
   expect(nodes[1]).toHaveAttribute("tabindex", "0");
   expect(nodes[2]).toHaveAttribute("tabindex", "-1");
+});
+
+test("should not set focus without interaction with the tree", () => {
+  const { queryAllByRole } = render(
+    <CheckboxTree
+      defaultSelectedIds={[8, 10, 11, 12, 14, 15]}
+      defaultExpandedIds={[1, 7, 11, 16]}
+      defaultDisabledIds={[9, 13]}
+    />
+  );
+
+  const nodes = queryAllByRole("treeitem");
+
+  expect(nodes[0]).toHaveAttribute("tabindex", "0");
+  expect(nodes[0].childNodes[0]).not.toHaveClass("tree-node--focused");
+  expect(nodes[0].childNodes[1]).not.toHaveClass("tree-node-group--focused");
 });
