@@ -222,6 +222,32 @@ const useTree = ({
     state,
   ]);
 
+  useEffect(() => {
+    if (prevData !== data) {
+      const treeParentNode = getTreeParent(data);
+      const newState = {
+        type: treeTypes.updateTreeState,
+        tabbableId: !data.find((node) => node.id === state.tabbableId)
+          ? treeParentNode.children[0]
+          : state.tabbableId,
+        lastInteractedWith: !data.find(
+          (node) => node.id === state.lastInteractedWith
+        )
+          ? null
+          : state.lastInteractedWith,
+        lastManuallyToggled: !data.find(
+          (node) => node.id === state.lastManuallyToggled
+        )
+          ? null
+          : state.lastManuallyToggled,
+        lastUserSelect: !data.find((node) => node.id === state.lastUserSelect)
+          ? treeParentNode.children[0]
+          : state.lastUserSelect,
+      };
+      dispatch(newState);
+    }
+  }, [data]);
+
   const toggledControlledIds = symmetricDifference(
     new Set(controlledSelectedIds),
     controlledIds
@@ -242,7 +268,7 @@ const useTree = ({
             ids: propagatedIds(data, [id], disabledIds),
             select: true,
             multiSelect,
-            lastInteractedWith: id
+            lastInteractedWith: id,
           });
       }
     }
