@@ -296,7 +296,9 @@ interface ITreeNode<M extends IFlatMetadata> {
   metadata?: M;
 }
 
-export const flattenTree = <M extends IFlatMetadata>(tree: ITreeNode<M>): INode<M>[] => {
+export const flattenTree = <M extends IFlatMetadata>(
+  tree: ITreeNode<M>
+): INode<M>[] => {
   let internalCount = 0;
   const flattenedTree: INode<M>[] = [];
 
@@ -306,7 +308,7 @@ export const flattenTree = <M extends IFlatMetadata>(tree: ITreeNode<M>): INode<
       name: tree.name,
       children: [],
       parent,
-      metadata: tree.metadata ? { ...tree.metadata} : undefined
+      metadata: tree.metadata ? { ...tree.metadata } : undefined,
     };
 
     if (flattenedTree.find((x) => x.id === node.id)) {
@@ -479,12 +481,13 @@ const hasDuplicates = (ids: NodeId[]): boolean => {
 };
 
 /**
- * We need to validate a tree data for 
+ * We need to validate a tree data for
  * - duplicates
  * - node references to itself
  * - node has duplicated children
  * - no root node in a tree
  * - more then one root node in a tree
+ * - to have nodes to display
  * */
 export const validateTreeViewData = (data: INode[]): void => {
   if (hasDuplicates(data.map((node) => node.id))) {
@@ -505,11 +508,15 @@ export const validateTreeViewData = (data: INode[]): void => {
   });
 
   if (data.filter((node) => node.parent === null).length === 0) {
-    throw Error(`TreeView must have one root node.`);
+    throw Error("TreeView must have one root node.");
   }
 
   if (data.filter((node) => node.parent === null).length > 1) {
-    throw Error(`TreeView can have only one root node.`);
+    throw Error("TreeView can have only one root node.");
+  }
+
+  if (!getTreeParent(data).children.length) {
+    console.warn("TreeView have no nodes to display.");
   }
 
   return;

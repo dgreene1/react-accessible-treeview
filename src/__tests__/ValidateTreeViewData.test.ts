@@ -9,7 +9,7 @@ test("Should error when no parent node", () => {
   ];
   const expected = () => validateTreeViewData(treeViewData);
   expect(expected).toThrow("TreeView must have one root node.");
-})
+});
 
 test("Should error when more then one parent node", () => {
   const treeViewData: INode[] = [
@@ -19,6 +19,17 @@ test("Should error when more then one parent node", () => {
   ];
   const expected = () => validateTreeViewData(treeViewData);
   expect(expected).toThrow("TreeView can have only one root node.");
+});
+
+test("Should warn of no nodes to display", () => {
+  const treeViewData: INode[] = [
+    { name: "", id: 0, parent: null, children: [] },
+  ];
+  jest.spyOn(console, "warn");
+  validateTreeViewData(treeViewData);
+  expect(console.warn).toHaveBeenCalledWith(
+    "TreeView have no nodes to display."
+  );
 });
 
 test("Should error when node's parent reference to node", () => {
