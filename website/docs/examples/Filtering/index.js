@@ -1307,7 +1307,6 @@ function Filtering() {
         ),
       })
     );
-    console.log(filtered);
     setTreeData(filtered);
   };
 
@@ -1336,49 +1335,49 @@ function Filtering() {
       {treeData.length === 1 ? (
         <div>No nodes match filter</div>
       ) : (
-        <div className="filtered">
-          <TreeView
-            data={treeData}
-            aria-label="Filtered tree"
-            multiSelect
-            propagateSelect
-            propagateSelectUpwards
-            togglableSelect
-            nodeRenderer={({
-              element,
-              isBranch,
-              isExpanded,
-              isSelected,
-              isHalfSelected,
-              getNodeProps,
-              level,
-              handleSelect,
-              handleExpand,
-            }) => {
-              return (
-                <div
-                  {...getNodeProps({ onClick: handleExpand })}
-                  style={{ marginLeft: 40 * (level - 1) }}
-                >
-                  <div style={{ marginLeft: isBranch ? "0" : "21px" }}>
-                    {isBranch && <ArrowIcon isOpen={isExpanded} />}
-                    <CheckBoxIcon
-                      className="checkbox-icon"
-                      onClick={(e) => {
-                        handleSelect(e);
-                        e.stopPropagation();
-                      }}
-                      variant={
-                        isHalfSelected ? "some" : isSelected ? "all" : "none"
-                      }
-                    />
-                    <span className="name">{element.name}</span>
-                  </div>
+      <div className="filtered">
+        <TreeView
+          data={treeData}
+          aria-label="Filtered tree"
+          multiSelect
+          propagateSelect
+          propagateSelectUpwards
+          togglableSelect
+          nodeRenderer={({
+            element,
+            isBranch,
+            isExpanded,
+            isSelected,
+            isHalfSelected,
+            getNodeProps,
+            level,
+            handleSelect,
+            handleExpand,
+          }) => {
+            return (
+              <div
+                {...getNodeProps({ onClick: handleExpand })}
+                style={{ marginLeft: 40 * (level - 1) }}
+              >
+                <div style={{ marginLeft: isBranch ? "0" : "21px" }}>
+                  {isBranch && <ArrowIcon isOpen={isExpanded} />}
+                  <CheckBoxIcon
+                    className="checkbox-icon"
+                    onClick={(e) => {
+                      handleSelect(e);
+                      e.stopPropagation();
+                    }}
+                    variant={
+                      isHalfSelected ? "some" : isSelected ? "all" : "none"
+                    }
+                  />
+                  <span className="name">{element.name}</span>
                 </div>
-              );
-            }}
-          />
-        </div>
+              </div>
+            );
+          }}
+        />
+      </div>
       )}
     </div>
   );

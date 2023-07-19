@@ -19,7 +19,7 @@ export const treeTypes = {
   enable: "ENABLE",
   clearLastManuallyToggled: "CLEAR_MANUALLY_TOGGLED",
   controlledSelectMany: "CONTROLLED_SELECT_MANY",
-  updateTreeState: "UPDATE_TREE_STATE",
+  updateTreeStateWhenDataChanged: "UPDATE_TREE_STATE_WHEN_DATA_CHANGED",
 } as const;
 
 export type TreeViewAction =
@@ -90,7 +90,7 @@ export type TreeViewAction =
       multiSelect?: boolean;
     }
   | {
-      type: "UPDATE_TREE_STATE";
+      type: "UPDATE_TREE_STATE_WHEN_DATA_CHANGED";
       tabbableId: NodeId;
       lastInteractedWith?: NodeId | null;
       lastManuallyToggled?: NodeId | null;
@@ -397,7 +397,7 @@ export const treeReducer = (
         lastManuallyToggled: null,
       };
     }
-    case treeTypes.updateTreeState: {
+    case treeTypes.updateTreeStateWhenDataChanged: {
       return {
         ...state,
         tabbableId: action.tabbableId,

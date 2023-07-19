@@ -222,29 +222,34 @@ const useTree = ({
     state,
   ]);
 
+  /**
+   * When data changes and the last focused item is no longer present in data,
+   * we need to reset state with existing nodes, e.g. first node in a tree.
+   */
   useEffect(() => {
     if (prevData !== data) {
       const treeParentNode = getTreeParent(data);
-      const newState = {
-        type: treeTypes.updateTreeState,
-        tabbableId: !data.find((node) => node.id === state.tabbableId)
-          ? treeParentNode.children[0]
-          : state.tabbableId,
-        lastInteractedWith: !data.find(
-          (node) => node.id === state.lastInteractedWith
-        )
-          ? null
-          : state.lastInteractedWith,
-        lastManuallyToggled: !data.find(
-          (node) => node.id === state.lastManuallyToggled
-        )
-          ? null
-          : state.lastManuallyToggled,
-        lastUserSelect: !data.find((node) => node.id === state.lastUserSelect)
-          ? treeParentNode.children[0]
-          : state.lastUserSelect,
-      };
-      dispatch(newState);
+      if (treeParentNode.children.length) {
+        dispatch({
+          type: treeTypes.updateTreeStateWhenDataChanged,
+          tabbableId: !data.find((node) => node.id === state.tabbableId)
+            ? treeParentNode.children[0]
+            : state.tabbableId,
+          lastInteractedWith: !data.find(
+            (node) => node.id === state.lastInteractedWith
+          )
+            ? null
+            : state.lastInteractedWith,
+          lastManuallyToggled: !data.find(
+            (node) => node.id === state.lastManuallyToggled
+          )
+            ? null
+            : state.lastManuallyToggled,
+          lastUserSelect: !data.find((node) => node.id === state.lastUserSelect)
+            ? treeParentNode.children[0]
+            : state.lastUserSelect,
+        });
+      }
     }
   }, [data]);
 
