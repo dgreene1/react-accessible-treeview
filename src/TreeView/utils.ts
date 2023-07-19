@@ -478,6 +478,14 @@ const hasDuplicates = (ids: NodeId[]): boolean => {
   return ids.length !== uniqueIds.length;
 };
 
+/**
+ * We need to validate a tree data for 
+ * - duplicates
+ * - node references to itself
+ * - node has duplicated children
+ * - no root node in a tree
+ * - more then one root node in a tree
+ * */
 export const validateTreeViewData = (data: INode[]): void => {
   if (hasDuplicates(data.map((node) => node.id))) {
     throw Error(
@@ -496,7 +504,11 @@ export const validateTreeViewData = (data: INode[]): void => {
     }
   });
 
-  if (data.filter((node) => node.parent === null).length !== 1) {
+  if (data.filter((node) => node.parent === null).length === 0) {
+    throw Error(`TreeView must have one root node.`);
+  }
+
+  if (data.filter((node) => node.parent === null).length > 1) {
     throw Error(`TreeView can have only one root node.`);
   }
 

@@ -1,6 +1,16 @@
 import { INode } from "../TreeView/types";
 import { validateTreeViewData } from "../TreeView/utils";
 
+test("Should error when no parent node", () => {
+  const treeViewData: INode[] = [
+    { name: "Fruits", id: 0, parent: 14, children: [] },
+    { name: "Vegetables", id: 3, parent: 0, children: [] },
+    { name: "Drinks", id: 14, parent: 3, children: [] },
+  ];
+  const expected = () => validateTreeViewData(treeViewData);
+  expect(expected).toThrow("TreeView must have one root node.");
+})
+
 test("Should error when more then one parent node", () => {
   const treeViewData: INode[] = [
     { name: "Fruits", id: 0, parent: null, children: [] },
