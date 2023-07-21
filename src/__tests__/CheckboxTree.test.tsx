@@ -389,3 +389,92 @@ test("should not set focus without interaction with the tree", () => {
   expect(nodes[0].childNodes[0]).not.toHaveClass("tree-node--focused");
   expect(nodes[0].childNodes[1]).not.toHaveClass("tree-node-group--focused");
 });
+
+test("should set focus on first node if data has changed", () => {
+  const firstNodeName = "Beets";
+  const vegetables = flattenTree({
+    name: "",
+    children: [
+      { name: firstNodeName },
+      { name: "Carrots" },
+      { name: "Celery" },
+      { name: "Lettuce" },
+      { name: "Onions" },
+    ],
+  });
+  const { queryAllByRole, rerender } = render(<CheckboxTree />);
+
+  const nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //focused Drinks
+
+  expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
+    "Drinks"
+  );
+
+  rerender(<CheckboxTree data={vegetables} />);
+
+  expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
+    firstNodeName
+  );
+});
+
+test.only("should preserve focus on node if changed data contains previouslt focused node", () => {
+  const filteredData = flattenTree({
+    name: "",
+    children: [
+      {
+        name: "Fruits",
+        children: [
+          { name: "Avocados" },
+          { name: "Bananas" },
+          { name: "Berries" },
+          { name: "Oranges" },
+          { name: "Pears" },
+        ],
+      },
+      {
+        name: "Drinks",
+        children: [
+          { name: "Apple Juice" },
+          { name: "Chocolate" },
+          { name: "Coffee" },
+          {
+            name: "Tea",
+            children: [
+              { name: "Black Tea" },
+              { name: "Green Tea" },
+              { name: "Red Tea" },
+              { name: "Matcha" },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  const { queryAllByRole, rerender } = render(<CheckboxTree />);
+
+  const nodes = queryAllByRole("treeitem");
+  nodes[0].focus();
+
+  if (document.activeElement == null)
+    throw new Error(
+      `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+    );
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); //focused Drinks
+
+  expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
+    "Drinks"
+  );
+
+  rerender(<CheckboxTree data={filteredData} />);
+
+  expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
+    "Drinks"
+  );
+});
