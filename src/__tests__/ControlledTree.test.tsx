@@ -754,7 +754,7 @@ describe("Data with ids", () => {
     expect(newNodes[5]).toHaveAttribute("aria-checked", "false");
   });
   
-  test("SelectedIds should be not steal focus if another control has it", () => {
+  test("SelectedIds should not steal focus if another control has it", () => {
     let selectedIds = [42];
     let renderContent = (<div>
       <input type="text" id="editor"/>
