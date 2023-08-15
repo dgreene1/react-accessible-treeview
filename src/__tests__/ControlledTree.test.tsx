@@ -756,7 +756,7 @@ describe("Data with ids", () => {
   
   test("SelectedIds should not steal focus if another control has it", () => {
     let selectedIds = [42];
-    let renderContent = (<div>
+    const renderContent = (<div>
       <input type="text" id="editor"/>
       <MultiSelectCheckboxControlled
         selectedIds={selectedIds}
