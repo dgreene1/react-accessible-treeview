@@ -32,13 +32,12 @@ import {
   symmetricDifference,
   usePrevious,
   usePreviousData,
-  isBranchSelectedAndHasSelectedDescendants,
   getTreeParent,
   getTreeNode,
   validateTreeViewData,
   noop,
   isBranchNotSelectedAndHasOnlySelectedChild,
-  isBranchSelectedAndHasOnlySelectedChild,
+  getOnSelectTreeAction,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -884,24 +883,9 @@ const handleKeyDown = ({
         return;
       }
 
-      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
-        data,
-        element.id,
-        selectedIds
-      );
-
-      const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
-        data,
-        element.id,
-        selectedIds
-      );
-
       dispatch({
         type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants &&
-            !isSelectedAndHasOnlySelectedChild
-            ? treeTypes.halfSelect
-            : treeTypes.toggleSelect
+          ? getOnSelectTreeAction(data, id, selectedIds, disabledIds)
           : treeTypes.select,
         id: id,
         multiSelect,
