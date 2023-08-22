@@ -346,6 +346,32 @@ describe("Data without ids", () => {
     expect(nodes[4]).toHaveAttribute("aria-checked", "false");
   });
 
+  test("SelectedIds should clear previous selection and half-selection on all nested levels", () => {
+    const { queryAllByRole, queryAllByTestId } = render(
+      <MultiSelectCheckboxControlledWithStateInside />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+
+    nodes[12].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.click(nodes[12].getElementsByClassName("checkbox-icon")[0]);
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[10]).toHaveAttribute("aria-checked", "mixed");
+    expect(nodes[6]).toHaveAttribute("aria-checked", "mixed");
+
+    fireEvent.click(queryAllByTestId("select-only-vegetables")[0]);
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[10]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[6]).toHaveAttribute("aria-checked", "false");
+  });
+
   test("SelectedIds should select all children if parent node selected", () => {
     const { queryAllByRole } = render(
       <MultiSelectCheckboxControlled selectedIds={[16]} data={dataWithoutIds} />
