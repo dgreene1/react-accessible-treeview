@@ -213,7 +213,9 @@ export const propagateSelectChange = (
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
         (x) =>
-          selectedIds.has(x) || changes.some.has(x) || halfSelectedIds.has(x)
+          selectedIds.has(x) ||
+          changes.some.has(x) ||
+          (halfSelectedIds.has(x) && !changes.none.has(x))
       );
       if (!some) {
         const selectedAncestorId = getAncestors(
