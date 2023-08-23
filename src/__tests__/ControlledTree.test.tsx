@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, fireEvent } from "@testing-library/react";
-import React from "react";
+import React, { useState } from "react";
 import TreeView, { flattenTree } from "..";
 import { NodeId, INode } from "../TreeView/types";
 
@@ -151,6 +151,31 @@ function MultiSelectCheckboxControlled(
   );
 }
 
+function MultiSelectCheckboxControlledWithStateInside() {
+  const [selectedIds, setSelectedIds] = useState([12]);
+
+  return (
+    <div>
+      <button
+        onClick={() => setSelectedIds([])}
+        data-testid="clear-selected-nodes"
+      >
+        Clear Selected Nodes
+      </button>
+      <button
+        onClick={() => setSelectedIds([16])}
+        data-testid="select-only-vegetables"
+      >
+        Select Only Vegetables
+      </button>
+      <MultiSelectCheckboxControlled
+        selectedIds={selectedIds}
+        data={dataWithoutIds}
+      />
+    </div>
+  );
+}
+
 describe("Data without ids", () => {
   test("SelectedIds should be rendered", () => {
     const { queryAllByRole } = render(
@@ -226,6 +251,125 @@ describe("Data without ids", () => {
     expect(newNodes[11]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[19]).toHaveAttribute("aria-checked", "true");
+  });
+
+  test("SelectedIds should clear previous selection including manual selection without rerendering", () => {
+    const { queryAllByRole, queryAllByTestId } = render(
+      <MultiSelectCheckboxControlledWithStateInside />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+
+    nodes[4].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.click(nodes[4].getElementsByClassName("checkbox-icon")[0]);
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(queryAllByTestId("clear-selected-nodes")[0]);
+
+    const newNodes = queryAllByRole("treeitem");
+    expect(newNodes[11]).toHaveAttribute("aria-checked", "false");
+    expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
+
+    [3, 4].forEach((i) => {
+      nodes[i].focus();
+      if (document.activeElement == null)
+        throw new Error(
+          `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+        );
+      fireEvent.click(nodes[i].getElementsByClassName("checkbox-icon")[0]);
+    });
+
+    expect(nodes[3]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(queryAllByTestId("clear-selected-nodes")[0]);
+
+    expect(nodes[3]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(queryAllByTestId("select-only-vegetables")[0]);
+
+    [3, 4].forEach((i) => {
+      nodes[i].focus();
+      if (document.activeElement == null)
+        throw new Error(
+          `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+        );
+      fireEvent.click(nodes[i].getElementsByClassName("checkbox-icon")[0]);
+    });
+
+    expect(nodes[15]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[16]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[17]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[18]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[19]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[20]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[3]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(queryAllByTestId("select-only-vegetables")[0]);
+
+    expect(nodes[15]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[16]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[17]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[18]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[19]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[20]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[3]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "false");
+
+    [3, 4].forEach((i) => {
+      nodes[i].focus();
+      if (document.activeElement == null)
+        throw new Error(
+          `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+        );
+      fireEvent.click(nodes[i].getElementsByClassName("checkbox-icon")[0]);
+    });
+
+    fireEvent.click(queryAllByTestId("clear-selected-nodes")[0]);
+
+    expect(nodes[15]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[16]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[17]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[18]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[19]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[20]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[3]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[4]).toHaveAttribute("aria-checked", "false");
+  });
+
+  test("SelectedIds should clear previous selection and half-selection on all nested levels", () => {
+    const { queryAllByRole, queryAllByTestId } = render(
+      <MultiSelectCheckboxControlledWithStateInside />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+
+    nodes[12].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.click(nodes[12].getElementsByClassName("checkbox-icon")[0]);
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[10]).toHaveAttribute("aria-checked", "mixed");
+    expect(nodes[6]).toHaveAttribute("aria-checked", "mixed");
+
+    fireEvent.click(queryAllByTestId("select-only-vegetables")[0]);
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[10]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[6]).toHaveAttribute("aria-checked", "false");
   });
 
   test("SelectedIds should select all children if parent node selected", () => {
@@ -328,19 +472,35 @@ describe("Data without ids", () => {
     const getNodes = () => container.querySelectorAll('[role="treeitem"]');
 
     const { rerender, container } = render(
-      <MultiSelectCheckboxControlled selectedIds={[1]} data={data} defaultExpandedIds={[1,2,3]} />
+      <MultiSelectCheckboxControlled
+        selectedIds={[1]}
+        data={data}
+        defaultExpandedIds={[1, 2, 3]}
+      />
     );
 
-    getNodes().forEach(node => {
+    getNodes().forEach((node) => {
       expect(node).toHaveAttribute("aria-checked", "true");
     });
 
-    rerender(<MultiSelectCheckboxControlled selectedIds={[6]} data={data} defaultExpandedIds={[1,2,3]} />);
+    rerender(
+      <MultiSelectCheckboxControlled
+        selectedIds={[6]}
+        data={data}
+        defaultExpandedIds={[1, 2, 3]}
+      />
+    );
     expect(getNodes()[0]).toHaveAttribute("aria-checked", "mixed");
     expect(getNodes()[1]).toHaveAttribute("aria-checked", "mixed");
     expect(getNodes()[4]).toHaveAttribute("aria-checked", "true");
 
-    rerender(<MultiSelectCheckboxControlled selectedIds={[]} data={data} defaultExpandedIds={[1,2,3]} />);
+    rerender(
+      <MultiSelectCheckboxControlled
+        selectedIds={[]}
+        data={data}
+        defaultExpandedIds={[1, 2, 3]}
+      />
+    );
     expect(getNodes()[0]).toHaveAttribute("aria-checked", "false");
     expect(getNodes()[1]).toHaveAttribute("aria-checked", "false");
   });
