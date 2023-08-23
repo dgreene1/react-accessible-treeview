@@ -424,7 +424,7 @@ test("should set focus on first node if data has changed", () => {
   );
 });
 
-test.only("should preserve focus on node if changed data contains previouslt focused node", () => {
+test("should preserve focus on node if changed data contains previouslt focused node", () => {
   const filteredData = flattenTree({
     name: "",
     children: [
