@@ -59,7 +59,6 @@ function TreeViewOnSelect(props: TreeViewOnSelectProps) {
         nodeAction="check"
         nodeRenderer={({
           element,
-          isHalfSelected,
           getNodeProps,
           handleSelect,
           handleExpand,
@@ -67,9 +66,7 @@ function TreeViewOnSelect(props: TreeViewOnSelectProps) {
           return (
             <div {...getNodeProps({ onClick: handleExpand })}>
               <div
-                className={`checkbox-icon ${
-                  isHalfSelected ? "half-checked" : ""
-                }`}
+                className='checkbox-icon'
                 onClick={(e) => {
                   handleSelect(e);
                   e.stopPropagation();
