@@ -57,6 +57,7 @@ function CheckboxTree({
   defaultSelectedIds = [],
   defaultExpandedIds = [],
   defaultDisabledIds = [],
+  selectedIds,
 }: {
   defaultSelectedIds?: NodeId[];
   defaultExpandedIds?: NodeId[];
@@ -64,6 +65,7 @@ function CheckboxTree({
   propagateSelect?: boolean;
   multiSelect?: boolean;
   data?: INode[];
+  selectedIds?: NodeId[];
 }) {
   return (
     <div>
@@ -76,6 +78,7 @@ function CheckboxTree({
           defaultSelectedIds={defaultSelectedIds}
           defaultExpandedIds={defaultExpandedIds}
           defaultDisabledIds={defaultDisabledIds}
+          selectedIds={selectedIds}
           propagateSelectUpwards
           togglableSelect
           nodeAction="check"
@@ -424,7 +427,7 @@ test("should set focus on first node if data has changed", () => {
   );
 });
 
-test.only("should preserve focus on node if changed data contains previouslt focused node", () => {
+test("should preserve focus on node if changed data contains previouslt focused node", () => {
   const filteredData = flattenTree({
     name: "",
     children: [
@@ -476,5 +479,136 @@ test.only("should preserve focus on node if changed data contains previouslt foc
 
   expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
     "Drinks"
+  );
+});
+
+describe("halfSelected parent should change status when propagateSelect={false}", () => {
+  const checkSelectionAndHalfSelection = (nodes: HTMLElement[]) => {
+    //Initial state
+    //[-] Fruits
+    //*[ ] Avocados
+    //*[+] Bananas
+    //*[ ] Berries
+    // ...
+
+    expect(nodes[0]).toHaveAttribute("aria-checked", "mixed");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "true");
+
+    nodes[0].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
+    //Expected state 1
+    //[+] Fruits
+    //*[ ] Avocados
+    //*[+] Bananas
+    //*[ ] Berries
+    // ...
+
+    expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]); //half-select Fruits
+    //Expected state 2
+    //[-] Fruits
+    //*[ ] Avocados
+    //*[+] Bananas
+    //*[ ] Berries
+    // ...
+    expect(nodes[0]).toHaveAttribute("aria-checked", "mixed");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "true");
+  };
+
+  const checkDeselectionAndSelectionOfParent = (nodes: HTMLElement[]) => {
+    fireEvent.click(nodes[2].getElementsByClassName("checkbox-icon")[0]); //deselect Bananas
+    //Initial state
+    //[ ] Fruits
+    //*[ ] Avocados
+    //*[ ] Bananas
+    //*[ ] Berries
+    // ...
+    expect(nodes[0]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]); //select Fruits
+    //Expected state 1
+    //[+] Fruits
+    //*[ ] Avocados
+    //*[ ] Bananas
+    //*[ ] Berries
+    // ...
+    expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(nodes[0].getElementsByClassName("checkbox-icon")[0]); //deselect Fruits
+    //Expected state 1
+    //[ ] Fruits
+    //*[ ] Avocados
+    //*[ ] Bananas
+    //*[ ] Berries
+    // ...
+    expect(nodes[0]).toHaveAttribute("aria-checked", "false");
+    expect(nodes[2]).toHaveAttribute("aria-checked", "false");
+  };
+
+  test(
+    "1. to selected when selection changed manually," +
+    "2. to deselected and to selected when no selected children after children where selected manually initially",
+    () => {
+      const { queryAllByRole } = render(
+        <CheckboxTree propagateSelect={false} defaultExpandedIds={[1]} />
+      );
+      const nodes = queryAllByRole("treeitem");
+
+      nodes[2].focus();
+      if (document.activeElement == null)
+        throw new Error(
+          `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+        );
+
+      fireEvent.click(nodes[2].getElementsByClassName("checkbox-icon")[0]); //select Bananas
+
+      expect(nodes[0]).toHaveAttribute("aria-checked", "mixed");
+      expect(nodes[2]).toHaveAttribute("aria-checked", "true");
+
+      checkSelectionAndHalfSelection(nodes);
+      checkDeselectionAndSelectionOfParent(nodes);
+    }
+  );
+
+  test(
+    "1. to selected when default selected child and selection changed manually" +
+    "2. to deselected and to selected when no selected children after children where selected by default initially",
+    () => {
+      const { queryAllByRole } = render(
+        <CheckboxTree
+          propagateSelect={false}
+          defaultSelectedIds={[3]}
+          defaultExpandedIds={[1]}
+        />
+      );
+      const nodes = queryAllByRole("treeitem");
+      checkSelectionAndHalfSelection(nodes);
+      checkDeselectionAndSelectionOfParent(nodes);
+    }
+  );
+
+  test(
+    "1. to selected when selection changed controlled and manually" +
+    "2. to deselected and to selected when no selected children after children where selected controlled initially",
+    () => {
+      const { queryAllByRole } = render(
+        <CheckboxTree
+          propagateSelect={false}
+          selectedIds={[3]}
+          defaultExpandedIds={[1]}
+        />
+      );
+      const nodes = queryAllByRole("treeitem");
+      checkSelectionAndHalfSelection(nodes);
+      checkDeselectionAndSelectionOfParent(nodes);
+    }
   );
 });

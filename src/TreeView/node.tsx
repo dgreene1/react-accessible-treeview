@@ -1,6 +1,6 @@
 import React from "react";
 import cx from "classnames";
-import { ITreeViewState, treeTypes, TreeViewAction } from "./reducer";
+import { ITreeViewState, TreeViewAction } from "./reducer";
 import {
   ClickActions,
   EventCallback,
@@ -19,12 +19,11 @@ import {
   getDescendants,
   getTreeNode,
   isBranchNode,
-  isBranchSelectedAndHasOnlySelectedChild,
-  isBranchSelectedAndHasSelectedDescendants,
   noop,
   propagatedIds,
+  getOnSelectTreeAction,
 } from "./utils";
-import { baseClassNames, clickActions } from "./constants";
+import { baseClassNames, clickActions, treeTypes } from "./constants";
 
 export interface INodeProps {
   element: INode;
@@ -148,25 +147,10 @@ export const Node = (props: INodeProps) => {
         lastManuallyToggled: element.id,
       });
     } else if (event.ctrlKey || clickAction === clickActions.select) {
-      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
-        data,
-        element.id,
-        selectedIds
-      );
-
-      const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
-        data,
-        element.id,
-        selectedIds
-      );
-
       //Select
       dispatch({
         type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants &&
-            !isSelectedAndHasOnlySelectedChild
-            ? treeTypes.halfSelect
-            : treeTypes.toggleSelect
+          ? getOnSelectTreeAction(data, element.id, selectedIds, disabledIds)
           : treeTypes.select,
         id: element.id,
         multiSelect,
