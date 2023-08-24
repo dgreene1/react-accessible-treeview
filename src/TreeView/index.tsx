@@ -1,11 +1,7 @@
 import cx from "classnames";
 import PropTypes from "prop-types";
 import React, { useEffect, useReducer, useRef } from "react";
-import {
-  ITreeViewState,
-  treeReducer,
-  TreeViewAction,
-} from "./reducer";
+import { ITreeViewState, treeReducer, TreeViewAction } from "./reducer";
 import {
   ClickActions,
   INode,
@@ -101,7 +97,6 @@ const useTree = ({
 
   const {
     selectedIds,
-    controlledIds,
     expandedIds,
     disabledIds,
     tabbableId,
@@ -330,7 +325,7 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards) {
-      const idsToUpdate = new Set<NodeId>([...toggledIds, ...controlledIds]);
+      const idsToUpdate = new Set<NodeId>([...toggledIds]);
       if (
         lastInteractedWith &&
         lastAction !== treeTypes.focus &&
