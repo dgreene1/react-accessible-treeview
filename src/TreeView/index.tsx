@@ -254,8 +254,9 @@ const useTree = ({
 
   const toggledControlledIds = symmetricDifference(
     new Set(controlledSelectedIds),
-    controlledIds
+    selectedIds
   );
+
   useEffect(() => {
     if (!!controlledSelectedIds) {
       toggledControlledIds.size &&
