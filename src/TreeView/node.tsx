@@ -1,6 +1,6 @@
 import React from "react";
 import cx from "classnames";
-import { ITreeViewState, treeTypes, TreeViewAction } from "./reducer";
+import { ITreeViewState, TreeViewAction } from "./reducer";
 import {
   ClickActions,
   EventCallback,
@@ -23,7 +23,7 @@ import {
   propagatedIds,
   getOnSelectTreeAction,
 } from "./utils";
-import { baseClassNames, clickActions } from "./constants";
+import { baseClassNames, clickActions, treeTypes } from "./constants";
 
 export interface INodeProps {
   element: INode;

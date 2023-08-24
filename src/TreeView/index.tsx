@@ -4,7 +4,6 @@ import React, { useEffect, useReducer, useRef } from "react";
 import {
   ITreeViewState,
   treeReducer,
-  treeTypes,
   TreeViewAction,
 } from "./reducer";
 import {
@@ -45,6 +44,7 @@ import {
   clickActions,
   CLICK_ACTIONS,
   NODE_ACTIONS,
+  treeTypes,
 } from "./constants";
 
 interface IUseTreeProps {

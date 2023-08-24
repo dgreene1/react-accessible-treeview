@@ -1,26 +1,6 @@
+import { treeTypes } from "./constants";
 import { NodeId } from "./types";
 import { difference } from "./utils";
-
-export const treeTypes = {
-  collapse: "COLLAPSE",
-  collapseMany: "COLLAPSE_MANY",
-  expand: "EXPAND",
-  expandMany: "EXPAND_MANY",
-  halfSelect: "HALF_SELECT",
-  select: "SELECT",
-  deselect: "DESELECT",
-  toggle: "TOGGLE",
-  toggleSelect: "TOGGLE_SELECT",
-  changeSelectMany: "SELECT_MANY",
-  exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
-  focus: "FOCUS",
-  blur: "BLUR",
-  disable: "DISABLE",
-  enable: "ENABLE",
-  clearLastManuallyToggled: "CLEAR_MANUALLY_TOGGLED",
-  controlledSelectMany: "CONTROLLED_SELECT_MANY",
-  updateTreeStateWhenDataChanged: "UPDATE_TREE_STATE_WHEN_DATA_CHANGED",
-} as const;
 
 export type TreeViewAction =
   | { type: "COLLAPSE"; id: NodeId; lastInteractedWith?: NodeId | null }

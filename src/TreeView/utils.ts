@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { EventCallback, INode, INodeRef, NodeId } from "./types";
-import { treeTypes } from "./reducer";
+import { treeTypes } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};
