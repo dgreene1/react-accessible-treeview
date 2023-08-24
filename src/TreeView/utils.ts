@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { EventCallback, INode, INodeRef, NodeId } from "./types";
+import { treeTypes } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};
@@ -413,17 +414,18 @@ export const isBranchSelectedAndHasSelectedDescendants = (
   );
 };
 
-export const isBranchNotSelectedAndHasAllSelectedDescendants = (
+export const isBranchSelectedAndHasAllSelectedEnabledDescendants = (
   data: INode[],
   elementId: NodeId,
-  selectedIds: Set<NodeId>
+  selectedIds: Set<NodeId>,
+  disabledIds: Set<NodeId>
 ) => {
+  const children = getDescendants(data, elementId, new Set<number>());
   return (
     isBranchNode(data, elementId) &&
-    !selectedIds.has(elementId) &&
-    getDescendants(data, elementId, new Set<number>()).every((item) =>
-      selectedIds.has(item)
-    )
+    selectedIds.has(elementId) &&
+    children.every((item) => selectedIds.has(item)) &&
+    children.every((item) => !disabledIds.has(item))
   );
 };
 
@@ -453,6 +455,47 @@ export const isBranchSelectedAndHasOnlySelectedChild = (
     nodeChildren.length === 1 &&
     nodeChildren.every((item) => selectedIds.has(item))
   );
+};
+
+export const getOnSelectTreeAction = (
+  data: INode[],
+  elementId: NodeId,
+  selectedIds: Set<NodeId>,
+  disabledIds: Set<NodeId>
+) => {
+  const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
+    data,
+    elementId,
+    selectedIds
+  );
+
+  const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
+    data,
+    elementId,
+    selectedIds
+  );
+
+  const isSelectedAndHasAllSelectedEnabledDescendants = isBranchSelectedAndHasAllSelectedEnabledDescendants(
+    data,
+    elementId,
+    selectedIds,
+    disabledIds
+  );
+
+  if (isSelectedAndHasAllSelectedEnabledDescendants) {
+    // current element is branch and has no disabled and all selected descendants
+    return treeTypes.toggleSelect;
+  } else if (
+    // current element is branch and has any number of selected descendants
+    // OR
+    // current element is branch and has only one selected child
+    isSelectedAndHasSelectedDescendants &&
+    !isSelectedAndHasOnlySelectedChild
+  ) {
+    return treeTypes.halfSelect;
+  }
+
+  return treeTypes.toggleSelect;
 };
 
 export const getTreeParent = (data: INode[]): INode => {

@@ -1,12 +1,7 @@
 import cx from "classnames";
 import PropTypes from "prop-types";
 import React, { useEffect, useReducer, useRef } from "react";
-import {
-  ITreeViewState,
-  treeReducer,
-  treeTypes,
-  TreeViewAction,
-} from "./reducer";
+import { ITreeViewState, treeReducer, TreeViewAction } from "./reducer";
 import {
   ClickActions,
   INode,
@@ -32,13 +27,12 @@ import {
   symmetricDifference,
   usePrevious,
   usePreviousData,
-  isBranchSelectedAndHasSelectedDescendants,
   getTreeParent,
   getTreeNode,
   validateTreeViewData,
   noop,
   isBranchNotSelectedAndHasOnlySelectedChild,
-  isBranchSelectedAndHasOnlySelectedChild,
+  getOnSelectTreeAction,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -46,6 +40,7 @@ import {
   clickActions,
   CLICK_ACTIONS,
   NODE_ACTIONS,
+  treeTypes,
 } from "./constants";
 
 interface IUseTreeProps {
@@ -102,7 +97,6 @@ const useTree = ({
 
   const {
     selectedIds,
-    controlledIds,
     expandedIds,
     disabledIds,
     tabbableId,
@@ -331,7 +325,7 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards) {
-      const idsToUpdate = new Set<NodeId>([...toggledIds, ...controlledIds]);
+      const idsToUpdate = new Set<NodeId>([...toggledIds]);
       if (
         lastInteractedWith &&
         lastAction !== treeTypes.focus &&
@@ -885,24 +879,9 @@ const handleKeyDown = ({
         return;
       }
 
-      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
-        data,
-        element.id,
-        selectedIds
-      );
-
-      const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
-        data,
-        element.id,
-        selectedIds
-      );
-
       dispatch({
         type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants &&
-            !isSelectedAndHasOnlySelectedChild
-            ? treeTypes.halfSelect
-            : treeTypes.toggleSelect
+          ? getOnSelectTreeAction(data, id, selectedIds, disabledIds)
           : treeTypes.select,
         id: id,
         multiSelect,
