@@ -214,7 +214,7 @@ export const propagateSelectChange = (
       const some = enabledChildren.some(
         (x) =>
           selectedIds.has(x) ||
-          changes.some.has(x) ||
+          (changes.some.has(x) && !changes.none.has(x)) ||
           (halfSelectedIds.has(x) && !changes.none.has(x))
       );
       if (!some) {

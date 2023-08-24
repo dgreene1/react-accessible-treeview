@@ -44,6 +44,22 @@ const folder = {
         { name: "Onions" },
       ],
     },
+    {
+      name: "Deserts",
+      children: [
+        { name: "Cookies" },
+        {
+          name: "Cakes",
+          children: [
+            {
+              name: "Cheesecake",
+              children: [{ name: "Classic" }, { name: "Chocolate" }],
+            },
+            { name: "Vanilla" },
+          ],
+        },
+      ],
+    },
   ],
 };
 
@@ -171,6 +187,7 @@ function MultiSelectCheckboxControlledWithStateInside() {
       <MultiSelectCheckboxControlled
         selectedIds={selectedIds}
         data={dataWithoutIds}
+        defaultExpandedIds={[1, 7, 11, 16, 22, 24, 25]}
       />
     </div>
   );
@@ -370,6 +387,70 @@ describe("Data without ids", () => {
     expect(nodes[11]).toHaveAttribute("aria-checked", "false");
     expect(nodes[10]).toHaveAttribute("aria-checked", "false");
     expect(nodes[6]).toHaveAttribute("aria-checked", "false");
+  });
+
+  test("SelectedIds should clear selection and half-selection after manual selection of top level parent and deselection of low level child", () => {
+    const { queryAllByRole, queryAllByTestId } = render(
+      <MultiSelectCheckboxControlledWithStateInside />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(queryAllByTestId("clear-selected-nodes")[0]);
+
+    expect(nodes[11]).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(queryAllByTestId("select-only-vegetables")[0]);
+
+    expect(nodes[15]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[16]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[17]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[18]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[19]).toHaveAttribute("aria-checked", "true");
+    expect(nodes[20]).toHaveAttribute("aria-checked", "true");
+
+    nodes[21].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.click(nodes[21].getElementsByClassName("checkbox-icon")[0]); // select Deserts
+
+    expect(nodes[21]).toHaveAttribute("aria-checked", "true"); // Deserts
+    expect(nodes[22]).toHaveAttribute("aria-checked", "true"); // Cookies
+    expect(nodes[23]).toHaveAttribute("aria-checked", "true"); // Cakes
+    expect(nodes[24]).toHaveAttribute("aria-checked", "true"); // Cheesecake
+    expect(nodes[25]).toHaveAttribute("aria-checked", "true"); // Classic cheesecake
+    expect(nodes[26]).toHaveAttribute("aria-checked", "true"); // Chocolate cheesecake
+    expect(nodes[27]).toHaveAttribute("aria-checked", "true"); // Vanilla
+
+    nodes[26].focus();
+    if (document.activeElement == null)
+      throw new Error(
+        `Expected to find an active element on the document (after focusing the second element with role["treeitem"]), but did not.`
+      );
+    fireEvent.click(nodes[26].getElementsByClassName("checkbox-icon")[0]); // deselect Chocolate cheesecake
+
+    expect(nodes[21]).toHaveAttribute("aria-checked", "mixed"); // Deserts
+    expect(nodes[22]).toHaveAttribute("aria-checked", "true"); // Cookies
+    expect(nodes[23]).toHaveAttribute("aria-checked", "mixed"); // Cakes
+    expect(nodes[24]).toHaveAttribute("aria-checked", "mixed"); // Cheesecake
+    expect(nodes[25]).toHaveAttribute("aria-checked", "true"); // Classic cheesecake
+    expect(nodes[26]).toHaveAttribute("aria-checked", "false"); // Chocolate cheesecake
+    expect(nodes[27]).toHaveAttribute("aria-checked", "true"); // Vanilla
+
+    fireEvent.click(queryAllByTestId("select-only-vegetables")[0]);
+
+    expect(nodes[21]).toHaveAttribute("aria-checked", "false"); // Deserts
+    expect(nodes[22]).toHaveAttribute("aria-checked", "false"); // Cookies
+    expect(nodes[23]).toHaveAttribute("aria-checked", "false"); // Cakes
+    expect(nodes[24]).toHaveAttribute("aria-checked", "false"); // Cheesecake
+    expect(nodes[25]).toHaveAttribute("aria-checked", "false"); // Classic cheesecake
+    expect(nodes[26]).toHaveAttribute("aria-checked", "false"); // Chocolate cheesecake
+    expect(nodes[27]).toHaveAttribute("aria-checked", "false"); // Vanilla
+    expect(nodes[15]).toHaveAttribute("aria-checked", "true");
   });
 
   test("SelectedIds should select all children if parent node selected", () => {
