@@ -295,6 +295,7 @@ export type IFlatMetadata = Record<string, string | number | undefined | null>;
 interface ITreeNode<M extends IFlatMetadata> {
   id?: NodeId;
   name: string;
+  isBranch?: boolean;
   children?: ITreeNode<M>[];
   metadata?: M;
 }
@@ -310,6 +311,7 @@ export const flattenTree = <M extends IFlatMetadata>(
       id: tree.id || internalCount,
       name: tree.name,
       children: [],
+      ...(tree.isBranch && { isBranch: tree.isBranch }),
       parent,
       metadata: tree.metadata ? { ...tree.metadata } : undefined,
     };
