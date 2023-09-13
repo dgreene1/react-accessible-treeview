@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { EventCallback, INode, INodeRef, NodeId } from "./types";
+import { treeTypes } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};
@@ -213,7 +214,9 @@ export const propagateSelectChange = (
       if (enabledChildren.length === 0) break;
       const some = enabledChildren.some(
         (x) =>
-          selectedIds.has(x) || changes.some.has(x) || halfSelectedIds.has(x)
+          selectedIds.has(x) ||
+          (changes.some.has(x) && !changes.none.has(x)) ||
+          (halfSelectedIds.has(x) && !changes.none.has(x))
       );
       if (!some) {
         const selectedAncestorId = getAncestors(
@@ -284,24 +287,33 @@ export const getAccessibleRange = ({
   return range;
 };
 
-interface ITreeNode {
+/**
+ * This is to help consumers to understand that we do not currently support metadata that is a nested object. If this is needed, make an issue in Github
+ */
+export type IFlatMetadata = Record<string, string | number | undefined | null>;
+
+interface ITreeNode<M extends IFlatMetadata> {
   id?: NodeId;
   name: string;
-  children?: ITreeNode[];
   isBranch?: boolean;
+  children?: ITreeNode<M>[];
+  metadata?: M;
 }
 
-export const flattenTree = function(tree: ITreeNode): INode[] {
+export const flattenTree = <M extends IFlatMetadata>(
+  tree: ITreeNode<M>
+): INode<M>[] => {
   let internalCount = 0;
-  const flattenedTree: INode[] = [];
+  const flattenedTree: INode<M>[] = [];
 
-  const flattenTreeHelper = function(tree: ITreeNode, parent: NodeId | null) {
-    const node: INode = {
+  const flattenTreeHelper = (tree: ITreeNode<M>, parent: NodeId | null) => {
+    const node: INode<M> = {
       id: tree.id || internalCount,
       name: tree.name,
       children: [],
       ...(tree.isBranch && { isBranch: tree.isBranch }),
       parent,
+      metadata: tree.metadata ? { ...tree.metadata } : undefined,
     };
 
     if (flattenedTree.find((x) => x.id === node.id)) {
@@ -404,17 +416,18 @@ export const isBranchSelectedAndHasSelectedDescendants = (
   );
 };
 
-export const isBranchNotSelectedAndHasAllSelectedDescendants = (
+export const isBranchSelectedAndHasAllSelectedEnabledDescendants = (
   data: INode[],
   elementId: NodeId,
-  selectedIds: Set<NodeId>
+  selectedIds: Set<NodeId>,
+  disabledIds: Set<NodeId>
 ) => {
+  const children = getDescendants(data, elementId, new Set<number>());
   return (
     isBranchNode(data, elementId) &&
-    !selectedIds.has(elementId) &&
-    getDescendants(data, elementId, new Set<number>()).every((item) =>
-      selectedIds.has(item)
-    )
+    selectedIds.has(elementId) &&
+    children.every((item) => selectedIds.has(item)) &&
+    children.every((item) => !disabledIds.has(item))
   );
 };
 
@@ -446,6 +459,47 @@ export const isBranchSelectedAndHasOnlySelectedChild = (
   );
 };
 
+export const getOnSelectTreeAction = (
+  data: INode[],
+  elementId: NodeId,
+  selectedIds: Set<NodeId>,
+  disabledIds: Set<NodeId>
+) => {
+  const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
+    data,
+    elementId,
+    selectedIds
+  );
+
+  const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
+    data,
+    elementId,
+    selectedIds
+  );
+
+  const isSelectedAndHasAllSelectedEnabledDescendants = isBranchSelectedAndHasAllSelectedEnabledDescendants(
+    data,
+    elementId,
+    selectedIds,
+    disabledIds
+  );
+
+  if (isSelectedAndHasAllSelectedEnabledDescendants) {
+    // current element is branch and has no disabled and all selected descendants
+    return treeTypes.toggleSelect;
+  } else if (
+    // current element is branch and has any number of selected descendants
+    // OR
+    // current element is branch and has only one selected child
+    isSelectedAndHasSelectedDescendants &&
+    !isSelectedAndHasOnlySelectedChild
+  ) {
+    return treeTypes.halfSelect;
+  }
+
+  return treeTypes.toggleSelect;
+};
+
 export const getTreeParent = (data: INode[]): INode => {
   const parentNode: INode | undefined = data.find(
     (node) => node.parent === null
@@ -473,6 +527,15 @@ const hasDuplicates = (ids: NodeId[]): boolean => {
   return ids.length !== uniqueIds.length;
 };
 
+/**
+ * We need to validate a tree data for
+ * - duplicates
+ * - node references to itself
+ * - node has duplicated children
+ * - no root node in a tree
+ * - more then one root node in a tree
+ * - to have nodes to display
+ * */
 export const validateTreeViewData = (data: INode[]): void => {
   if (hasDuplicates(data.map((node) => node.id))) {
     throw Error(
@@ -491,8 +554,16 @@ export const validateTreeViewData = (data: INode[]): void => {
     }
   });
 
-  if (data.filter((node) => node.parent === null).length !== 1) {
-    throw Error(`TreeView can have only one root node.`);
+  if (data.filter((node) => node.parent === null).length === 0) {
+    throw Error("TreeView must have one root node.");
+  }
+
+  if (data.filter((node) => node.parent === null).length > 1) {
+    throw Error("TreeView can have only one root node.");
+  }
+
+  if (!getTreeParent(data).children.length) {
+    console.warn("TreeView have no nodes to display.");
   }
 
   return;

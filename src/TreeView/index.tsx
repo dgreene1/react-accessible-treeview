@@ -1,12 +1,7 @@
 import cx from "classnames";
 import PropTypes from "prop-types";
 import React, { useEffect, useReducer, useRef } from "react";
-import {
-  ITreeViewState,
-  treeReducer,
-  treeTypes,
-  TreeViewAction,
-} from "./reducer";
+import { ITreeViewState, treeReducer, TreeViewAction } from "./reducer";
 import {
   ClickActions,
   INode,
@@ -32,13 +27,12 @@ import {
   symmetricDifference,
   usePrevious,
   usePreviousData,
-  isBranchSelectedAndHasSelectedDescendants,
   getTreeParent,
   getTreeNode,
   validateTreeViewData,
   noop,
   isBranchNotSelectedAndHasOnlySelectedChild,
-  isBranchSelectedAndHasOnlySelectedChild,
+  getOnSelectTreeAction,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -46,6 +40,7 @@ import {
   clickActions,
   CLICK_ACTIONS,
   NODE_ACTIONS,
+  treeTypes,
 } from "./constants";
 
 interface IUseTreeProps {
@@ -102,7 +97,6 @@ const useTree = ({
 
   const {
     selectedIds,
-    controlledIds,
     expandedIds,
     disabledIds,
     tabbableId,
@@ -222,10 +216,42 @@ const useTree = ({
     state,
   ]);
 
+  /**
+   * When data changes and the last focused item is no longer present in data,
+   * we need to reset state with existing nodes, e.g. first node in a tree.
+   */
+  useEffect(() => {
+    if (prevData !== data) {
+      const treeParentNode = getTreeParent(data);
+      if (treeParentNode.children.length) {
+        dispatch({
+          type: treeTypes.updateTreeStateWhenDataChanged,
+          tabbableId: !data.find((node) => node.id === state.tabbableId)
+            ? treeParentNode.children[0]
+            : state.tabbableId,
+          lastInteractedWith: !data.find(
+            (node) => node.id === state.lastInteractedWith
+          )
+            ? null
+            : state.lastInteractedWith,
+          lastManuallyToggled: !data.find(
+            (node) => node.id === state.lastManuallyToggled
+          )
+            ? null
+            : state.lastManuallyToggled,
+          lastUserSelect: !data.find((node) => node.id === state.lastUserSelect)
+            ? treeParentNode.children[0]
+            : state.lastUserSelect,
+        });
+      }
+    }
+  }, [data]);
+
   const toggledControlledIds = symmetricDifference(
     new Set(controlledSelectedIds),
-    controlledIds
+    selectedIds
   );
+
   useEffect(() => {
     if (!!controlledSelectedIds) {
       toggledControlledIds.size &&
@@ -242,6 +268,7 @@ const useTree = ({
             ids: propagatedIds(data, [id], disabledIds),
             select: true,
             multiSelect,
+            lastInteractedWith: id,
           });
       }
     }
@@ -298,7 +325,7 @@ const useTree = ({
   //Update parent if a child changes
   useEffect(() => {
     if (propagateSelectUpwards) {
-      const idsToUpdate = new Set<NodeId>([...toggledIds, ...controlledIds]);
+      const idsToUpdate = new Set<NodeId>([...toggledIds]);
       if (
         lastInteractedWith &&
         lastAction !== treeTypes.focus &&
@@ -350,6 +377,8 @@ const useTree = ({
             type: treeTypes.halfSelect,
             id,
             lastInteractedWith,
+            keepFocus: true,
+            NotUserAction: true,
           });
       }
       for (const id of none) {
@@ -850,24 +879,9 @@ const handleKeyDown = ({
         return;
       }
 
-      const isSelectedAndHasSelectedDescendants = isBranchSelectedAndHasSelectedDescendants(
-        data,
-        element.id,
-        selectedIds
-      );
-
-      const isSelectedAndHasOnlySelectedChild = isBranchSelectedAndHasOnlySelectedChild(
-        data,
-        element.id,
-        selectedIds
-      );
-
       dispatch({
         type: togglableSelect
-          ? isSelectedAndHasSelectedDescendants &&
-            !isSelectedAndHasOnlySelectedChild
-            ? treeTypes.halfSelect
-            : treeTypes.toggleSelect
+          ? getOnSelectTreeAction(data, id, selectedIds, disabledIds)
           : treeTypes.select,
         id: id,
         multiSelect,

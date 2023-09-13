@@ -39,6 +39,7 @@ An array of nodes. Nodes are objects with the following structure:
 | `children` | `array[id]`          | required | An array with the ids of the children nodes.                                                              |
 | `parent`   | `id`                 | required | The parent of the node. `null` for the root node                                                          |
 | `isBranch` | `boolean`            | optional | Used to indicated whether a node is branch to be able load async data onExpand, default is false          |
+| `metadata` | `object`             | optional | Used to add metadata into node object. We do not currently support metadata that is a nested object       |
 
 The item with `parent:null` of the array represents the root node and won't be displayed.
 
@@ -61,7 +62,7 @@ const data = [
 ];
 ```
 
-The array can also be generated from a nested object using the `flattenTree` helper (see the examples below).
+The array can also be generated from a nested object using the `flattenTree` helper (see the examples below). `flattenTree` preserves `metadata`.
 
 Data supports non-sequential ids provided by user.
 

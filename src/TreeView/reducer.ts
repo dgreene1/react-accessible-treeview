@@ -1,25 +1,6 @@
+import { treeTypes } from "./constants";
 import { NodeId } from "./types";
 import { difference } from "./utils";
-
-export const treeTypes = {
-  collapse: "COLLAPSE",
-  collapseMany: "COLLAPSE_MANY",
-  expand: "EXPAND",
-  expandMany: "EXPAND_MANY",
-  halfSelect: "HALF_SELECT",
-  select: "SELECT",
-  deselect: "DESELECT",
-  toggle: "TOGGLE",
-  toggleSelect: "TOGGLE_SELECT",
-  changeSelectMany: "SELECT_MANY",
-  exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
-  focus: "FOCUS",
-  blur: "BLUR",
-  disable: "DISABLE",
-  enable: "ENABLE",
-  clearLastManuallyToggled: "CLEAR_MANUALLY_TOGGLED",
-  controlledSelectMany: "CONTROLLED_SELECT_MANY",
-} as const;
 
 export type TreeViewAction =
   | { type: "COLLAPSE"; id: NodeId; lastInteractedWith?: NodeId | null }
@@ -30,6 +11,9 @@ export type TreeViewAction =
       type: "HALF_SELECT";
       id: NodeId;
       lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
+      keepFocus?: boolean;
+      NotUserAction?: boolean;
     }
   | {
       type: "SELECT";
@@ -84,6 +68,13 @@ export type TreeViewAction =
       type: "CONTROLLED_SELECT_MANY";
       ids: NodeId[];
       multiSelect?: boolean;
+    }
+  | {
+      type: "UPDATE_TREE_STATE_WHEN_DATA_CHANGED";
+      tabbableId: NodeId;
+      lastInteractedWith?: NodeId | null;
+      lastManuallyToggled?: NodeId | null;
+      lastUserSelect: NodeId;
     };
 
 export interface ITreeViewState {
@@ -186,8 +177,11 @@ export const treeReducer = (
         ...state,
         selectedIds,
         halfSelectedIds,
+        tabbableId: action.keepFocus ? state.tabbableId : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
+        lastManuallyToggled: action.lastManuallyToggled,
+        lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
       };
     }
     case treeTypes.select: {
@@ -209,7 +203,7 @@ export const treeReducer = (
         selectedIds,
         halfSelectedIds,
         tabbableId: action.keepFocus ? state.tabbableId : action.id,
-        isFocused: true,
+        isFocused: action.NotUserAction !== true,
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
@@ -312,8 +306,14 @@ export const treeReducer = (
     }
     case treeTypes.controlledSelectMany: {
       let selectedIds;
+      let lastInteractedWith = state.lastInteractedWith;
+      let tabbableId = state.tabbableId;
       if (action.multiSelect) {
         selectedIds = new Set<NodeId>(action.ids);
+        if (action.ids.length) {
+          lastInteractedWith = action.ids[action.ids.length - 1];
+          tabbableId = action.ids[action.ids.length - 1];
+        }
       } else {
         selectedIds = new Set<NodeId>();
         if (action.ids.length > 1) {
@@ -323,6 +323,8 @@ export const treeReducer = (
         }
         const idToAdd = action.ids[0];
         idToAdd && selectedIds.add(idToAdd);
+        lastInteractedWith = idToAdd ?? lastInteractedWith;
+        tabbableId = idToAdd ?? lastInteractedWith;
       }
 
       const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
@@ -336,6 +338,8 @@ export const treeReducer = (
         controlledIds,
         isFocused: true,
         lastAction: action.type,
+        tabbableId,
+        lastInteractedWith,
       };
     }
     case treeTypes.focus:
@@ -371,6 +375,15 @@ export const treeReducer = (
       return {
         ...state,
         lastManuallyToggled: null,
+      };
+    }
+    case treeTypes.updateTreeStateWhenDataChanged: {
+      return {
+        ...state,
+        tabbableId: action.tabbableId,
+        lastInteractedWith: action.lastInteractedWith,
+        lastManuallyToggled: action.lastManuallyToggled,
+        lastUserSelect: action.lastUserSelect,
       };
     }
     default:
