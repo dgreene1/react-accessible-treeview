@@ -661,7 +661,7 @@ const handleKeyDown = ({
   const element = getTreeNode(data, tabbableId);
   const id = element.id;
   if (event.ctrlKey) {
-    if (event.key === "a") {
+    if (event.key === "a" && clickAction !== clickActions.focus) {
       event.preventDefault();
       const dataWithoutRoot = data.filter((x) => x.parent !== null);
       const ids = dataWithoutRoot
@@ -678,7 +678,8 @@ const handleKeyDown = ({
       });
     } else if (
       event.shiftKey &&
-      (event.key === "Home" || event.key === "End")
+      (event.key === "Home" || event.key === "End") &&
+      clickAction !== clickActions.focus
     ) {
       const newId =
         event.key === "Home"
@@ -711,16 +712,18 @@ const handleKeyDown = ({
         event.preventDefault();
         const previous = getPreviousAccessible(data, id, expandedIds);
         if (previous != null && !disabledIds.has(previous)) {
-          dispatch({
-            type: treeTypes.changeSelectMany,
-            ids: propagateSelect
-              ? propagatedIds(data, [previous], disabledIds)
-              : [previous],
-            select: true,
-            multiSelect,
-            lastInteractedWith: previous,
-            lastManuallyToggled: previous,
-          });
+          if (clickAction !== clickActions.focus) {
+            dispatch({
+              type: treeTypes.changeSelectMany,
+              ids: propagateSelect
+                ? propagatedIds(data, [previous], disabledIds)
+                : [previous],
+              select: true,
+              multiSelect,
+              lastInteractedWith: previous,
+              lastManuallyToggled: previous,
+            });
+          }
           dispatch({
             type: treeTypes.focus,
             id: previous,
@@ -733,16 +736,18 @@ const handleKeyDown = ({
         event.preventDefault();
         const next = getNextAccessible(data, id, expandedIds);
         if (next != null && !disabledIds.has(next)) {
-          dispatch({
-            type: treeTypes.changeSelectMany,
-            ids: propagateSelect
-              ? propagatedIds(data, [next], disabledIds)
-              : [next],
-            multiSelect,
-            select: true,
-            lastInteractedWith: next,
-            lastManuallyToggled: next,
-          });
+          if (clickAction !== clickActions.focus) {
+            dispatch({
+              type: treeTypes.changeSelectMany,
+              ids: propagateSelect
+                ? propagatedIds(data, [next], disabledIds)
+                : [next],
+              multiSelect,
+              select: true,
+              lastInteractedWith: next,
+              lastManuallyToggled: next,
+            });
+          }
           dispatch({
             type: treeTypes.focus,
             id: next,
