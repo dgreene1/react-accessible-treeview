@@ -290,7 +290,7 @@ export const getAccessibleRange = ({
 /**
  * This is to help consumers to understand that we do not currently support metadata that is a nested object. If this is needed, make an issue in Github
  */
-export type IFlatMetadata = Record<string, string | number | undefined | null>;
+export type IFlatMetadata = Record<string, string | number | boolean | undefined | null>;
 
 interface ITreeNode<M extends IFlatMetadata> {
   id?: NodeId;
