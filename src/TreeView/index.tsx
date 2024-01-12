@@ -57,6 +57,7 @@ interface IUseTreeProps {
   onExpand?: (props: ITreeViewOnExpandProps) => void;
   multiSelect?: boolean;
   propagateSelectUpwards?: boolean;
+  treeRef?: React.MutableRefObject<HTMLUListElement | null>;
   propagateSelect?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLoadData?: (props: ITreeViewOnLoadDataProps) => Promise<any>;
@@ -80,6 +81,7 @@ const useTree = ({
   multiSelect,
   propagateSelect,
   propagateSelectUpwards,
+  treeRef,
 }: IUseTreeProps) => {
   const treeParentNode = getTreeParent(data);
   const [state, dispatch] = useReducer(treeReducer, {
@@ -417,10 +419,16 @@ const useTree = ({
       nodeRefs?.current != null &&
       leafRefs?.current != null
     ) {
-      const tabbableNode = nodeRefs.current[tabbableId];
-      const leafNode = leafRefs.current[lastInteractedWith];
-      scrollToRef(leafNode);
-      focusRef(tabbableNode);
+      const isTreeActive = (treeRef?.current == null) || 
+        (document.activeElement && treeRef.current.contains(document.activeElement));
+      if (isTreeActive) {
+        // Only scroll and focus on the tree when it is the active element on the page.
+        // This prevents controlled updates from scrolling to the tree and giving it focus.
+        const tabbableNode = nodeRefs.current[tabbableId];
+        const leafNode = leafRefs.current[lastInteractedWith]; 
+        scrollToRef(leafNode);
+        focusRef(tabbableNode);
+      }
     }
   }, [tabbableId, nodeRefs, leafRefs, lastInteractedWith]);
 
@@ -543,6 +551,10 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
     validateTreeViewData(data);
     const nodeRefs = useRef({});
     const leafRefs = useRef({});
+    let innerRef = useRef<HTMLUListElement | null>(null);
+    if (ref != null) {
+      innerRef = ref as React.MutableRefObject<HTMLUListElement>;
+    }
     const [state, dispatch] = useTree({
       data,
       controlledSelectedIds: selectedIds,
@@ -560,13 +572,9 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       multiSelect,
       propagateSelect,
       propagateSelectUpwards,
+	  treeRef: innerRef,
     });
     propagateSelect = propagateSelect && multiSelect;
-
-    let innerRef = useRef<HTMLUListElement | null>(null);
-    if (ref != null) {
-      innerRef = ref as React.MutableRefObject<HTMLUListElement>;
-    }
 
     return (
       <ul

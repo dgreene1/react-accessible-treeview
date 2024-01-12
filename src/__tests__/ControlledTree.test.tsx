@@ -753,4 +753,22 @@ describe("Data with ids", () => {
     expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[5]).toHaveAttribute("aria-checked", "false");
   });
+  
+  test("SelectedIds should not steal focus if another control has it", () => {
+    let selectedIds = [42];
+    const renderContent = (<div>
+      <input type="text" id="editor"/>
+      <MultiSelectCheckboxControlled
+        selectedIds={selectedIds}
+        data={dataWithIds}
+      />
+      </div>);
+    const { rerender } = render(renderContent);
+
+    const editorElement = document?.getElementById("editor");
+    editorElement?.focus();
+    selectedIds = [4];
+    rerender(renderContent);
+    expect(document.activeElement).toEqual(editorElement);
+  });
 });
