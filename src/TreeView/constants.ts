@@ -36,6 +36,7 @@ export const treeTypes = {
   changeSelectMany: "SELECT_MANY",
   exclusiveChangeSelectMany: "EXCLUSIVE_CHANGE_SELECT_MANY",
   focus: "FOCUS",
+  clearFocus: "CLEAR_FOCUS",
   blur: "BLUR",
   disable: "DISABLE",
   enable: "ENABLE",
