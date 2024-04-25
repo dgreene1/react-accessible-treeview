@@ -73,6 +73,11 @@ function ControlledFocusedNode() {
         <label htmlFor="txtIdToFocus">Node ID to focus:</label>
         <input id="txtIdToFocus" type="text" onKeyDown={onKeyDown} />
         <button onClick={() => getFocusId()}>Set</button>
+        <div>
+          <button onClick={() => setFocusId(undefined)}>
+            Clear focused node
+          </button>
+        </div>
       </div>
       <div className="checkbox">
         <TreeView
