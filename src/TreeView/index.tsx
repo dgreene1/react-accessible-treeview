@@ -445,7 +445,7 @@ const useTree = ({
       });
     }
 
-    if (focusedId && getTreeNode(data, focusedId)) {
+    if (focusedId && data.find((node) => node.id === focusedId)) {
       const nodesToExpand = getBranchNodesToExpand(data, focusedId);
       if (nodesToExpand.length) {
         dispatch({
