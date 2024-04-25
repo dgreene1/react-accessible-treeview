@@ -65,7 +65,7 @@ function ControlledFocusedNode() {
   return (
     <div>
       <div>
-        <label htmlFor="txtIdToFocus">node ID to focus:</label>
+        <label htmlFor="txtIdToFocus">Node ID to focus:</label>
         <input id="txtIdToFocus" type="text" onKeyDown={onKeyDown} />
         <button onClick={() => getFocusId()}>Set</button>
       </div>

@@ -438,18 +438,14 @@ const useTree = ({
   }, [tabbableId, nodeRefs, leafRefs, lastInteractedWith]);
   //Controlled focus
   useEffect(() => {
-    if (!focusedId || disabledIds.has(focusedId)) {
+    if (!focusedId) {
       dispatch({
         type: treeTypes.clearFocus,
         id: treeParentNode.children[0],
       });
     }
 
-    if (
-      focusedId &&
-      getTreeNode(data, focusedId) &&
-      !disabledIds.has(focusedId)
-    ) {
+    if (focusedId && getTreeNode(data, focusedId)) {
       const nodesToExpand = getBranchNodesToExpand(data, focusedId);
       if (nodesToExpand.length) {
         dispatch({
@@ -463,6 +459,10 @@ const useTree = ({
         id: focusedId,
         lastInteractedWith: focusedId,
       });
+      if (nodeRefs?.current != null) {
+        const focusNodeRef = nodeRefs.current[focusedId];
+        focusRef(focusNodeRef);
+      }
     }
   }, [focusedId]);
 
