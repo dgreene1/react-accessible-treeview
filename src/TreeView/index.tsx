@@ -436,6 +436,7 @@ const useTree = ({
       }
     }
   }, [tabbableId, nodeRefs, leafRefs, lastInteractedWith]);
+
   //Controlled focus
   useEffect(() => {
     if (!focusedId) {

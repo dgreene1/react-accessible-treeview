@@ -78,9 +78,9 @@ function ControlledFocusedNode() {
         <TreeView
           data={data}
           aria-label="Controlled expanded node tree"
-          defaultExpandedIds={[1]}
+          defaultExpandedIds={["fruits"]}
           focusedId={focusId}
-          defaultDisabledIds={[3]}
+          defaultDisabledIds={["bananas"]}
           nodeRenderer={({
             element,
             isBranch,
