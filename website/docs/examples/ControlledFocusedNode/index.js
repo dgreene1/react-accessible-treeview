@@ -5,41 +5,47 @@ import cx from "classnames";
 
 const folder = {
   name: "",
+  id: "treeview",
   children: [
     {
+      id: "fruits",
       name: "Fruits",
       children: [
-        { name: "Avocados" },
-        { name: "Bananas" },
-        { name: "Berries" },
-        { name: "Oranges" },
-        { name: "Pears" },
+        { name: "Avocados", id: "avocados" },
+        { name: "Bananas", id: "bananas" },
+        { name: "Berries", id: "berries" },
+        { name: "Oranges", id: "oranges" },
+        { name: "Pears", id: "pears" },
       ],
     },
     {
+      id: "drinks",
       name: "Drinks",
       children: [
-        { name: "Apple Juice" },
-        { name: "Chocolate" },
-        { name: "Coffee" },
+        { name: "Apple Juice", id: "appleJuice" },
+        { name: "Chocolate", id: "chocolate" },
+        { name: "Coffee", id: "coffee" },
         {
+          id: "tea",
           name: "Tea",
           children: [
-            { name: "Black Tea" },
-            { name: "Green Tea" },
-            { name: "Red Tea" },
+            { name: "Black Tea", id: "blackTea" },
+            { name: "Green Tea", id: "greenTea" },
+            { name: "Red Tea", id: "redTea" },
+            { name: "Matcha", id: "matcha" },
           ],
         },
       ],
     },
     {
+      id: "vegetables",
       name: "Vegetables",
       children: [
-        { name: "Beets" },
-        { name: "Carrots" },
-        { name: "Celery" },
-        { name: "Lettuce" },
-        { name: "Onions" },
+        { name: "Beets", id: "beets" },
+        { name: "Carrots", id: "carrots" },
+        { name: "Celery", id: "celery" },
+        { name: "Lettuce", id: "lettuce" },
+        { name: "Onions", id: "onions" },
       ],
     },
   ],
@@ -57,8 +63,7 @@ function ControlledFocusedNode() {
   };
 
   const getFocusId = () => {
-    const idString = document.querySelector("#txtIdToFocus").value.trim();
-    const id = idString ? parseInt(idString) : undefined;
+    const id = document.querySelector("#txtIdToFocus").value.trim();
     setFocusId(id);
   };
 
@@ -95,7 +100,7 @@ function ControlledFocusedNode() {
               >
                 {isBranch && <ArrowIcon isOpen={isExpanded} />}
                 <span className="name">
-                  {element.name}-{element.id}
+                  {element.name} [{element.id}]
                 </span>
               </div>
             );

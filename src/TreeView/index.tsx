@@ -426,7 +426,7 @@ const useTree = ({
         treeRef?.current == null ||
         (document.activeElement &&
           treeRef.current.contains(document.activeElement));
-      if (isTreeActive) {
+      if (isTreeActive || focusedId) {
         // Only scroll and focus on the tree when it is the active element on the page.
         // This prevents controlled updates from scrolling to the tree and giving it focus.
         const tabbableNode = nodeRefs.current[tabbableId];
@@ -459,10 +459,6 @@ const useTree = ({
         id: focusedId,
         lastInteractedWith: focusedId,
       });
-      if (nodeRefs?.current != null) {
-        const focusNodeRef = nodeRefs.current[focusedId];
-        focusRef(focusNodeRef);
-      }
     }
   }, [focusedId]);
 

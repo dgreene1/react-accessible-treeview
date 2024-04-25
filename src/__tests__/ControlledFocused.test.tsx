@@ -178,35 +178,35 @@ describe("Without node ids", () => {
       "Drinks"
     );
   });
-  test("Should not have focus when focusedId is disabled", () => {
-    const { getAllByRole } = render(
+  test("Should focus when focusedId is disabled", () => {
+    render(
       <ControlledFocused
-        focusedId={3}
+        focusedId={7}
         data={dataWithoutIds}
-        defaultDisabledIds={[3]}
+        defaultDisabledIds={[7]}
       />
     );
-    expect(document.querySelector(".tree-node--focused")).toBeNull();
-    getAllByRole("treeitem")[0].focus();
+    const focusNode = document.querySelector(".tree-node--focused");
+    expect(focusNode?.innerHTML).toContain("Drinks");
 
-    if (document.activeElement) {
-      fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
+    if (focusNode) {
+      fireEvent.keyDown(focusNode, { key: "ArrowDown" });
     }
+
     expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
-      "Drinks"
+      "Vegetables"
     );
   });
 });
 
 describe("With node ids", () => {
   test("Should set focus with focusedId", () => {
-    const focusId: NodeId = "690";
-    render(<ControlledFocused focusedId={focusId} data={dataWithIds} />);
+    render(<ControlledFocused focusedId="690" data={dataWithIds} />);
     const focusNode = document.querySelector(".tree-node--focused");
     expect(focusNode?.innerHTML).toContain("Drinks");
 
-    if (focusNode) {
-      fireEvent.keyDown(focusNode, { key: "ArrowDown" });
+    if (document.activeElement) {
+      fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
     }
 
     expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
@@ -220,8 +220,8 @@ describe("With node ids", () => {
     const focusNode = document.querySelector(".tree-node--focused");
     expect(focusNode?.innerHTML).toContain("Black Tea");
 
-    if (focusNode) {
-      fireEvent.keyDown(focusNode, { key: "ArrowUp" });
+    if (document.activeElement) {
+      fireEvent.keyDown(document.activeElement, { key: "ArrowUp" });
     }
 
     expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
@@ -241,23 +241,23 @@ describe("With node ids", () => {
       "Drinks"
     );
   });
-  test("Should not have focus when focusedId is disabled", () => {
-    const { getAllByRole } = render(
+  test("Should have focus when focusedId is disabled", () => {
+    render(
       <ControlledFocused
         focusedId="690"
         data={dataWithIds}
         defaultDisabledIds={["690"]}
       />
     );
-
-    expect(document.querySelector(".tree-node--focused")).toBeNull();
-    getAllByRole("treeitem")[0].focus();
+    const focusNode = document.querySelector(".tree-node--focused");
+    expect(focusNode?.innerHTML).toContain("Drinks");
 
     if (document.activeElement) {
       fireEvent.keyDown(document.activeElement, { key: "ArrowDown" });
     }
+
     expect(document.querySelector(".tree-node--focused")?.innerHTML).toContain(
-      "Drinks"
+      "Vegetables"
     );
   });
 });
