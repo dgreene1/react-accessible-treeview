@@ -207,8 +207,6 @@ describe("Single select", () => {
 
     const newNodes = queryAllByRole("treeitem");
 
-    newNodes.forEach((node) => console.log(node.innerHTML));
-
     expect(newNodes.length).toBe(8);
     expect(newNodes[0]).toHaveAttribute("aria-checked", "mixed");
     expect(newNodes[2]).toHaveAttribute("aria-checked", "true");

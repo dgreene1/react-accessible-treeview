@@ -11,6 +11,7 @@ module.exports = {
     Examples: [
       "examples-Basic",
       "examples-ControlledExpandedNode",
+      "examples-ControlledFocusedNode",
       "examples-DataTypes",
       "examples-DirectoryTree",
       "examples-Filtering",

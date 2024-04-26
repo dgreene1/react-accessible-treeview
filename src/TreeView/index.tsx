@@ -33,6 +33,7 @@ import {
   noop,
   isBranchNotSelectedAndHasOnlySelectedChild,
   getOnSelectTreeAction,
+  getBranchNodesToExpand,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -62,6 +63,7 @@ interface IUseTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLoadData?: (props: ITreeViewOnLoadDataProps) => Promise<any>;
   togglableSelect?: boolean;
+  focusedId?: NodeId;
 }
 
 const useTree = ({
@@ -82,6 +84,7 @@ const useTree = ({
   propagateSelect,
   propagateSelectUpwards,
   treeRef,
+  focusedId,
 }: IUseTreeProps) => {
   const treeParentNode = getTreeParent(data);
   const [state, dispatch] = useReducer(treeReducer, {
@@ -419,18 +422,46 @@ const useTree = ({
       nodeRefs?.current != null &&
       leafRefs?.current != null
     ) {
-      const isTreeActive = (treeRef?.current == null) || 
-        (document.activeElement && treeRef.current.contains(document.activeElement));
-      if (isTreeActive) {
+      const isTreeActive =
+        treeRef?.current == null ||
+        (document.activeElement &&
+          treeRef.current.contains(document.activeElement));
+      if (isTreeActive || focusedId) {
         // Only scroll and focus on the tree when it is the active element on the page.
         // This prevents controlled updates from scrolling to the tree and giving it focus.
         const tabbableNode = nodeRefs.current[tabbableId];
-        const leafNode = leafRefs.current[lastInteractedWith]; 
+        const leafNode = leafRefs.current[lastInteractedWith];
         scrollToRef(leafNode);
         focusRef(tabbableNode);
       }
     }
   }, [tabbableId, nodeRefs, leafRefs, lastInteractedWith]);
+
+  //Controlled focus
+  useEffect(() => {
+    if (!focusedId) {
+      dispatch({
+        type: treeTypes.clearFocus,
+        id: treeParentNode.children[0],
+      });
+    }
+
+    if (focusedId && data.find((node) => node.id === focusedId)) {
+      const nodesToExpand = getBranchNodesToExpand(data, focusedId);
+      if (nodesToExpand.length) {
+        dispatch({
+          type: treeTypes.expandMany,
+          ids: nodesToExpand,
+          lastInteractedWith: focusedId,
+        });
+      }
+      dispatch({
+        type: treeTypes.focus,
+        id: focusedId,
+        lastInteractedWith: focusedId,
+      });
+    }
+  }, [focusedId]);
 
   // The "as const" technique tells Typescript that this is a tuple not an array
   return [state, dispatch] as const;
@@ -518,6 +549,8 @@ export interface ITreeViewProps {
     treeState: ITreeViewState;
     dispatch: React.Dispatch<TreeViewAction>;
   }) => void;
+  /** Id of the node to focus */
+  focusedId?: NodeId;
 }
 
 const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
@@ -543,6 +576,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       clickAction = clickActions.select,
       nodeAction = "select",
       expandedIds,
+      focusedId,
       onBlur,
       ...other
     },
@@ -572,7 +606,8 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       multiSelect,
       propagateSelect,
       propagateSelectUpwards,
-	  treeRef: innerRef,
+      treeRef: innerRef,
+      focusedId,
     });
     propagateSelect = propagateSelect && multiSelect;
 
@@ -1006,6 +1041,9 @@ TreeView.propTypes = {
 
   /** Function called to load data asynchronously on expand */
   onLoadData: PropTypes.func,
+
+  /** Id of the node to focus on */
+  focusedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default TreeView;

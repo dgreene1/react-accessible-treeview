@@ -60,6 +60,7 @@ export type TreeViewAction =
       lastManuallyToggled?: NodeId | null;
     }
   | { type: "FOCUS"; id: NodeId; lastInteractedWith?: NodeId | null }
+  | { type: "CLEAR_FOCUS"; id: NodeId }
   | { type: "BLUR" }
   | { type: "DISABLE"; id: NodeId }
   | { type: "ENABLE"; id: NodeId }
@@ -354,6 +355,13 @@ export const treeReducer = (
       return {
         ...state,
         isFocused: false,
+      };
+    case treeTypes.clearFocus:
+      return {
+        ...state,
+        isFocused: false,
+        lastInteractedWith: null,
+        tabbableId: action.id,
       };
     case treeTypes.disable: {
       const disabledIds = new Set<NodeId>(state.disabledIds);

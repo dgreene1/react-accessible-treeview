@@ -51,6 +51,18 @@ export const isBranchNode = (data: INode[], i: NodeId) => {
   return !!node.children?.length;
 };
 
+export const getBranchNodesToExpand = (data: INode[], id: NodeId): NodeId[] => {
+  const parentId = getParent(data, id);
+  const isNodeExpandable =
+    parentId &&
+    (isBranchNode(data, parentId) || getTreeNode(data, parentId).isBranch);
+
+  if (!parentId || !isNodeExpandable) {
+    return [];
+  }
+  return [parentId, ...getBranchNodesToExpand(data, parentId)];
+};
+
 export const scrollToRef = (ref: INodeRef) => {
   if (ref != null && ref.scrollIntoView) {
     ref.scrollIntoView({ block: "nearest" });
@@ -290,7 +302,10 @@ export const getAccessibleRange = ({
 /**
  * This is to help consumers to understand that we do not currently support metadata that is a nested object. If this is needed, make an issue in Github
  */
-export type IFlatMetadata = Record<string, string | number | boolean | undefined | null>;
+export type IFlatMetadata = Record<
+  string,
+  string | number | boolean | undefined | null
+>;
 
 interface ITreeNode<M extends IFlatMetadata> {
   id?: NodeId;
