@@ -30,6 +30,7 @@ A react component that implements the treeview pattern as described by the [WAI-
 | `selectedIds`            | `array`       | `[]`          | (Controlled) Array with the ids that should be selected                                                                                                                   |
 | `expandedIds`            | `array`       | `[]`          | (Controlled) Array with the ids of branch node that should be expanded                                                                                                    |
 | `clickAction`            | `enum`        | `SELECT`      | Action to perform on click. One of: EXCLUSIVE_SELECT, FOCUS, SELECT                                                                                                       |
+| `allowKeyboardControl`   | `bool`        | `true`        | If set to false, the tree will not respond to keyboard events.                                                                                                            |
 
 <br/> <br/>
 

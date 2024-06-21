@@ -551,11 +551,14 @@ export interface ITreeViewProps {
   }) => void;
   /** Id of the node to focus */
   focusedId?: NodeId;
+  /** Allows enabling or disabling all keyboard interactions. When disabled, no keyboard events will be handled by the component. */
+  allowKeyboardControl?: boolean;
 }
 
 const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
   function TreeView(
     {
+      allowKeyboardControl = true,
       data,
       selectedIds,
       nodeRenderer,
@@ -628,6 +631,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           });
         }}
         onKeyDown={handleKeyDown({
+          allowKeyboardControl,
           data,
           tabbableId: state.tabbableId,
           expandedIds: state.expandedIds,
@@ -674,6 +678,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
 );
 
 const handleKeyDown = ({
+  allowKeyboardControl = true,
   data,
   expandedIds,
   selectedIds,
@@ -687,6 +692,7 @@ const handleKeyDown = ({
   togglableSelect,
   clickAction,
 }: {
+  allowKeyboardControl?: boolean;
   data: INode[];
   tabbableId: NodeId;
   expandedIds: Set<NodeId>;
@@ -701,6 +707,8 @@ const handleKeyDown = ({
   togglableSelect?: boolean;
   clickAction: ClickActions;
 }) => (event: React.KeyboardEvent) => {
+  if (!allowKeyboardControl) return;
+
   const element = getTreeNode(data, tabbableId);
   const id = element.id;
   if (event.ctrlKey) {
