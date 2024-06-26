@@ -294,33 +294,37 @@ const useTree = ({
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
-        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
-          const ids = [id, ...getDescendants(data, id, new Set<number>())];
-          dispatch({
-            type: treeTypes.collapseMany,
-            ids: ids,
-            lastInteractedWith: id,
-          });
+        if (data.find((n) => n.id === id)) {
+          if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
+            const ids = [id, ...getDescendants(data, id, new Set<number>())];
+            dispatch({
+              type: treeTypes.collapseMany,
+              ids: ids,
+              lastInteractedWith: id,
+            });
+          }
         }
       }
     }
     //controlled expanding
     if (diffExpandedIds.size) {
       for (const id of diffExpandedIds) {
-        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
-          const parentId = getParent(data, id);
-          if (parentId) {
-            dispatch({
-              type: treeTypes.expandMany,
-              ids: [id, parentId],
-              lastInteractedWith: id,
-            });
-          } else {
-            dispatch({
-              type: treeTypes.expand,
-              id: id,
-              lastInteractedWith: id,
-            });
+        if (data.find((n) => n.id === id)) {
+          if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
+            const parentId = getParent(data, id);
+            if (parentId) {
+              dispatch({
+                type: treeTypes.expandMany,
+                ids: [id, parentId],
+                lastInteractedWith: id,
+              });
+            } else {
+              dispatch({
+                type: treeTypes.expand,
+                id: id,
+                lastInteractedWith: id,
+              });
+            }
           }
         }
       }
