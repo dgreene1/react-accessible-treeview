@@ -672,14 +672,11 @@ function TreeViewInner<M extends IFlatMetadata>(
     )
   }
 
-  function genericForwardRef<T, P = Record<string, unknown>>(
-    render: (props: P, ref: React.Ref<T>) => JSX.Element
-  ): (props: P & React.RefAttributes<T>) => JSX.Element {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return React.forwardRef(render) as any;
-  }
 
-const TreeView = genericForwardRef(TreeViewInner)
+  const TreeView = React.forwardRef(TreeViewInner) as <T extends IFlatMetadata>(
+    props: ITreeViewProps<T> & React.RefAttributes<T>
+  ) => ReturnType<typeof TreeViewInner>;
+
 
 
 const handleKeyDown = ({
@@ -984,7 +981,8 @@ const handleKeyDown = ({
   }
 };
 
-TreeViewInner.propTypes = {
+//@ts-expect-error
+TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,
 
