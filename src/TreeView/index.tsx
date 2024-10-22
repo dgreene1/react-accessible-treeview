@@ -503,7 +503,7 @@ export interface ITreeViewOnLoadDataProps {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewProps<M extends IFlatMetadata> {
+export interface ITreeViewProps<M extends IFlatMetadata = IFlatMetadata> {
   /** Tree data*/
   data: INode<M>[];
   /** Function called when a node changes its selected state */
@@ -648,7 +648,7 @@ function TreeViewInner<M extends IFlatMetadata>(
           <Node
             key={`${x}-${typeof x}`}
             data={data}
-            element={getTreeNode(data, x)}
+            element={getTreeNode(data, x) as INode<M>}
             setsize={getTreeParent(data).children.length}
             posinset={index + 1}
             level={1}
@@ -981,7 +981,7 @@ const handleKeyDown = ({
   }
 };
 
-//@ts-expect-error
+//@ts-expect-error type assertion for ts
 TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,
