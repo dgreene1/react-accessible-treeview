@@ -33,7 +33,7 @@ export type EventCallback = <T, E>(
     metadata?: M;
   }
 
-  export interface INodeRendererProps<M extends IFlatMetadata> {
+  export interface INodeRendererProps<M extends IFlatMetadata = IFlatMetadata> {
     /** The object that represents the rendered node */
     element: INode<M>;
     /** A function which gives back the props to pass to the node */

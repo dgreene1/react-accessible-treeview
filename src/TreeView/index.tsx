@@ -554,7 +554,8 @@ export interface ITreeViewProps<M extends IFlatMetadata = IFlatMetadata> {
   focusedId?: NodeId;
 }
 
-function TreeViewInner<M extends IFlatMetadata>(
+const TreeView = React.forwardRef(
+function TreeView<M extends IFlatMetadata = IFlatMetadata>(
     {
       data,
       selectedIds,
@@ -670,12 +671,9 @@ function TreeViewInner<M extends IFlatMetadata>(
         ))}
       </ul>
     )
-  }
+  })
 
 
-  const TreeView = React.forwardRef(TreeViewInner) as <T extends IFlatMetadata>(
-    props: ITreeViewProps<T> & React.RefAttributes<T>
-  ) => ReturnType<typeof TreeViewInner>;
 
 
 
@@ -981,7 +979,7 @@ const handleKeyDown = ({
   }
 };
 
-//@ts-expect-error type assertion for ts
+
 TreeView.propTypes = {
   /** Tree data*/
   data: PropTypes.array.isRequired,

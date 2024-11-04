@@ -26,7 +26,7 @@ import {
 } from "./utils";
 import { baseClassNames, clickActions, treeTypes } from "./constants";
 
-export interface INodeProps<M extends IFlatMetadata> {
+export interface INodeProps<M extends IFlatMetadata = IFlatMetadata> {
   element: INode<M>;
   dispatch: React.Dispatch<TreeViewAction>;
   data: INode<M>[];
@@ -54,7 +54,7 @@ export interface INodeProps<M extends IFlatMetadata> {
   propagateSelectUpwards: boolean;
 }
 
-export interface INodeGroupProps<M extends IFlatMetadata>
+export interface INodeGroupProps<M extends IFlatMetadata = IFlatMetadata>
   extends Omit<INodeProps<M>, "setsize" | "posinset"> {
   getClasses: (className: string) => string;
   /** don't send this. The NodeGroup render function, determines it for you */
@@ -66,7 +66,7 @@ export interface INodeGroupProps<M extends IFlatMetadata>
 /**
  * It's convenient to pass props down to the child, but we don't want to pass everything since it would create incorrect values for setsize and posinset
  */
-const removeIrrelevantGroupProps = <M extends IFlatMetadata,>(
+const removeIrrelevantGroupProps = <M extends IFlatMetadata = IFlatMetadata,>(
   nodeProps: INodeProps<M>
 ): Omit<INodeGroupProps<M>, "getClasses"> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -74,7 +74,7 @@ const removeIrrelevantGroupProps = <M extends IFlatMetadata,>(
   return rest;
 };
 
-export const Node = <M extends IFlatMetadata>(props: INodeProps<M>) => {
+export const Node = <M extends IFlatMetadata = IFlatMetadata>(props: INodeProps<M>) => {
   const {
     element,
     dispatch,
@@ -330,7 +330,7 @@ export const NodeGroup = <M extends IFlatMetadata = IFlatMetadata>({
           expandedIds={expandedIds}
           baseClassNames={baseClassNames}
           key={`${x}-${typeof x}`}
-          element={getTreeNode(data, x) as INode<M>}
+          element={getTreeNode(data, x)}
           setsize={element.children.length}
           posinset={index + 1}
           level={level + 1}
