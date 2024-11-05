@@ -22,13 +22,14 @@ import {
   noop,
   propagatedIds,
   getOnSelectTreeAction,
+  IFlatMetadata,
 } from "./utils";
 import { baseClassNames, clickActions, treeTypes } from "./constants";
 
-export interface INodeProps {
-  element: INode;
+export interface INodeProps<M extends IFlatMetadata = IFlatMetadata> {
+  element: INode<M>;
   dispatch: React.Dispatch<TreeViewAction>;
-  data: INode[];
+  data: INode<M>[];
   nodeAction: NodeAction;
   selectedIds: Set<NodeId>;
   tabbableId: NodeId;
@@ -40,7 +41,7 @@ export interface INodeProps {
   nodeRefs: INodeRefs;
   leafRefs: INodeRefs;
   baseClassNames: typeof baseClassNames;
-  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  nodeRenderer: (props: INodeRendererProps<M>) => React.ReactNode;
   setsize: number;
   posinset: number;
   level: number;
@@ -53,8 +54,8 @@ export interface INodeProps {
   propagateSelectUpwards: boolean;
 }
 
-export interface INodeGroupProps
-  extends Omit<INodeProps, "setsize" | "posinset"> {
+export interface INodeGroupProps<M extends IFlatMetadata = IFlatMetadata>
+  extends Omit<INodeProps<M>, "setsize" | "posinset"> {
   getClasses: (className: string) => string;
   /** don't send this. The NodeGroup render function, determines it for you */
   setsize?: undefined;
@@ -65,15 +66,15 @@ export interface INodeGroupProps
 /**
  * It's convenient to pass props down to the child, but we don't want to pass everything since it would create incorrect values for setsize and posinset
  */
-const removeIrrelevantGroupProps = (
-  nodeProps: INodeProps
-): Omit<INodeGroupProps, "getClasses"> => {
+const removeIrrelevantGroupProps = <M extends IFlatMetadata = IFlatMetadata,>(
+  nodeProps: INodeProps<M>
+): Omit<INodeGroupProps<M>, "getClasses"> => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { setsize, posinset, ...rest } = nodeProps;
   return rest;
 };
 
-export const Node = (props: INodeProps) => {
+export const Node = <M extends IFlatMetadata = IFlatMetadata>(props: INodeProps<M>) => {
   const {
     element,
     dispatch,
@@ -311,7 +312,7 @@ export const Node = (props: INodeProps) => {
   );
 };
 
-export const NodeGroup = ({
+export const NodeGroup = <M extends IFlatMetadata = IFlatMetadata>({
   data,
   element,
   expandedIds,
@@ -319,7 +320,7 @@ export const NodeGroup = ({
   baseClassNames,
   level,
   ...rest
-}: INodeGroupProps) => (
+}: INodeGroupProps<M>) => (
   <ul role="group" className={getClasses(baseClassNames.nodeGroup)}>
     {expandedIds.has(element.id) &&
       element.children.length > 0 &&
