@@ -552,6 +552,8 @@ export interface ITreeViewProps<M extends IFlatMetadata = IFlatMetadata> {
   }) => void;
   /** Id of the node to focus */
   focusedId?: NodeId;
+  /** Custom onKeyDown event that is triggered when a key is pressed */
+  onKeyDown?: (event: React.KeyboardEvent<HTMLUListElement>) => void;
 }
 
 const TreeView = React.forwardRef(
