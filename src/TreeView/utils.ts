@@ -307,7 +307,7 @@ export type IFlatMetadata = Record<
   string | number | boolean | undefined | null
 >;
 
-interface ITreeNode<M extends IFlatMetadata> {
+interface ITreeNode<M extends IFlatMetadata = IFlatMetadata> {
   id?: NodeId;
   name: string;
   isBranch?: boolean;
@@ -315,7 +315,7 @@ interface ITreeNode<M extends IFlatMetadata> {
   metadata?: M;
 }
 
-export const flattenTree = <M extends IFlatMetadata>(
+export const flattenTree = <M extends IFlatMetadata = IFlatMetadata>(
   tree: ITreeNode<M>
 ): INode<M>[] => {
   let internalCount = 0;
@@ -515,8 +515,8 @@ export const getOnSelectTreeAction = (
   return treeTypes.toggleSelect;
 };
 
-export const getTreeParent = (data: INode[]): INode => {
-  const parentNode: INode | undefined = data.find(
+export const getTreeParent = <M extends IFlatMetadata = IFlatMetadata>(data: INode<M>[]): INode<M> => {
+  const parentNode: INode<M> | undefined = data.find(
     (node) => node.parent === null
   );
 
@@ -527,7 +527,7 @@ export const getTreeParent = (data: INode[]): INode => {
   return parentNode;
 };
 
-export const getTreeNode = (data: INode[], id: NodeId): INode => {
+export const getTreeNode = <M extends IFlatMetadata = IFlatMetadata>(data: INode<M>[], id: NodeId): INode<M> => {
   const treeNode = data.find((node) => node.id === id);
 
   if (treeNode == null) {

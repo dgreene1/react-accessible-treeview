@@ -34,6 +34,7 @@ import {
   isBranchNotSelectedAndHasOnlySelectedChild,
   getOnSelectTreeAction,
   getBranchNodesToExpand,
+  IFlatMetadata,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -506,9 +507,9 @@ export interface ITreeViewOnLoadDataProps {
   treeState: ITreeViewState;
 }
 
-export interface ITreeViewProps {
+export interface ITreeViewProps<M extends IFlatMetadata = IFlatMetadata> {
   /** Tree data*/
-  data: INode[];
+  data: INode<M>[];
   /** Function called when a node changes its selected state */
   onSelect?: (props: ITreeViewOnSelectProps) => void;
   /** Function called when a single node is manually selected/unselected. */
@@ -521,7 +522,7 @@ export interface ITreeViewProps {
   /** className to add to the outermost ul */
   className?: string;
   /** Render prop for the node */
-  nodeRenderer: (props: INodeRendererProps) => React.ReactNode;
+  nodeRenderer: (props: INodeRendererProps<M>) => React.ReactNode;
   /** Indicates what action will be performed on a node which informs the correct aria-* properties to use on the node (aria-checked if using checkboxes, aria-selected if not). */
   nodeAction?: NodeAction;
   /** Array with the ids of the default expanded nodes */
@@ -557,8 +558,8 @@ export interface ITreeViewProps {
   focusedId?: NodeId;
 }
 
-const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
-  function TreeView(
+const TreeView = React.forwardRef(
+function TreeView<M extends IFlatMetadata = IFlatMetadata>(
     {
       data,
       selectedIds,
@@ -583,8 +584,8 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
       focusedId,
       onBlur,
       ...other
-    },
-    ref
+    }: ITreeViewProps<M>,
+    ref: React.ForwardedRef<HTMLUListElement>
   ) {
     validateTreeViewData(data);
     const nodeRefs = useRef({});
@@ -652,7 +653,7 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           <Node
             key={`${x}-${typeof x}`}
             data={data}
-            element={getTreeNode(data, x)}
+            element={getTreeNode(data, x) as INode<M>}
             setsize={getTreeParent(data).children.length}
             posinset={index + 1}
             level={1}
@@ -673,9 +674,12 @@ const TreeView = React.forwardRef<HTMLUListElement, ITreeViewProps>(
           />
         ))}
       </ul>
-    );
-  }
-);
+    )
+  })
+
+
+
+
 
 const handleKeyDown = ({
   data,
@@ -978,6 +982,7 @@ const handleKeyDown = ({
       return;
   }
 };
+
 
 TreeView.propTypes = {
   /** Tree data*/
