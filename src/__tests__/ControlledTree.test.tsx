@@ -634,6 +634,26 @@ describe("Data with ids", () => {
     expect(newNodes[19]).toHaveAttribute("aria-checked", "true");
   });
 
+  test("SelectedIds should not error when a selectedId are not in the data", () => {
+    const selectedId = ["data-string", "non-existent-id"];
+    expect(() => {
+      const { queryAllByRole } = render(
+        <MultiSelectCheckboxControlled
+          defaultExpandedIds={["data-string", "690", 908, 42]}
+          selectedIds={selectedId}
+          data={dataWithIds}
+        />
+      );
+      const nodes = queryAllByRole("treeitem");
+      expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+      nodes.forEach((node, index) => {
+        if (index !== 0) {
+          expect(node).toHaveAttribute("aria-checked", "false");
+        }
+      });
+    }).not.toThrow(`Node with id=${selectedId[1]} doesn't exist in the tree.`);
+  });
+
   test("SelectedIds should clear previous selection", () => {
     let selectedIds = [923];
     const { queryAllByRole, rerender } = render(
@@ -753,16 +773,18 @@ describe("Data with ids", () => {
     expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[5]).toHaveAttribute("aria-checked", "false");
   });
-  
+
   test("SelectedIds should not steal focus if another control has it", () => {
     let selectedIds = [42];
-    const renderContent = (<div>
-      <input type="text" id="editor"/>
-      <MultiSelectCheckboxControlled
-        selectedIds={selectedIds}
-        data={dataWithIds}
-      />
-      </div>);
+    const renderContent = (
+      <div>
+        <input type="text" id="editor" />
+        <MultiSelectCheckboxControlled
+          selectedIds={selectedIds}
+          data={dataWithIds}
+        />
+      </div>
+    );
     const { rerender } = render(renderContent);
 
     const editorElement = document?.getElementById("editor");
