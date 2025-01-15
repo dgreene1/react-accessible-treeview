@@ -286,4 +286,35 @@ describe("With node ids", () => {
     expect(nodesAfterExpandedAll[6]).toHaveAttribute("aria-expanded", "true");
     expect(nodesAfterExpandedAll[11]).toHaveAttribute("aria-expanded", "true");
   });
+  test("Should rerender when the data and expanded nodes change", () => {
+    const expandedIds = [1, 7, 11];
+
+    const { queryAllByRole, rerender } = render(
+      <ControlledExpanded expandedIds={expandedIds} data={dataWithoutIds} />
+    );
+
+    let nodes = queryAllByRole("treeitem");
+    expect(nodes.length).toBe(16);
+
+    // remove the fruits directory from both data and expandedIds
+    rerender(
+      <ControlledExpanded
+        expandedIds={[7, 11]}
+        data={dataWithoutIds
+          .filter((node) => node.id !== 1)
+          .map((node) => ({
+            ...node,
+            children: node.children.filter((child) => child !== 1),
+          }))}
+      />
+    );
+
+    nodes = queryAllByRole("treeitem");
+    // six nodes were removed (everything in fruits)
+    expect(nodes.length).toBe(10);
+
+    expect(nodes[0]).toHaveAttribute("aria-expanded", "true");
+    expect(nodes[1]).not.toHaveAttribute("aria-expanded");
+    expect(nodes[4]).toHaveAttribute("aria-expanded", "true");
+  });
 });

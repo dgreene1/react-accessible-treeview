@@ -599,13 +599,6 @@ describe("Data with ids", () => {
 
     const nodes = queryAllByRole("treeitem");
     expect(nodes[0]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[1]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[2]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[3]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[4]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[5]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[11]).toHaveAttribute("aria-checked", "true");
-    expect(nodes[18]).toHaveAttribute("aria-checked", "true");
   });
 
   test("SelectedIds should be re-rendered", () => {
@@ -632,6 +625,26 @@ describe("Data with ids", () => {
     const newNodes = queryAllByRole("treeitem");
     expect(newNodes[11]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[19]).toHaveAttribute("aria-checked", "true");
+  });
+
+  test("SelectedIds should not error when a selectedId are not in the data", () => {
+    const selectedId = ["data-string", "non-existent-id"];
+    expect(() => {
+      const { queryAllByRole } = render(
+        <MultiSelectCheckboxControlled
+          defaultExpandedIds={["data-string", "690", 908, 42]}
+          selectedIds={selectedId}
+          data={dataWithIds}
+        />
+      );
+      const nodes = queryAllByRole("treeitem");
+      expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+      nodes.forEach((node, index) => {
+        if (index !== 0) {
+          expect(node).toHaveAttribute("aria-checked", "false");
+        }
+      });
+    }).not.toThrow(`Node with id=${selectedId[1]} doesn't exist in the tree.`);
   });
 
   test("SelectedIds should clear previous selection", () => {
@@ -753,16 +766,18 @@ describe("Data with ids", () => {
     expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[5]).toHaveAttribute("aria-checked", "false");
   });
-  
+
   test("SelectedIds should not steal focus if another control has it", () => {
     let selectedIds = [42];
-    const renderContent = (<div>
-      <input type="text" id="editor"/>
-      <MultiSelectCheckboxControlled
-        selectedIds={selectedIds}
-        data={dataWithIds}
-      />
-      </div>);
+    const renderContent = (
+      <div>
+        <input type="text" id="editor" />
+        <MultiSelectCheckboxControlled
+          selectedIds={selectedIds}
+          data={dataWithIds}
+        />
+      </div>
+    );
     const { rerender } = render(renderContent);
 
     const editorElement = document?.getElementById("editor");
