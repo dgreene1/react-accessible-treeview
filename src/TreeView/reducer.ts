@@ -199,12 +199,18 @@ export const treeReducer = (
 
       const halfSelectedIds = new Set<NodeId>(state.halfSelectedIds);
       halfSelectedIds.delete(action.id);
+
+      const tabbableId = action.keepFocus ? state.tabbableId : action.id;
+      const isFocused =
+        tabbableId === action.lastInteractedWith ||
+        action.NotUserAction !== true;
+
       return {
         ...state,
         selectedIds,
         halfSelectedIds,
-        tabbableId: action.keepFocus ? state.tabbableId : action.id,
-        isFocused: action.NotUserAction !== true,
+        tabbableId,
+        isFocused,
         lastUserSelect: action.NotUserAction ? state.lastUserSelect : action.id,
         lastAction: action.type,
         lastInteractedWith: action.lastInteractedWith,
