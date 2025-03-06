@@ -775,7 +775,7 @@ describe("Data with ids", () => {
   });
 
   test("SelectedIds should not reset propragated id after previous controlled ids", () => {
-    const { rerender, queryAllByRole, debug } = render(
+    const { rerender, queryAllByRole } = render(
       <MultiSelectCheckboxControlled
         selectedIds={[8, 9, 10, 11]}
         defaultExpandedIds={[7]}
