@@ -774,7 +774,7 @@ describe("Data with ids", () => {
     expect(document.activeElement).toEqual(editorElement);
   });
 
-  test("SelectedIds should not reset propragated id after previous controlled ids", () => {
+  test("SelectedIds should not reset propagated id after previous controlled ids", () => {
     const { rerender, queryAllByRole } = render(
       <MultiSelectCheckboxControlled
         selectedIds={[8, 9, 10, 11]}

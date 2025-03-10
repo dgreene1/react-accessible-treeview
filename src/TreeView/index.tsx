@@ -367,10 +367,10 @@ const useTree = ({
         idsToUpdate.forEach((id) => {
           if (isBranchNode(data, id)) {
             const descendantIds = getDescendants(data, id, new Set<number>());
-            const isPropagratedId = descendantIds.every((childId) =>
+            const isPropagatedId = descendantIds.every((childId) =>
               selectedIds.has(childId)
             );
-            isPropagratedId && every.add(id);
+            isPropagatedId && every.add(id);
           }
         });
       }
