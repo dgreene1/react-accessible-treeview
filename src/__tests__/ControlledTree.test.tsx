@@ -753,16 +753,18 @@ describe("Data with ids", () => {
     expect(newNodes[4]).toHaveAttribute("aria-checked", "false");
     expect(newNodes[5]).toHaveAttribute("aria-checked", "false");
   });
-  
+
   test("SelectedIds should not steal focus if another control has it", () => {
     let selectedIds = [42];
-    const renderContent = (<div>
-      <input type="text" id="editor"/>
-      <MultiSelectCheckboxControlled
-        selectedIds={selectedIds}
-        data={dataWithIds}
-      />
-      </div>);
+    const renderContent = (
+      <div>
+        <input type="text" id="editor" />
+        <MultiSelectCheckboxControlled
+          selectedIds={selectedIds}
+          data={dataWithIds}
+        />
+      </div>
+    );
     const { rerender } = render(renderContent);
 
     const editorElement = document?.getElementById("editor");
@@ -770,5 +772,33 @@ describe("Data with ids", () => {
     selectedIds = [4];
     rerender(renderContent);
     expect(document.activeElement).toEqual(editorElement);
+  });
+
+  test("SelectedIds should not reset propagated id after previous controlled ids", () => {
+    const { rerender, queryAllByRole } = render(
+      <MultiSelectCheckboxControlled
+        selectedIds={[8, 9, 10, 11]}
+        defaultExpandedIds={[7]}
+        data={dataWithoutIds}
+      />
+    );
+    rerender(
+      <MultiSelectCheckboxControlled
+        selectedIds={[8, 9, 10, 11, 1]}
+        defaultExpandedIds={[7]}
+        data={dataWithoutIds}
+      />
+    );
+    const newNodes = queryAllByRole("treeitem");
+    expect(newNodes).toHaveLength(8);
+
+    expect(newNodes[0].children[0]).toHaveClass("tree-node--focused"); // Fruits
+    expect(newNodes[0]).toHaveAttribute("aria-checked", "true"); // Fruits
+    expect(newNodes[1]).toHaveAttribute("aria-checked", "true"); // Drinks
+    expect(newNodes[2]).toHaveAttribute("aria-checked", "true"); // Drinks->Apple Juice
+    expect(newNodes[3]).toHaveAttribute("aria-checked", "true"); // Drinks->Chocolate
+    expect(newNodes[4]).toHaveAttribute("aria-checked", "true"); // Drinks->Coffee
+    expect(newNodes[5]).toHaveAttribute("aria-checked", "true"); // Drinks->Tea
+    expect(newNodes[6]).toHaveAttribute("aria-checked", "false"); // Vegetables
   });
 });
