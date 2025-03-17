@@ -51,6 +51,10 @@ export const isBranchNode = (data: INode[], i: NodeId) => {
   return !!node.children?.length;
 };
 
+export const isNode = (data: INode[], id: NodeId) => {
+  return data.find((node) => node.id === id);
+};
+
 export const getBranchNodesToExpand = (data: INode[], id: NodeId): NodeId[] => {
   const parentId = getParent(data, id);
   const isNodeExpandable =
@@ -515,7 +519,9 @@ export const getOnSelectTreeAction = (
   return treeTypes.toggleSelect;
 };
 
-export const getTreeParent = <M extends IFlatMetadata = IFlatMetadata>(data: INode<M>[]): INode<M> => {
+export const getTreeParent = <M extends IFlatMetadata = IFlatMetadata>(
+  data: INode<M>[]
+): INode<M> => {
   const parentNode: INode<M> | undefined = data.find(
     (node) => node.parent === null
   );
@@ -527,7 +533,10 @@ export const getTreeParent = <M extends IFlatMetadata = IFlatMetadata>(data: INo
   return parentNode;
 };
 
-export const getTreeNode = <M extends IFlatMetadata = IFlatMetadata>(data: INode<M>[], id: NodeId): INode<M> => {
+export const getTreeNode = <M extends IFlatMetadata = IFlatMetadata>(
+  data: INode<M>[],
+  id: NodeId
+): INode<M> => {
   const treeNode = data.find((node) => node.id === id);
 
   if (treeNode == null) {

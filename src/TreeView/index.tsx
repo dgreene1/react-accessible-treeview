@@ -35,6 +35,7 @@ import {
   getOnSelectTreeAction,
   getBranchNodesToExpand,
   IFlatMetadata,
+  isNode,
 } from "./utils";
 import { Node } from "./node";
 import {
@@ -267,15 +268,17 @@ const useTree = ({
           multiSelect,
         });
       for (const id of controlledSelectedIds) {
-        propagateSelect &&
-          !disabledIds.has(id) &&
-          dispatch({
-            type: treeTypes.changeSelectMany,
-            ids: propagatedIds(data, [id], disabledIds),
-            select: true,
-            multiSelect,
-            lastInteractedWith: id,
-          });
+        if (isNode(data, id)) {
+          propagateSelect &&
+            !disabledIds.has(id) &&
+            dispatch({
+              type: treeTypes.changeSelectMany,
+              ids: propagatedIds(data, [id], disabledIds),
+              select: true,
+              multiSelect,
+              lastInteractedWith: id,
+            });
+        }
       }
     }
   }, [controlledSelectedIds]);
@@ -295,33 +298,37 @@ const useTree = ({
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
-        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
-          const ids = [id, ...getDescendants(data, id, new Set<number>())];
-          dispatch({
-            type: treeTypes.collapseMany,
-            ids: ids,
-            lastInteractedWith: id,
-          });
+        if (isNode(data, id)) {
+          if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
+            const ids = [id, ...getDescendants(data, id, new Set<number>())];
+            dispatch({
+              type: treeTypes.collapseMany,
+              ids: ids,
+              lastInteractedWith: id,
+            });
+          }
         }
       }
     }
     //controlled expanding
     if (diffExpandedIds.size) {
       for (const id of diffExpandedIds) {
-        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
-          const parentId = getParent(data, id);
-          if (parentId) {
-            dispatch({
-              type: treeTypes.expandMany,
-              ids: [id, parentId],
-              lastInteractedWith: id,
-            });
-          } else {
-            dispatch({
-              type: treeTypes.expand,
-              id: id,
-              lastInteractedWith: id,
-            });
+        if (isNode(data, id)) {
+          if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
+            const parentId = getParent(data, id);
+            if (parentId) {
+              dispatch({
+                type: treeTypes.expandMany,
+                ids: [id, parentId],
+                lastInteractedWith: id,
+              });
+            } else {
+              dispatch({
+                type: treeTypes.expand,
+                id: id,
+                lastInteractedWith: id,
+              });
+            }
           }
         }
       }

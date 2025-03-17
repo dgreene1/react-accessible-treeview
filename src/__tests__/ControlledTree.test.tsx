@@ -634,6 +634,26 @@ describe("Data with ids", () => {
     expect(newNodes[19]).toHaveAttribute("aria-checked", "true");
   });
 
+  test("SelectedIds should not error when a selectedId are not in the data", () => {
+    const selectedId = ["data-string", "non-existent-id"];
+    expect(() => {
+      const { queryAllByRole } = render(
+        <MultiSelectCheckboxControlled
+          defaultExpandedIds={["data-string", "690", 908, 42]}
+          selectedIds={selectedId}
+          data={dataWithIds}
+        />
+      );
+      const nodes = queryAllByRole("treeitem");
+      expect(nodes[0]).toHaveAttribute("aria-checked", "true");
+      nodes.forEach((node, index) => {
+        if (index !== 0) {
+          expect(node).toHaveAttribute("aria-checked", "false");
+        }
+      });
+    }).not.toThrow(`Node with id=${selectedId[1]} doesn't exist in the tree.`);
+  });
+
   test("SelectedIds should clear previous selection", () => {
     let selectedIds = [923];
     const { queryAllByRole, rerender } = render(
