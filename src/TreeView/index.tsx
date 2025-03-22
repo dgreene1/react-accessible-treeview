@@ -163,14 +163,16 @@ const useTree = ({
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onExpand != null && onExpand !== noop) {
       for (const id of toggledExpandIds) {
-        onExpand({
-          element: getTreeNode(data, id),
-          isExpanded: expandedIds.has(id),
-          isSelected: selectedIds.has(id),
-          isDisabled: disabledIds.has(id),
-          isHalfSelected: halfSelectedIds.has(id),
-          treeState: state,
-        });
+        if(data.find(d => d.id == id)) {
+          onExpand({
+            element: getTreeNode(data, id),
+            isExpanded: expandedIds.has(id),
+            isSelected: selectedIds.has(id),
+            isDisabled: disabledIds.has(id),
+            isHalfSelected: halfSelectedIds.has(id),
+            treeState: state,
+          });
+        }
       }
     }
   }, [
@@ -295,7 +297,7 @@ const useTree = ({
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
-        if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
+        if (data.find(d => d.id == id) && (isBranchNode(data, id) || getTreeNode(data, id).isBranch)) {
           const ids = [id, ...getDescendants(data, id, new Set<number>())];
           dispatch({
             type: treeTypes.collapseMany,
