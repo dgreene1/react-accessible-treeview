@@ -585,6 +585,21 @@ describe("Data without ids", () => {
     expect(getNodes()[0]).toHaveAttribute("aria-checked", "false");
     expect(getNodes()[1]).toHaveAttribute("aria-checked", "false");
   });
+  test("SelectedIds should not throw if non-existent", () => {
+    const { queryAllByRole } = render(
+
+      <MultiSelectCheckboxControlled
+        defaultExpandedIds={[]}
+        selectedIds={["does-not-exist"]}
+        data={dataWithoutIds}
+      />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    for(const node of nodes) {
+      expect(node).toHaveAttribute("aria-checked", "false");
+    }
+  });
 });
 
 describe("Data with ids", () => {
@@ -800,5 +815,21 @@ describe("Data with ids", () => {
     expect(newNodes[4]).toHaveAttribute("aria-checked", "true"); // Drinks->Coffee
     expect(newNodes[5]).toHaveAttribute("aria-checked", "true"); // Drinks->Tea
     expect(newNodes[6]).toHaveAttribute("aria-checked", "false"); // Vegetables
+  });
+
+  test("SelectedIds should not throw if non-existent", () => {
+    const { queryAllByRole } = render(
+
+      <MultiSelectCheckboxControlled
+        defaultExpandedIds={["data-string", "690", 908, 42]}
+        selectedIds={["does-not-exist"]}
+        data={dataWithIds}
+      />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    for(const node of nodes) {
+      expect(node).toHaveAttribute("aria-checked", "false");
+    }
   });
 });

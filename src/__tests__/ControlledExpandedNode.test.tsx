@@ -206,6 +206,25 @@ describe("Without node ids", () => {
     expect(nodesAfterExpandedAll[6]).toHaveAttribute("aria-expanded", "true");
     expect(nodesAfterExpandedAll[11]).toHaveAttribute("aria-expanded", "true");
   });
+  test("ExpandedIds should not throw if non-existent", () => {
+    const { queryAllByRole, rerender } = render(
+      <ControlledExpanded expandedIds={["does-not-exist"]} data={dataWithoutIds} />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    for(const node of nodes) {
+      expect(node).toHaveAttribute("aria-expanded", "false");
+    }
+
+    rerender(
+      <ControlledExpanded expandedIds={["does-not-exist-2"]} data={dataWithoutIds} />
+    );
+
+    const newNodes = queryAllByRole("treeitem");
+    for(const node of newNodes) {
+      expect(node).toHaveAttribute("aria-expanded", "false");
+    }
+  });
 });
 
 describe("With node ids", () => {
@@ -285,5 +304,24 @@ describe("With node ids", () => {
     expect(nodesAfterExpandedAll[0]).toHaveAttribute("aria-expanded", "true");
     expect(nodesAfterExpandedAll[6]).toHaveAttribute("aria-expanded", "true");
     expect(nodesAfterExpandedAll[11]).toHaveAttribute("aria-expanded", "true");
+  });
+  test("ExpandedIds should not throw if non-existent", () => {
+    const { queryAllByRole, rerender } = render(
+      <ControlledExpanded expandedIds={["does-not-exist"]} data={dataWithIds} />
+    );
+
+    const nodes = queryAllByRole("treeitem");
+    for(const node of nodes) {
+      expect(node).toHaveAttribute("aria-expanded", "false");
+    }
+
+    rerender(
+      <ControlledExpanded expandedIds={["does-not-exist-2"]} data={dataWithIds} />
+    );
+
+    const newNodes = queryAllByRole("treeitem");
+    for(const node of newNodes) {
+      expect(node).toHaveAttribute("aria-expanded", "false");
+    }
   });
 });
