@@ -163,14 +163,16 @@ const useTree = ({
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onExpand != null && onExpand !== noop) {
       for (const id of toggledExpandIds) {
-        onExpand({
-          element: getTreeNode(data, id),
-          isExpanded: expandedIds.has(id),
-          isSelected: selectedIds.has(id),
-          isDisabled: disabledIds.has(id),
-          isHalfSelected: halfSelectedIds.has(id),
-          treeState: state,
-        });
+        if(data.find(d => d.id == id)) {
+          onExpand({
+            element: getTreeNode(data, id),
+            isExpanded: expandedIds.has(id),
+            isSelected: selectedIds.has(id),
+            isDisabled: disabledIds.has(id),
+            isHalfSelected: halfSelectedIds.has(id),
+            treeState: state,
+          });
+        }
       }
     }
   }, [
@@ -267,7 +269,7 @@ const useTree = ({
           multiSelect,
         });
       for (const id of controlledSelectedIds) {
-        propagateSelect &&
+        propagateSelect && 
           !disabledIds.has(id) &&
           dispatch({
             type: treeTypes.changeSelectMany,
@@ -283,15 +285,15 @@ const useTree = ({
   useEffect(() => {
     const toggleControlledExpandedIds = new Set<NodeId>(controlledExpandedIds);
     //nodes need to be expanded
-    const diffExpandedIds = difference(
+    const diffExpandedIds = new Set<NodeId>([...difference(
       toggleControlledExpandedIds,
       prevExpandedIds
-    );
+    )].filter((id) => data.find((n) => n.id == id)));
     //nodes to be collapsed
-    const diffCollapseIds = difference(
+    const diffCollapseIds = new Set<NodeId>([...difference(
       prevExpandedIds,
       toggleControlledExpandedIds
-    );
+    )].filter((id) => data.find((n) => n.id == id)));
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {

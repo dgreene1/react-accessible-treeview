@@ -392,7 +392,7 @@ export const propagatedIds = (
 ) =>
   ids.concat(
     ...ids
-      .filter((id) => isBranchNode(data, id))
+      .filter((id) => data.find(d => d.id == id) && isBranchNode(data, id))
       .map((id) => getDescendants(data, id, disabledIds))
   );
 
