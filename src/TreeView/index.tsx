@@ -282,14 +282,16 @@ const useTree = ({
 
   useEffect(() => {
     const toggleControlledExpandedIds = new Set<NodeId>(controlledExpandedIds);
+    //previous nodes need to be filtered to what is currently in the tree
+    const filteredPrevExpandedIds = new Set<NodeId>([...prevExpandedIds].filter((n) => data.find((d) => d.id == n)))
     //nodes need to be expanded
     const diffExpandedIds = difference(
       toggleControlledExpandedIds,
-      prevExpandedIds
+      filteredPrevExpandedIds
     );
     //nodes to be collapsed
     const diffCollapseIds = difference(
-      prevExpandedIds,
+      filteredPrevExpandedIds,
       toggleControlledExpandedIds
     );
     //controlled collapsing

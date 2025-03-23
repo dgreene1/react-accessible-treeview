@@ -206,6 +206,21 @@ describe("Without node ids", () => {
     expect(nodesAfterExpandedAll[6]).toHaveAttribute("aria-expanded", "true");
     expect(nodesAfterExpandedAll[11]).toHaveAttribute("aria-expanded", "true");
   });
+  test("ExpandedIds should not throw if non-existent after remove", () => {
+    const { rerender } = render(
+      <ControlledExpanded expandedIds={[1,7,16]} data={dataWithoutIds} />
+    );
+
+    //clone data and remove fruits
+    const updatedData = [...(JSON.parse(JSON.stringify(dataWithoutIds))).filter((d:any) => !(d.id == 1 || d.parent == 1) )]
+    //remove fruit from root children
+    updatedData.find((d) => d.id == 0)!.children = [7,16]
+
+    rerender(
+      <ControlledExpanded expandedIds={[7,16]} data={updatedData} />
+    );
+
+  });
 });
 
 describe("With node ids", () => {
