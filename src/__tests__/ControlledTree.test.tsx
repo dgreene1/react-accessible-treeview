@@ -585,6 +585,25 @@ describe("Data without ids", () => {
     expect(getNodes()[0]).toHaveAttribute("aria-checked", "false");
     expect(getNodes()[1]).toHaveAttribute("aria-checked", "false");
   });
+  test("SelectedIds should not throw if non-existent after remove", () => {
+    const { rerender } = render(
+
+      <MultiSelectCheckboxControlled
+        defaultExpandedIds={[]}
+        selectedIds={[1,7,16]}
+        data={dataWithoutIds}
+      />
+    );
+
+    //clone data and remove fruits
+    const updatedData = [...(JSON.parse(JSON.stringify(dataWithoutIds))).filter((d:any) => !(d.id == 1 || d.parent == 1) )]
+    //remove fruit from root children
+    updatedData.find((d) => d.id == 0)!.children = [7,16]
+
+    rerender(
+      <MultiSelectCheckboxControlled selectedIds={[7,16]} data={updatedData} />
+    );
+  });
 });
 
 describe("Data with ids", () => {
