@@ -1,3 +1,6 @@
+# SEEKING NEW MAINTAINERS
+We're looking to give this repository to a new owner. Please see issue https://github.com/dgreene1/react-accessible-treeview/issues/222 to inquire about being the new owner.
+
 # react-accessible-treeview [![Build Status](https://travis-ci.org/lissitz/react-accessible-treeview.svg?branch=master)](https://travis-ci.org/lissitz/react-accessible-treeview) [![Greenkeeper badge](https://badges.greenkeeper.io/lissitz/react-accessible-treeview.svg)](https://greenkeeper.io/) [![npm version](https://badge.fury.io/js/react-accessible-treeview.svg)](https://badge.fury.io/js/react-accessible-treeview) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A react component that implements the treeview pattern as described by the [WAI-ARIA Authoring Practices](https://www.w3.org/TR/wai-aria-practices/#TreeView).
