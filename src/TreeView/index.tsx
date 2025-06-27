@@ -259,14 +259,21 @@ const useTree = ({
   );
 
   useEffect(() => {
-    if (!!controlledSelectedIds) {
+    const selectedIdsToUse = controlledSelectedIds || defaultSelectedIds;
+    const isControlledSelected =
+      controlledSelectedIds && controlledSelectedIds.length > 0;
+
+    if (isControlledSelected) {
       toggledControlledIds.size &&
         dispatch({
           type: treeTypes.controlledSelectMany,
           ids: controlledSelectedIds,
           multiSelect,
         });
-      for (const id of controlledSelectedIds) {
+    }
+
+    if (selectedIdsToUse) {
+      for (const id of selectedIdsToUse) {
         propagateSelect &&
           !disabledIds.has(id) &&
           dispatch({
