@@ -612,3 +612,175 @@ describe("halfSelected parent should change status when propagateSelect={false}"
     }
   );
 });
+
+test("should render defaultSelectedIds correctly with propagateSelect and verify selection after expanding nodes", () => {
+  const { queryAllByRole } = render(
+    <CheckboxTree defaultSelectedIds={[2, 7]} />
+  );
+
+  let nodes = queryAllByRole("treeitem");
+
+  // Verify initial state
+  expect(nodes[0]).toHaveAttribute("aria-checked", "mixed"); // Fruits should be half-selected
+  expect(nodes[1]).toHaveAttribute("aria-checked", "true"); // Drinks should be selected
+  expect(nodes[2]).toHaveAttribute("aria-checked", "false"); // Vegetables should not be selected
+
+  expect(nodes[0]).toHaveAttribute("aria-expanded", "false"); // Fruits should not be expanded
+  expect(nodes[1]).toHaveAttribute("aria-expanded", "false"); // Drinks should not be expanded
+  expect(nodes[2]).toHaveAttribute("aria-expanded", "false"); // Vegetables should not be expanded
+
+  // Expand Fruits node
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error("Expected to find an active element");
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+
+  nodes = queryAllByRole("treeitem");
+  expect(nodes[0]).toHaveAttribute("aria-expanded", "true");
+
+  // Verify Fruits children selection after expanding
+  const fruitsChildNodes = nodes.filter(
+    (node) => node.getAttribute("aria-level") === "2"
+  );
+
+  expect(fruitsChildNodes[0]).toHaveAttribute("aria-checked", "true"); // Avocados (id: 2)
+  expect(fruitsChildNodes[1]).toHaveAttribute("aria-checked", "false"); // Bananas
+  expect(fruitsChildNodes[2]).toHaveAttribute("aria-checked", "false"); // Berries
+  expect(fruitsChildNodes[3]).toHaveAttribute("aria-checked", "false"); // Oranges
+  expect(fruitsChildNodes[4]).toHaveAttribute("aria-checked", "false"); // Pears
+
+  // Navigate to and expand Drinks node
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Collapse Fruits
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Navigate to Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Expand Drinks
+
+  nodes = queryAllByRole("treeitem");
+  const drinksNode = nodes.find((node) => node.textContent?.includes("Drinks"));
+  expect(drinksNode).toHaveAttribute("aria-expanded", "true");
+
+  // Verify Drinks children selection after expanding
+  const drinksChildNodes = nodes.filter(
+    (node) =>
+      node.getAttribute("aria-level") === "2" &&
+      (node.textContent?.includes("Apple Juice") ||
+        node.textContent?.includes("Chocolate") ||
+        node.textContent?.includes("Coffee") ||
+        node.textContent?.includes("Tea"))
+  );
+
+  expect(drinksChildNodes[0]).toHaveAttribute("aria-checked", "true"); // Apple Juice (id: 8)
+  expect(drinksChildNodes[1]).toHaveAttribute("aria-checked", "true"); // Chocolate (id: 9)
+  expect(drinksChildNodes[2]).toHaveAttribute("aria-checked", "true"); // Coffee (id: 10)
+  expect(drinksChildNodes[3]).toHaveAttribute("aria-checked", "true"); // Tea (id: 11)
+});
+
+test("should render defaultSelectedIds with nested selections and propagateSelect", () => {
+  const { queryAllByRole } = render(
+    <CheckboxTree defaultSelectedIds={[12, 13]} defaultExpandedIds={[7, 11]} />
+  );
+
+  const nodes = queryAllByRole("treeitem");
+
+  // Verify parent states with nested selections
+  expect(nodes[0]).toHaveAttribute("aria-checked", "false"); // Fruits
+  expect(nodes[1]).toHaveAttribute("aria-checked", "mixed"); // Drinks should be half-selected
+  expect(nodes[2]).toHaveAttribute("aria-checked", "false"); // Vegetables
+
+  // Find Tea node and verify it's half-selected
+  const teaNode = nodes.find(
+    (node) =>
+      node.textContent?.includes("Tea") &&
+      node.getAttribute("aria-level") === "2"
+  );
+  expect(teaNode).toHaveAttribute("aria-checked", "mixed");
+
+  // Verify Tea children
+  const teaChildNodes = nodes.filter(
+    (node) => node.getAttribute("aria-level") === "3"
+  );
+  expect(teaChildNodes[0]).toHaveAttribute("aria-checked", "true"); // Green Tea (id: 12)
+  expect(teaChildNodes[1]).toHaveAttribute("aria-checked", "true"); // Red Tea (id: 13)
+  expect(teaChildNodes[2]).toHaveAttribute("aria-checked", "false"); // Black Tea
+  expect(teaChildNodes[3]).toHaveAttribute("aria-checked", "false"); // Matcha
+});
+
+test("should render defaultSelectedIds where selecting all children propagates selection to parent", () => {
+  const { queryAllByRole } = render(
+    <CheckboxTree defaultSelectedIds={[2, 3, 4, 5, 6]} />
+  );
+
+  const nodes = queryAllByRole("treeitem");
+
+  // Verify parent is fully selected when all its children are selected
+  expect(nodes[0]).toHaveAttribute("aria-checked", "true"); // Fruits should be fully selected
+  expect(nodes[1]).toHaveAttribute("aria-checked", "false"); // Drinks should not be selected
+  expect(nodes[2]).toHaveAttribute("aria-checked", "false"); // Vegetables should not be selected
+
+  // Expand Fruits to confirm all children are selected
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error("Expected to find an active element");
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+
+  // Verify all children of Fruits are selected
+  const fruitsChildNodes = nodes.filter(
+    (node) => node.getAttribute("aria-level") === "2"
+  );
+  fruitsChildNodes.forEach((node) => {
+    expect(node).toHaveAttribute("aria-checked", "true");
+  });
+});
+
+test("should render defaultSelectedIds with propagateSelect disabled", () => {
+  const { queryAllByRole } = render(
+    <CheckboxTree defaultSelectedIds={[2, 8, 16]} propagateSelect={false} />
+  );
+
+  let nodes = queryAllByRole("treeitem");
+
+  expect(nodes[0]).toHaveAttribute("aria-checked", "mixed"); // Fruits should be half-selected
+  expect(nodes[1]).toHaveAttribute("aria-checked", "mixed"); // Drinks should be half-selected
+  expect(nodes[2]).toHaveAttribute("aria-checked", "true"); // Vegetables
+
+  // Expand Fruits to verify only specific child is selected
+  nodes[0].focus();
+  if (document.activeElement == null)
+    throw new Error("Expected to find an active element");
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" });
+
+  nodes = queryAllByRole("treeitem");
+  const fruitsChildNodes = nodes.filter(
+    (node) => node.getAttribute("aria-level") === "2"
+  );
+
+  expect(fruitsChildNodes[0]).toHaveAttribute("aria-checked", "true"); // Avocados (id: 2)
+  expect(fruitsChildNodes[1]).toHaveAttribute("aria-checked", "false"); // Bananas
+  expect(fruitsChildNodes[2]).toHaveAttribute("aria-checked", "false"); // Berries
+  expect(fruitsChildNodes[3]).toHaveAttribute("aria-checked", "false"); // Oranges
+  expect(fruitsChildNodes[4]).toHaveAttribute("aria-checked", "false"); // Pears
+
+  // Expand Vegetables to verify there no children selected
+  fireEvent.keyDown(document.activeElement, { key: "ArrowLeft" }); // Collapse Fruits
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Navigate to Drinks
+  fireEvent.keyDown(document.activeElement, { key: "ArrowDown" }); // Navigate to Vegetables
+  fireEvent.keyDown(document.activeElement, { key: "ArrowRight" }); // Expand Vegetables
+
+  nodes = queryAllByRole("treeitem");
+  const vegetablesChildNodes = nodes.filter(
+    (node) => node.getAttribute("aria-level") === "2"
+  );
+  expect(vegetablesChildNodes[0]).toHaveAttribute("aria-checked", "false"); // Beets (id: 16)
+  expect(vegetablesChildNodes[1]).toHaveAttribute("aria-checked", "false"); // Carrots
+  expect(vegetablesChildNodes[2]).toHaveAttribute("aria-checked", "false"); // Celery
+  expect(vegetablesChildNodes[3]).toHaveAttribute("aria-checked", "false"); // Lettuce
+  expect(vegetablesChildNodes[4]).toHaveAttribute("aria-checked", "false"); // Onions
+});
+
+test("should handle empty defaultSelectedIds", () => {
+  const { queryAllByRole } = render(<CheckboxTree defaultSelectedIds={[]} />);
+
+  const nodes = queryAllByRole("treeitem");
+  nodes.forEach((node) => {
+    expect(node).toHaveAttribute("aria-checked", "false");
+  });
+});

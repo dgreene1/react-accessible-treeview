@@ -259,6 +259,8 @@ const useTree = ({
   );
 
   useEffect(() => {
+    const selectedIdsToUse = controlledSelectedIds || defaultSelectedIds;
+
     if (!!controlledSelectedIds) {
       toggledControlledIds.size &&
         dispatch({
@@ -266,7 +268,10 @@ const useTree = ({
           ids: controlledSelectedIds,
           multiSelect,
         });
-      for (const id of controlledSelectedIds) {
+    }
+
+    if (selectedIdsToUse) {
+      for (const id of selectedIdsToUse) {
         propagateSelect &&
           !disabledIds.has(id) &&
           dispatch({
