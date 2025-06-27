@@ -260,10 +260,8 @@ const useTree = ({
 
   useEffect(() => {
     const selectedIdsToUse = controlledSelectedIds || defaultSelectedIds;
-    const isControlledSelected =
-      controlledSelectedIds && controlledSelectedIds.length > 0;
 
-    if (isControlledSelected) {
+    if (!!controlledSelectedIds) {
       toggledControlledIds.size &&
         dispatch({
           type: treeTypes.controlledSelectMany,
