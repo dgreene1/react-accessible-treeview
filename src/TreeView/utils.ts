@@ -307,7 +307,7 @@ export type IFlatMetadata = Record<
   string | number | boolean | undefined | null
 >;
 
-interface ITreeNode<M extends IFlatMetadata = IFlatMetadata> {
+export interface ITreeNode<M extends IFlatMetadata = IFlatMetadata> {
   id?: NodeId;
   name: string;
   isBranch?: boolean;

@@ -117,6 +117,7 @@ const useTree = ({
   useEffect(() => {
     if (onSelect != null && onSelect !== noop) {
       for (const toggledId of toggledIds) {
+        if (!data.find((node) => node.id === toggledId)) continue;
         const isBranch =
           isBranchNode(data, toggledId) ||
           !!getTreeNode(data, tabbableId)?.isBranch;
@@ -144,7 +145,7 @@ const useTree = ({
 
   useEffect(() => {
     if (onNodeSelect != null && onNodeSelect !== noop) {
-      if (lastManuallyToggled != null) {
+      if (lastManuallyToggled != null && data.find((node) => node.id === lastManuallyToggled)) {
         if (toggledIds.size) {
           onNodeSelect({
             element: getTreeNode(data, lastManuallyToggled),
@@ -163,6 +164,7 @@ const useTree = ({
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onExpand != null && onExpand !== noop) {
       for (const id of toggledExpandIds) {
+        if (!data.find((node) => node.id === id)) continue;
         onExpand({
           element: getTreeNode(data, id),
           isExpanded: expandedIds.has(id),
@@ -189,6 +191,7 @@ const useTree = ({
     const toggledExpandIds = symmetricDifference(expandedIds, prevExpandedIds);
     if (onLoadData) {
       for (const id of toggledExpandIds) {
+        if (!data.find((node) => node.id === id)) continue;
         onLoadData({
           element: getTreeNode(data, id),
           isExpanded: expandedIds.has(id),
@@ -200,6 +203,7 @@ const useTree = ({
       }
       if (prevData !== data && togglableSelect && propagateSelect) {
         for (const id of expandedIds) {
+          if (!data.find((node) => node.id === id)) continue;
           selectedIds.has(id) &&
             dispatch({
               type: treeTypes.changeSelectMany,
@@ -265,13 +269,16 @@ const useTree = ({
       toggledControlledIds.size &&
         dispatch({
           type: treeTypes.controlledSelectMany,
-          ids: controlledSelectedIds,
+          ids: controlledSelectedIds.filter((id) =>
+            data.some((node) => node.id === id)
+          ),
           multiSelect,
         });
     }
 
     if (selectedIdsToUse) {
       for (const id of selectedIdsToUse) {
+        if (!data.find((node) => node.id === id)) continue;
         propagateSelect &&
           !disabledIds.has(id) &&
           dispatch({
@@ -300,6 +307,7 @@ const useTree = ({
     //controlled collapsing
     if (diffCollapseIds.size) {
       for (const id of diffCollapseIds) {
+        if (!data.find((node) => node.id === id)) continue;
         if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
           const ids = [id, ...getDescendants(data, id, new Set<number>())];
           dispatch({
@@ -313,6 +321,7 @@ const useTree = ({
     //controlled expanding
     if (diffExpandedIds.size) {
       for (const id of diffExpandedIds) {
+        if (!data.find((node) => node.id === id)) continue;
         if (isBranchNode(data, id) || getTreeNode(data, id).isBranch) {
           const parentId = getParent(data, id);
           if (parentId) {
@@ -571,6 +580,8 @@ export interface ITreeViewProps<M extends IFlatMetadata = IFlatMetadata> {
     treeState: ITreeViewState;
     dispatch: React.Dispatch<TreeViewAction>;
   }) => void;
+  /** Custom onKeyDown event handler */
+  onKeyDown?: React.KeyboardEventHandler<HTMLUListElement>;
   /** Id of the node to focus */
   focusedId?: NodeId;
 }
@@ -725,6 +736,9 @@ const handleKeyDown = ({
 }) => (event: React.KeyboardEvent) => {
   const element = getTreeNode(data, tabbableId);
   const id = element.id;
+  if (event.metaKey || event.altKey) {
+    return;
+  }
   if (event.ctrlKey) {
     if (event.key === "a" && clickAction !== clickActions.focus) {
       event.preventDefault();
@@ -973,12 +987,20 @@ const handleKeyDown = ({
       return;
     default:
       if (event.key.length === 1) {
+        const visited = new Set<NodeId>([id]);
         let currentId = getNextAccessible(data, id, expandedIds);
         while (currentId !== id) {
           if (currentId == null) {
             currentId = getTreeParent(data).children[0];
+            if (currentId == null || visited.has(currentId)) {
+              break;
+            }
             continue;
           }
+          if (visited.has(currentId)) {
+            break;
+          }
+          visited.add(currentId);
           if (
             getTreeNode(data, currentId).name[0].toLowerCase() ===
             event.key.toLowerCase()

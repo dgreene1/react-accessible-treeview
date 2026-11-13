@@ -16,10 +16,12 @@ import {
   IBranchProps,
   LeafProps,
 } from "./TreeView/types";
-import { flattenTree } from "./TreeView/utils";
+import { flattenTree, ITreeNode, IFlatMetadata } from "./TreeView/utils";
 
 export {
   flattenTree,
+  ITreeNode,
+  IFlatMetadata,
   ITreeViewProps,
   INode,
   NodeId,
